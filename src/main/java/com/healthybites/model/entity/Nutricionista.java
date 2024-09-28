@@ -25,9 +25,6 @@ public class Nutricionista {
     @OneToMany(mappedBy = "nutricionista", cascade = CascadeType.ALL)
     private List<Contenido> contenidos;
 
-    @OneToMany(mappedBy = "nutricionista", cascade = CascadeType.ALL)
-    private List<Recompensa> recompensas;
-
     @OneToOne
     @JoinColumn(name = "id_usuario", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "FK_nutricionista_usuario"))

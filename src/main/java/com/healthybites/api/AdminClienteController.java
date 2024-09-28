@@ -16,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/admin/cliente")
 public class AdminClienteController {
+
     private final AdminClienteService adminClienteService;
 
     @GetMapping
