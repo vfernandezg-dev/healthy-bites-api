@@ -1,7 +1,9 @@
 package com.healthybites.service.impl;
 
 import com.healthybites.model.entity.Contenido;
+import com.healthybites.model.entity.Nutricionista;
 import com.healthybites.repository.ContenidoRepository;
+import com.healthybites.repository.NutricionistaRepository;
 import com.healthybites.service.AdminContenidoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -16,6 +18,7 @@ import java.util.List;
 public class AdminContenidoServiceImpl implements AdminContenidoService {
 
     private final ContenidoRepository contenidoRepository;
+    private final NutricionistaRepository nutricionistaRepository;
 
     @Transactional(readOnly = true)
     @Override
@@ -39,6 +42,10 @@ public class AdminContenidoServiceImpl implements AdminContenidoService {
     @Transactional
     @Override
     public Contenido create(Contenido contenido) {
+
+        Nutricionista nutricionista = nutricionistaRepository.findById(contenido.getNutricionista().getId())
+                .orElseThrow(() -> new RuntimeException("Nutricionista no encontrado por ID: " + contenido.getNutricionista().getId()));
+
         return contenidoRepository.save(contenido);
     }
 
@@ -46,11 +53,16 @@ public class AdminContenidoServiceImpl implements AdminContenidoService {
     @Override
     public Contenido update(Integer id, Contenido updateContenido) {
         Contenido contenidoFromDB = findById(id);
+
+        Nutricionista nutricionista = nutricionistaRepository.findById(updateContenido.getNutricionista().getId())
+                .orElseThrow(() -> new RuntimeException("Nutricionista no encontrado por ID: " + updateContenido.getNutricionista().getId()));
+
         contenidoFromDB.setTitulo(updateContenido.getTitulo());
         contenidoFromDB.setDescripcion(updateContenido.getDescripcion());
         contenidoFromDB.setTipoContenido(updateContenido.getTipoContenido());
         contenidoFromDB.setCategoriaContenido(updateContenido.getCategoriaContenido());
         contenidoFromDB.setEsGratis(updateContenido.isEsGratis());
+        contenidoFromDB.setNutricionista(updateContenido.getNutricionista());
         return contenidoRepository.save(contenidoFromDB);
     }
 
