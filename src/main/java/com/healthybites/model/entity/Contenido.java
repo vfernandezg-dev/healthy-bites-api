@@ -31,7 +31,6 @@ public class Contenido {
     @Column(name = "es_gratis", nullable = false)
     private boolean esGratis;
 
-    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "id_nutricionista", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "FK_contenido_nutricionista"))
