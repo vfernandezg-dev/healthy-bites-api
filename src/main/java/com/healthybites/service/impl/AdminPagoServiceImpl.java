@@ -1,7 +1,9 @@
 package com.healthybites.service.impl;
 
 import com.healthybites.model.entity.Pago;
+import com.healthybites.model.entity.Suscripcion;
 import com.healthybites.repository.PagoRepository;
+import com.healthybites.repository.SuscripcionRepository;
 import com.healthybites.service.AdminPagoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -16,6 +18,7 @@ import java.util.List;
 public class AdminPagoServiceImpl implements AdminPagoService {
 
     private final PagoRepository pagoRepository;
+    private final SuscripcionRepository suscripcionRepository;
 
     @Transactional(readOnly = true)
     @Override
@@ -39,6 +42,10 @@ public class AdminPagoServiceImpl implements AdminPagoService {
     @Transactional
     @Override
     public Pago create(Pago pago) {
+        Suscripcion suscripcion = suscripcionRepository.findById(pago.getSuscripcion().getId()).
+                orElseThrow(() -> new RuntimeException("Suscripcion no encontrada por ID: " + pago.getSuscripcion().getId()));
+
+        pago.setSuscripcion(suscripcion);
         return pagoRepository.save(pago);
     }
 
@@ -46,14 +53,20 @@ public class AdminPagoServiceImpl implements AdminPagoService {
     @Override
     public Pago update(Integer id, Pago updatePago) {
         Pago pagoFromDB = findById(id);
+
+        Suscripcion suscripcion = suscripcionRepository.findById(updatePago.getSuscripcion().getId()).
+                orElseThrow(() -> new RuntimeException("Suscripcion no encontrada por ID: " + updatePago.getSuscripcion().getId()));
+
         pagoFromDB.setEstadoPago(updatePago.getEstadoPago());
+        pagoFromDB.setSuscripcion(suscripcion);
         return pagoRepository.save(pagoFromDB);
     }
 
     @Transactional
     @Override
     public void delete(Integer id) {
-        Pago pago = findById(id);
+        Pago pago = pagoRepository.findById(id).
+                orElseThrow(() -> new RuntimeException("Pago no encontrado por ID: " + id));
         pagoRepository.delete(pago);
     }
 }

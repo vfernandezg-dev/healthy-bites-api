@@ -1,7 +1,10 @@
 package com.healthybites.service.impl;
 
+import com.healthybites.model.entity.Cliente;
+import com.healthybites.model.entity.Pago;
 import com.healthybites.model.entity.Suscripcion;
 import com.healthybites.repository.ClienteRepository;
+import com.healthybites.repository.PagoRepository;
 import com.healthybites.repository.SuscripcionRepository;
 import com.healthybites.service.AdminSuscripcionService;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +20,8 @@ import java.util.List;
 public class AdminSuscripcionServiceImpl implements AdminSuscripcionService {
 
     private final SuscripcionRepository suscripcionRepository;
+    private final ClienteRepository clienteRepository;
+    private final PagoRepository pagoRepository;
 
     @Transactional(readOnly = true)
     @Override
@@ -40,6 +45,13 @@ public class AdminSuscripcionServiceImpl implements AdminSuscripcionService {
     @Transactional
     @Override
     public Suscripcion create(Suscripcion suscripcion) {
+        Pago pago = pagoRepository.findById(suscripcion.getPago().getId()).
+                orElseThrow(() -> new RuntimeException("Pago no encontrado por ID: " + suscripcion.getPago().getId()));
+        Cliente cliente = clienteRepository.findById(suscripcion.getCliente().getId()).
+                orElseThrow(() -> new RuntimeException("Cliente no encontrado por ID: " + suscripcion.getCliente().getId()));
+
+        suscripcion.setPago(pago);
+        suscripcion.setCliente(cliente);
         return suscripcionRepository.save(suscripcion);
     }
 
@@ -47,17 +59,26 @@ public class AdminSuscripcionServiceImpl implements AdminSuscripcionService {
     @Override
     public Suscripcion update(Integer id, Suscripcion updateSuscripcion) {
         Suscripcion suscripcionFromDB = findById(id);
+
+        Pago pago = pagoRepository.findById(updateSuscripcion.getPago().getId()).
+                orElseThrow(() -> new RuntimeException("Pago no encontrado por ID: " + updateSuscripcion.getPago().getId()));
+        Cliente cliente = clienteRepository.findById(updateSuscripcion.getCliente().getId()).
+                orElseThrow(() -> new RuntimeException("Cliente no encontrado por ID: " + updateSuscripcion.getCliente().getId()));
+
         suscripcionFromDB.setTipoSuscripcion(updateSuscripcion.getTipoSuscripcion());
         suscripcionFromDB.setPrecio(updateSuscripcion.getPrecio());
         suscripcionFromDB.setFechaInicio(updateSuscripcion.getFechaInicio());
         suscripcionFromDB.setFechaFin(updateSuscripcion.getFechaFin());
+        suscripcionFromDB.setPago(pago);
+        suscripcionFromDB.setCliente(cliente);
         return suscripcionRepository.save(suscripcionFromDB);
     }
 
     @Transactional
     @Override
     public void delete(Integer id) {
-        Suscripcion suscripcion = findById(id);
+        Suscripcion suscripcion = suscripcionRepository.findById(id).
+                orElseThrow(() -> new RuntimeException("Suscripcion no encontrada por ID: " + id));
         suscripcionRepository.delete(suscripcion);
     }
 }
