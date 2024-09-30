@@ -1,6 +1,8 @@
 package com.healthybites.service.impl;
 
+import com.healthybites.model.entity.Cliente;
 import com.healthybites.model.entity.Habito;
+import com.healthybites.repository.ClienteRepository;
 import com.healthybites.repository.HabitoRepository;
 import com.healthybites.service.AdminHabitoService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ import java.util.List;
 public class AdminHabitoServiceImpl implements AdminHabitoService {
 
     private final HabitoRepository habitoRepository;
+    private final ClienteRepository clienteRepository;
 
     @Transactional(readOnly = true)
     @Override
@@ -39,6 +42,10 @@ public class AdminHabitoServiceImpl implements AdminHabitoService {
     @Transactional
     @Override
     public Habito create(Habito habito) {
+        Cliente cliente = clienteRepository.findById(habito.getCliente().getId()).
+                orElseThrow(() -> new RuntimeException("Cliente no encontrado por ID: " + habito.getCliente().getId()));
+
+        habito.setCliente(cliente);
         return habitoRepository.save(habito);
     }
 
@@ -46,11 +53,16 @@ public class AdminHabitoServiceImpl implements AdminHabitoService {
     @Override
     public Habito update(Integer id, Habito updateHabito) {
         Habito habitoFromDB = findById(id);
+
+        Cliente cliente = clienteRepository.findById(updateHabito.getCliente().getId()).
+                orElseThrow(() -> new RuntimeException("Cliente no encontrado por ID: " + updateHabito.getCliente().getId()));
+
         habitoFromDB.setNombre(updateHabito.getNombre());
         habitoFromDB.setHidratacion(updateHabito.getHidratacion());
         habitoFromDB.setAlimentacion(updateHabito.getAlimentacion());
         habitoFromDB.setEjercicio(updateHabito.getEjercicio());
         habitoFromDB.setCalidadDeSueno(updateHabito.getCalidadDeSueno());
+        habitoFromDB.setCliente(cliente);
         return habitoRepository.save(habitoFromDB);
     }
 
