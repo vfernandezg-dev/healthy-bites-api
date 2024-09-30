@@ -30,7 +30,7 @@ VALUES
     ('DEFICIT', 'Plan de desintoxicación de 7 días basado en jugos y alimentos naturales', 7, true, 4)
     ON CONFLICT DO NOTHING;
 
-INSERT INTO public.grupo (nombre, es_privado)
+INSERT INTO public.grupos (nombre, es_privado)
 VALUES
     ('Grupo de pérdida de peso', true),
     ('Grupo de corredores', false),

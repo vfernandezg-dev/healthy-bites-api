@@ -32,26 +32,6 @@ public class Cliente {
     @Column(name = "peso", nullable = false)
     private double peso;
 
-    @ManyToOne
-    @JoinColumn(name = "id_grupo", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "FK_cliente_grupo"))
-    private Grupo grupo;
-
-    @ManyToOne
-    @JoinColumn(name = "id_meta", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "FK_cliente_meta"))
-    private Meta meta;
-
-    @ManyToOne
-    @JoinColumn(name = "id_suscripcion", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "FK_cliente_suscripcion"))
-    private Suscripcion suscripcion;
-
-    @ManyToOne
-    @JoinColumn(name = "id_racha", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "FK_cliente_racha"))
-    private Racha racha;
-
     @OneToOne
     @JoinColumn(name = "id_usuario", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "FK_cliente_usuario"))
