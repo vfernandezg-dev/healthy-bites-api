@@ -1,0 +1,2801 @@
+{
+	"info": {
+		"_postman_id": "88801793-1e27-49c8-b9b5-6dfd1d88112d",
+		"name": "Healthy Bites API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "37883980",
+		"_collection_link": "https://healthy-bites.postman.co/workspace/Healthy-Bites-Workspace~9822cd4c-339f-4116-88d0-40a5ede4bbfe/collection/37883980-88801793-1e27-49c8-b9b5-6dfd1d88112d?action=share&source=collection_link&creator=37883980"
+	},
+	"item": [
+		{
+			"name": "Cliente",
+			"item": [
+				{
+					"name": "Obtener todos los clientes",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/cliente",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"cliente"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Paginacion de clientes",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/cliente/page?size=5&sort=nombre",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"cliente",
+								"page"
+							],
+							"query": [
+								{
+									"key": "size",
+									"value": "5"
+								},
+								{
+									"key": "sort",
+									"value": "nombre"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener un cliente por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/cliente/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"cliente",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear un nuevo cliente",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\": \"Valentin\",\r\n    \"apellido\": \"Gutierrez\",\r\n    \"sexo\": \"M\",\r\n    \"edad\": 19,\r\n    \"altura\": 1.71,\r\n    \"peso\": 88.0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/cliente",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"cliente"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar un cliente",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\": \"Valentin\",\r\n    \"apellido\": \"Fernandez\",\r\n    \"sexo\": \"M\",\r\n    \"edad\": 19,\r\n    \"altura\": 1.70,\r\n    \"peso\": 88.0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/cliente/9",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"cliente",
+								"9"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar un cliente por ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/cliente/9",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"cliente",
+								"9"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Nutricionista",
+			"item": [
+				{
+					"name": "Obtener todos los nutricionistas",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/nutricionista",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"nutricionista"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Paginacion de nutricionistas",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/nutricionista?size=5&sort=name",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"nutricionista"
+							],
+							"query": [
+								{
+									"key": "size",
+									"value": "5"
+								},
+								{
+									"key": "sort",
+									"value": "name"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener un nutricionista por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/nutricionista/3",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"nutricionista",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear un nuevo nutricionista",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\": \"Camila\",\r\n    \"apellido\": \"Moreno\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/nutricionista",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"nutricionista"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar un nutricionista",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\": \"Camilo\",\r\n    \"apellido\": \"Moreno\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/nutricionista/5",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"nutricionista",
+								"5"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar un nutricionissta por ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/nutricionista/5",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"nutricionista",
+								"5"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Publicación",
+			"item": [
+				{
+					"name": "Obtener todas las publicaciones",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/publicacion",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"publicacion"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Paginación de publicaciones",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/publicacion/page?size=5&sort=titulo",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"publicacion",
+								"page"
+							],
+							"query": [
+								{
+									"key": "size",
+									"value": "5"
+								},
+								{
+									"key": "sort",
+									"value": "titulo"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear una nueva publicación",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"titulo\": \"Esta es una nueva publicacion\",\r\n    \"descripcion\": \"Esta es la descripcion de mi publicacion\",\r\n    \"fecha\": \"2024-09-01T16:05:00\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/publicacion",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"publicacion"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener publicación por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/publicacion/7",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"publicacion",
+								"7"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar una publicación",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"titulo\": \"Esta es mi octava publicacion\",\r\n    \"descripcion\": \"Esta es la descripcion de mi publicacion\",\r\n    \"fecha\": \"2024-09-01T16:05:00.000+00:00\",\r\n    \"comentarios\": null,\r\n    \"cliente\": null,\r\n    \"grupo\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/publicacion/8",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"publicacion",
+								"8"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar una publicación por ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/publicacion/6",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"publicacion",
+								"6"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Comentario",
+			"item": [
+				{
+					"name": "Obtener todos los comentarios",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/comentario",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"comentario"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Paginación de comentarios",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/comentario/page?size=5&sort=mensaje",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"comentario",
+								"page"
+							],
+							"query": [
+								{
+									"key": "size",
+									"value": "5"
+								},
+								{
+									"key": "sort",
+									"value": "mensaje"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener un comentario por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/comentario/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"comentario",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear un nuevo comentario",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"mensaje\": \"No gusta esta publicacion\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/comentario",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"comentario"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar un comentario",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"mensaje\": \"Definitivamente no me gusta esta publicacion\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/comentario/3",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"comentario",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar un comentario por ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/comentario/2",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"comentario",
+								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Pago",
+			"item": [
+				{
+					"name": "Obtener todos los pagos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/pago",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"pago"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Paginación de pagos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/pago/page?size=5&sort=estadoPago",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"pago",
+								"page"
+							],
+							"query": [
+								{
+									"key": "size",
+									"value": "5"
+								},
+								{
+									"key": "sort",
+									"value": "estadoPago"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener un pago por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/pago/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"pago",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear un nuevo pago",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"estadoPago\": \"PAGADO\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/pago",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"pago"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar un pago",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"estadoPago\": \"FALLIDO\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/pago/4",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"pago",
+								"4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar un pago por ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/pago/4",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"pago",
+								"4"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Suscripción",
+			"item": [
+				{
+					"name": "Obtener todas las suscripciones",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/suscripcion",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"suscripcion"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Paginación de suscripciones",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/suscripcion/page?size=5&sort=tipoSuscripcion",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"suscripcion",
+								"page"
+							],
+							"query": [
+								{
+									"key": "size",
+									"value": "5"
+								},
+								{
+									"key": "sort",
+									"value": "tipoSuscripcion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener una suscripción por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/suscripcion/10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"suscripcion",
+								"10"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear una nueva suscripción",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"tipoSuscripcion\": \"BASICO\",\r\n  \"precio\": 0.0,\r\n  \"fechaInicio\": \"2024-01-01T00:00:00\",\r\n  \"fechaFin\": \"2099-12-31T23:59:59\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/suscripcion",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"suscripcion"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar una suscripción",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"tipoSuscripcion\": \"PREMIUM\",\r\n    \"precio\": 0.0,\r\n    \"fechaInicio\": \"2024-01-01T00:00:00.000+00:00\",\r\n    \"fechaFin\": \"2099-12-31T23:59:59.000+00:00\",\r\n    \"pago\": {\r\n        \"id\": 1\r\n    },\r\n    \"cliente\": {\r\n        \"id\": 1\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/suscripcion/12",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"suscripcion",
+								"12"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar una suscripción por ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/suscripcion/11",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"suscripcion",
+								"11"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Grupo",
+			"item": [
+				{
+					"name": "Obtener todos los grupos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/grupo",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"grupo"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Paginación de grupos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/grupo/page?size=5&sort=nombre",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"grupo",
+								"page"
+							],
+							"query": [
+								{
+									"key": "size",
+									"value": "5"
+								},
+								{
+									"key": "sort",
+									"value": "nombre"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener un grupo por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/grupo/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"grupo",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear un nuevo grupo",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\": \"Grupo de Videos Mentales\",\r\n    \"esPrivado\": true,\r\n    \"clientes\": [],\r\n    \"publicaciones\": []\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/grupo",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"grupo"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar un grupo",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\": \"Grupo de Salud Mental\",\r\n    \"esPrivado\": false,\r\n    \"clientes\": [],\r\n    \"publicaciones\": []\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/grupo/43",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"grupo",
+								"43"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar un grupo por ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/grupo/44",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"grupo",
+								"44"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Unirse",
+			"item": [
+				{
+					"name": "Obtener todos los clientes y su grupo de interes",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/unirse",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"unirse"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear una nueva relación",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/unirse",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"unirse"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar relación",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/unirse/9",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"unirse",
+								"9"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar una relacion por ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/unirse/9",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"unirse",
+								"9"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Hábito",
+			"item": [
+				{
+					"name": "Obtener todos los hábitos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/habito",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"habito"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Paginación de hábitos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/habito/page?size=5&sort=nombre",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"habito",
+								"page"
+							],
+							"query": [
+								{
+									"key": "size",
+									"value": "5"
+								},
+								{
+									"key": "sort",
+									"value": "nombre"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener un hábito por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/habito/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"habito",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear un nuevo hábito",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\": \"Aumentar de peso\",\r\n    \"hidratacion\": \"10\",\r\n    \"alimentacion\": \"10\",\r\n    \"ejercicio\": \"0\",\r\n    \"calidadDeSueno\": \"6.5\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/habito",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"habito"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar un hábito",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\": \"Aumentar de peso\",\r\n    \"hidratacion\": \"8\",\r\n    \"alimentacion\": \"10\",\r\n    \"ejercicio\": \"0\",\r\n    \"calidadDeSueno\": \"6.5\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/habito/3",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"habito",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar un hábito por ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/habito/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"habito",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Plan alimenticio",
+			"item": [
+				{
+					"name": "Obtener todos los planes alimenticios",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/plan-alimenticio",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"plan-alimenticio"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Paginación de planes alimenticios",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/plan-alimenticio/page?size=5&sort=planObjetivo",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"plan-alimenticio",
+								"page"
+							],
+							"query": [
+								{
+									"key": "size",
+									"value": "5"
+								},
+								{
+									"key": "sort",
+									"value": "planObjetivo"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener un plan alimenticio por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/plan-alimenticio/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"plan-alimenticio",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear un nuevo plan alimenticio",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"planObjetivo\": \"DEFICIT\",\r\n    \"descripcion\": \"Plan bajo en grasas con alto contenido en proteínas\",\r\n    \"duracionDias\": 45,\r\n    \"esGratis\": true,\r\n    \"comidasDiarias\": []\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/plan-alimenticio",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"plan-alimenticio"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar un plan alimenticio",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"planObjetivo\": \"DEFICIT\",\r\n    \"descripcion\": \"Plan bajo en grasas con alto contenido en proteínas\",\r\n    \"duracionDias\": 50,\r\n    \"esGratis\": true,\r\n    \"comidasDiarias\": []\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/plan-alimenticio/73",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"plan-alimenticio",
+								"73"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar un plan alimenticio por ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/plan-alimenticio/11",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"plan-alimenticio",
+								"11"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Contenido",
+			"item": [
+				{
+					"name": "Obtener todos los contenidos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/contenido",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"contenido"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Paginación de contenidos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/contenido/page?size=5&sort=titulo",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"contenido",
+								"page"
+							],
+							"query": [
+								{
+									"key": "size",
+									"value": "5"
+								},
+								{
+									"key": "sort",
+									"value": "titulo"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener un contenido por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/contenido/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"contenido",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear un nuevo contenido",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"titulo\": \"Dieta para bajar de peso\",\r\n    \"descripcion\": \"Esta dieta ayuda a bajar de peso\",\r\n    \"tipoContenido\": \"GUIA\",\r\n    \"categoriaContenido\": \"NUTRICION\",\r\n    \"esGratis\": false\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/contenido",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"contenido"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar un contenido",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"titulo\": \"Dieta para perder rapido peso\",\r\n    \"descripcion\": \"Esta dieta ayuda a bajar de peso\",\r\n    \"tipoContenido\": \"GUIA\",\r\n    \"categoriaContenido\": \"NUTRICION\",\r\n    \"esGratis\": false\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/contenido/77",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"contenido",
+								"77"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar un contenido por ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/contenido/9",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"contenido",
+								"9"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Racha",
+			"item": [
+				{
+					"name": "Obtener todas las rachas",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/racha",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"racha"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Paginación de rachas",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/racha/page?size=5&sort=diasConsecutivos",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"racha",
+								"page"
+							],
+							"query": [
+								{
+									"key": "size",
+									"value": "5"
+								},
+								{
+									"key": "sort",
+									"value": "diasConsecutivos"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear una nueva racha",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"diasConsecutivos\": \"15\",\r\n    \"ultimaFechaRegistro\": \"2024-12-12\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/racha",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"racha"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener racha por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/racha/4",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"racha",
+								"4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar una racha",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"diasConsecutivos\": \"15\",\r\n    \"ultimaFechaRegistro\": \"2024-12-30\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/racha/5",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"racha",
+								"5"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar una racha por ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/racha/9",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"racha",
+								"9"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Recompensa",
+			"item": [
+				{
+					"name": "Obtener todas las recompensas",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/recompensa",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"recompensa"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Paginación de recompensas",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/recompensa/page?size=5&sort=nombre",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"recompensa",
+								"page"
+							],
+							"query": [
+								{
+									"key": "size",
+									"value": "5"
+								},
+								{
+									"key": "sort",
+									"value": "nombre"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear una nueva recompensa",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\": \"Acceso a contenido exclusivo\",\r\n    \"descripcion\": \"Completa una racha de 30 días para desbloquear acceso a recetas y entrenamientos exclusivos.\",\r\n    \"diasRequeridos\": \"30\"\r\n}\r\n\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/recompensa",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"recompensa"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener recompensa por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/recompensa/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"recompensa",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar una recompensa",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nombre\": \"Acceso a contenido exclusivo\",\r\n  \"descripcion\": \"Completa una racha de 100 días para desbloquear acceso a recetas y entrenamientos exclusivos.\",\r\n  \"diasRequeridos\": \"100\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/recompensa/3",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"recompensa",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar una recompensa por ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/recompensa/9",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"recompensa",
+								"9"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Seguimiento",
+			"item": [
+				{
+					"name": "Obtener todos los registros de seguimiento",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/seguimiento",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"seguimiento"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Paginación de seguimiento",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/seguimiento/page?size=5&sort=fecha",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"seguimiento",
+								"page"
+							],
+							"query": [
+								{
+									"key": "size",
+									"value": "5"
+								},
+								{
+									"key": "sort",
+									"value": "fecha"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener un seguimiento por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/seguimiento/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"seguimiento",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear un nuevo seguimiento",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"fecha\": \"2024-09-30\",\r\n  \"pesoDelDia\": \"69.8\",\r\n  \"observaciones\": \"Realicé una rutina intensa de ejercicios\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/seguimiento",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"seguimiento"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar un seguimiento",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"fecha\": \"2024-09-30\",\r\n  \"pesoDelDia\": \"69.9\",\r\n  \"observaciones\": \"Realicé una rutina intensa de ejercicios\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/seguimiento/3",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"seguimiento",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar un seguimiento por ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/seguimiento/4",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"seguimiento",
+								"4"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Comida diaria",
+			"item": [
+				{
+					"name": "Obtener todas las comidas diarias",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/comida-diaria",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"comida-diaria"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Paginación de comidas diarias",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/comida-diaria/page?size=5&sort=nombreComida",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"comida-diaria",
+								"page"
+							],
+							"query": [
+								{
+									"key": "size",
+									"value": "5"
+								},
+								{
+									"key": "sort",
+									"value": "nombreComida"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear una nueva comida diaria",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombreComida\": \"Galleta de avena\",\r\n    \"calorias\": \"100\",\r\n    \"categoria\": \"SNACK\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/comida-diaria",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"comida-diaria"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener comida diaria por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/comida-diaria/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"comida-diaria",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar una comida diaria",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombreComida\": \"Arroz con atun\",\r\n    \"calorias\": 250,\r\n    \"categoria\": \"ALMUERZO\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/comida-diaria/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"comida-diaria",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar una comida diaria por ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/comida-diaria/4",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"comida-diaria",
+								"4"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Meta",
+			"item": [
+				{
+					"name": "Obtener todas las metas",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/meta",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"meta"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Paginación de metas",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/meta/page?size=5&sort=nombre",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"meta",
+								"page"
+							],
+							"query": [
+								{
+									"key": "size",
+									"value": "5"
+								},
+								{
+									"key": "sort",
+									"value": "nombre"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear una nueva meta",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nombre\": \"Mejorar mi resistencia\",\r\n  \"descripcion\": \"Aumentar mi capacidad aeróbica y bajar mi peso a 65 kg antes de la próxima competencia.\",\r\n  \"pesoObjetivo\": \"65\"\r\n}\r\n\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/meta",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"meta"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener meta por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/meta/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"meta",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar una meta",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nombre\": \"Mejorar mi resistencia al maximo\",\r\n  \"descripcion\": \"Aumentar mi capacidad aeróbica y bajar mi peso a 65 kg antes de la próxima competencia.\",\r\n  \"pesoObjetivo\": \"65\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/meta/3",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"meta",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar una meta por ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/meta/4",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"meta",
+								"4"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Rol",
+			"item": [
+				{
+					"name": "Obtener todos los roles",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/rol",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"rol"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Paginación de roles",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/rol/page?size=5&sort=nombre",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"rol",
+								"page"
+							],
+							"query": [
+								{
+									"key": "size",
+									"value": "5"
+								},
+								{
+									"key": "sort",
+									"value": "nombre"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener un rol por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/rol/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"rol",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear un nuevo rol",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/rol",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"rol"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar un rol",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/rol/9",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"rol",
+								"9"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar un rol por ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/rol/9",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"rol",
+								"9"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Usuario",
+			"item": [
+				{
+					"name": "Obtener todos los usuarios",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/usuario",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"usuario"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Paginación de usuarios",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/usuario/page?size=5&sort=nombre",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"usuario",
+								"page"
+							],
+							"query": [
+								{
+									"key": "size",
+									"value": "5"
+								},
+								{
+									"key": "sort",
+									"value": "nombre"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener un usuario por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/usuario/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"usuario",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear un nuevo usuario",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/usuario",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"usuario"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar un usuario",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/usuario/9",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"usuario",
+								"9"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar un usuario por ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/usuario/9",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"usuario",
+								"9"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Acceso contenido",
+			"item": [
+				{
+					"name": "Obtener todos los acceso contenido",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/accesocontenido",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"accesocontenido"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Paginación de accesos al contenido",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/accesocontenido/page?size=5&sort=nombre",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"accesocontenido",
+								"page"
+							],
+							"query": [
+								{
+									"key": "size",
+									"value": "5"
+								},
+								{
+									"key": "sort",
+									"value": "nombre"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener un acceso contenido por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/accesocontenido/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"accesocontenido",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear un nuevo acceso contenido",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/accesocontenido",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"accesocontenido"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar un acceso contenido",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/accesocontenido/9",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"accesocontenido",
+								"9"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar un acceso contenido por ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/accesocontenido/9",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"accesocontenido",
+								"9"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Acceso plan",
+			"item": [
+				{
+					"name": "Obtener todos los acceso plan",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/accesoplan",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"accesoplan"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Paginación de accesos al plan",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/accesoplan/page?size=5&sort=nombre",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"accesoplan",
+								"page"
+							],
+							"query": [
+								{
+									"key": "size",
+									"value": "5"
+								},
+								{
+									"key": "sort",
+									"value": "nombre"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener un acceso plan por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/accesoplan/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"accesoplan",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear un nuevo acceso plan",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/accesoplan",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"accesoplan"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar un acceso plan",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/accesoplan/9",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"accesoplan",
+								"9"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar un acceso plan por ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/admin/accesoplan/9",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"accesoplan",
+								"9"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080/api/v1",
+			"type": "string"
+		}
+	]
+}

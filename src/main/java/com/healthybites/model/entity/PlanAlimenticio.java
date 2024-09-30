@@ -28,6 +28,7 @@ public class PlanAlimenticio {
     @Column(name = "es_gratis", nullable = false)
     private boolean esGratis;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "planAlimenticio", cascade = CascadeType.ALL)
     private List<ComidaDiaria> comidasDiarias;
 
