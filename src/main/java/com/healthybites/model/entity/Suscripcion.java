@@ -30,11 +30,6 @@ public class Suscripcion {
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "id_pago", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "FK_suscripcion_pago"))
-    private Pago pago;
-
-    @ManyToOne
     @JoinColumn(name = "id_cliente", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "FK_suscripcion_cliente"))
     private Cliente cliente;

@@ -7,7 +7,7 @@ import java.util.List;
 
 @Data
 @Entity
-@Table(name = "grupo")
+@Table(name = "grupos")
 public class Grupo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,7 +20,7 @@ public class Grupo {
     private boolean esPrivado;
 
     @OneToMany(mappedBy = "grupo", cascade = CascadeType.ALL)
-    private List<Cliente> clientes;
+    private List<Unirse> unirse;
 
     @OneToMany(mappedBy = "grupo", cascade = CascadeType.ALL)
     private List<Publicacion> publicaciones;

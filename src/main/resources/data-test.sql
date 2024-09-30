@@ -1,9 +1,9 @@
-INSERT INTO public.cliente (nombre, apellido, sexo, edad, altura, peso)
+INSERT INTO public.cliente (nombre, apellido, correo, contrasena, sexo, edad, altura, peso)
 VALUES
-    ('Juan', 'Perez', 'M', 25, 1.75, 70),
-    ('Maria', 'Lopez', 'F', 30, 1.60, 60),
-    ('Pedro', 'Gomez', 'M', 35, 1.80, 80),
-    ('Ana', 'Martinez', 'F', 40, 1.70, 65)
+    ('Juan', 'Perez', 'juan.perez@example.com', 'contraseña123', 'M', 25, 1.75, 70),
+    ('Maria', 'Lopez', 'maria.lopez@example.com', 'contraseña456', 'F', 30, 1.60, 60),
+    ('Pedro', 'Gomez', 'pedro.gomez@example.com', 'contraseña789', 'M', 35, 1.80, 80),
+    ('Ana', 'Martinez', 'ana.martinez@example.com', 'contraseña321', 'F', 40, 1.70, 65)
     ON CONFLICT DO NOTHING;
 
 INSERT INTO public.nutricionista (nombre, apellido)
@@ -30,7 +30,7 @@ VALUES
     ('DEFICIT', 'Plan de desintoxicación de 7 días basado en jugos y alimentos naturales', 7, true, 4)
     ON CONFLICT DO NOTHING;
 
-INSERT INTO public.grupo (nombre, es_privado)
+INSERT INTO public.grupos (nombre, es_privado)
 VALUES
     ('Grupo de pérdida de peso', true),
     ('Grupo de corredores', false),
