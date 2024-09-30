@@ -19,7 +19,6 @@ public class AccesoContenidoController {
 
     @PostMapping("/{clienteId}/add-contenido")
     public ResponseEntity<AccesoContenido> addContenidoToCliente(@PathVariable Integer clienteId, @RequestParam Integer contenidoId) {
-
         AccesoContenido accesoContenido = accesoContenidoService.addContenidoToCliente(clienteId, contenidoId);
         return new ResponseEntity<>(accesoContenido, HttpStatus.CREATED);
     }
