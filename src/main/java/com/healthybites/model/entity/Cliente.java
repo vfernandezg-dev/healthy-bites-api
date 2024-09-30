@@ -37,6 +37,9 @@ public class Cliente {
             foreignKey = @ForeignKey(name = "FK_cliente_usuario"))
     private Usuario usuario;
 
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
+    private List<AccesoContenido> accesoContenidos;
+
     @JsonIgnore
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
     private List<Recompensa> recompensas;
