@@ -1,5 +1,6 @@
 package com.healthybites.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -22,6 +23,7 @@ public class Grupo {
     @OneToMany(mappedBy = "grupo", cascade = CascadeType.ALL)
     private List<Unirse> unirse;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "grupo", cascade = CascadeType.ALL)
     private List<Publicacion> publicaciones;
 }
