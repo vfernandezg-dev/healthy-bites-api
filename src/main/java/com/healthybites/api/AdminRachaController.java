@@ -20,9 +20,9 @@ public class AdminRachaController {
         private final AdminRachaService adminRachaService;
 
         @GetMapping
-        public ResponseEntity<List<Racha>> getAllRacha() {
+        public ResponseEntity<List<Racha>> list() {
             List<Racha> rachas = adminRachaService.getAll();
-            return new ResponseEntity<List<Racha>>(rachas, HttpStatus.OK);
+            return new ResponseEntity<>(rachas, HttpStatus.OK);
         }
 
         @GetMapping("/page")
@@ -35,11 +35,11 @@ public class AdminRachaController {
         @GetMapping("/{id}")
         public ResponseEntity<Racha> getRachaById(@PathVariable("id") Integer id) {
             Racha racha = adminRachaService.findById(id);
-            return new ResponseEntity<Racha>(racha, HttpStatus.OK);
+            return new ResponseEntity<>(racha, HttpStatus.OK);
         }
 
         @PostMapping
-        public ResponseEntity<Racha> createRacha(@RequestBody Racha racha) {
+        public ResponseEntity<Racha> create(@RequestBody Racha racha) {
             Racha newRacha = adminRachaService.create(racha);
             return new ResponseEntity<Racha>(newRacha, HttpStatus.CREATED);
         }

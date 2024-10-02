@@ -1,7 +1,9 @@
 package com.healthybites.service.impl;
 
 
+import com.healthybites.model.entity.Cliente;
 import com.healthybites.model.entity.Racha;
+import com.healthybites.repository.ClienteRepository;
 import com.healthybites.repository.RachaRepository;
 import com.healthybites.service.AdminRachaService;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ import java.util.List;
 public class AdminRachaServiceImpl implements AdminRachaService {
 
     private final RachaRepository rachaRepository;
+    private final ClienteRepository clienteRepository;
 
     @Transactional(readOnly = true)
     @Override
@@ -34,21 +37,28 @@ public class AdminRachaServiceImpl implements AdminRachaService {
     @Override
     public Racha findById(Integer id) {
         return rachaRepository.findById(id).
-                orElseThrow(() -> new RuntimeException("Racha no encontrada"));
+                orElseThrow(() -> new RuntimeException("Racha no encontrada: " + id));
     }
 
     @Transactional
     @Override
     public Racha create(Racha racha) {
-        return rachaRepository.save(racha);
+        Cliente cliente = clienteRepository.findById(racha.getCliente().getId()).orElseThrow(()-> new RuntimeException("Not found with id: " + racha.getCliente().getId()));
+
+                racha.setCliente(cliente);
+                return rachaRepository.save(racha);
+
     }
 
     @Transactional
     @Override
     public Racha update(Integer id, Racha updateRacha) {
         Racha rachaFromDB = findById(id);
+        Cliente cliente = clienteRepository.findById(updateRacha.getCliente().getId()).orElseThrow(()-> new RuntimeException("Not found with id: " + updateRacha.getCliente().getId()));
+
         rachaFromDB.setDiasConsecutivos(updateRacha.getDiasConsecutivos());
         rachaFromDB.setUltimaFechaRegistro(updateRacha.getUltimaFechaRegistro());
+        rachaFromDB.setCliente(cliente);
         return rachaRepository.save(rachaFromDB);
     }
 

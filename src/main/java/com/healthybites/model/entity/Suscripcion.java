@@ -1,5 +1,6 @@
 package com.healthybites.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.healthybites.model.enums.TipoSuscripcion;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -27,6 +28,7 @@ public class Suscripcion {
     @Column(name = "fecha_fin", nullable = false)
     private Date fechaFin;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "id_cliente", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "FK_suscripcion_cliente"))
