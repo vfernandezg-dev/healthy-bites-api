@@ -1,8 +1,11 @@
 package com.healthybites.api;
 
+import com.healthybites.dto.ClienteDTO;
 import com.healthybites.model.entity.Cliente;
 import com.healthybites.service.AdminClienteService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -20,34 +23,34 @@ public class AdminClienteController {
     private final AdminClienteService adminClienteService;
 
     @GetMapping
-    public ResponseEntity<List<Cliente>> getAllCliente() {
-        List<Cliente> clientes = adminClienteService.getAll();
-        return new ResponseEntity<List<Cliente>>(clientes, HttpStatus.OK);
+    public ResponseEntity<List<ClienteDTO>> getAllCliente() {
+        List<ClienteDTO> clientes = adminClienteService.getAll();
+        return new ResponseEntity<>(clientes, HttpStatus.OK);
     }
 
     @GetMapping("/page")
-    public ResponseEntity<Page<Cliente>> paginateClientes(
+    public ResponseEntity<Page<ClienteDTO>> paginateClientes(
             @PageableDefault(size = 5, sort = "nombre") Pageable pageable) {
-        Page<Cliente> clientes = adminClienteService.paginate(pageable);
-        return new ResponseEntity<Page<Cliente>>(clientes, HttpStatus.OK);
+        Page<ClienteDTO> clientes = adminClienteService.paginate(pageable);
+        return new ResponseEntity<Page<ClienteDTO>>(clientes, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Cliente> getClienteById(@PathVariable("id") Integer id) {
-        Cliente cliente = adminClienteService.findById(id);
-        return new ResponseEntity<Cliente>(cliente, HttpStatus.OK);
+    public ResponseEntity<ClienteDTO> getClienteById(@PathVariable("id") Integer id) {
+        ClienteDTO cliente = adminClienteService.findById(id);
+        return new ResponseEntity<>(cliente, HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<Cliente> createCliente(@RequestBody Cliente cliente) {
-        Cliente newCliente = adminClienteService.create(cliente);
-        return new ResponseEntity<Cliente>(newCliente, HttpStatus.CREATED);
+    public ResponseEntity<ClienteDTO> createCliente(@Valid @RequestBody ClienteDTO clienteDTO) {
+        ClienteDTO createdCliente = adminClienteService.create(clienteDTO);
+        return new ResponseEntity<>(createdCliente, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Cliente> updateCliente(@PathVariable("id") Integer id, @RequestBody Cliente cliente) {
-        Cliente updateCliente = adminClienteService.update(id, cliente);
-        return new ResponseEntity<Cliente>(updateCliente, HttpStatus.OK);
+    public ResponseEntity<ClienteDTO> updateCliente(@PathVariable("id") Integer id,@Valid @RequestBody ClienteDTO clienteDTO) {
+        ClienteDTO updateCliente = adminClienteService.update(id, clienteDTO);
+        return new ResponseEntity<ClienteDTO>(updateCliente, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
