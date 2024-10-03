@@ -25,7 +25,6 @@ public class Meta {
     @OneToMany(mappedBy = "meta", cascade = CascadeType.ALL)
     private List<Seguimiento> seguimiento;
 
-
     @ManyToOne
     @JoinColumn(name = "id_cliente", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "FK_meta_cliente"))

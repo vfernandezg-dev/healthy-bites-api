@@ -55,11 +55,18 @@ public class AdminMetaServiceImpl implements AdminMetaService{
     @Transactional
     public MetaDTO create(MetaDTO metaDTO) {
         Meta meta = metaMapper.toEntity(metaDTO);
+
         Cliente cliente = clienteRepository.findById(metaDTO.getCliente().getId())
                 .orElseThrow(() -> new BadRequestException("El cliente no fue encontrado"));
+
+
+
         ClienteDTO clienteDTO = clienteMapper.ToDTO(cliente);
+
         cliente = clienteRepository.save(cliente);
+
         meta = metaRepository.save(meta);
+
         return metaMapper.toMetaDTO(meta);
     }
 
@@ -88,33 +95,4 @@ public class AdminMetaServiceImpl implements AdminMetaService{
                         .orElseThrow(()-> new ResourceNotFoundException("La meta con ID "+id+" no fue encontrado"));
         metaRepository.delete(meta);
     }
-
-    @Transactional(readOnly = true)
-    public String calcularRecomendacion(MetaDTO metaDTO) {
-        double pesoObjetivo = metaDTO.getPesoObjetivo();
-        double pesoActual = metaDTO.getCliente().getPeso();
-
-        double diferenciaPeso = pesoActual - pesoObjetivo;
-        String recomendacion;
-
-        if (diferenciaPeso > 5) {
-            recomendacion = "Se recomienda un plan de 6 meses para reducir gradualmente.";
-        } else if (diferenciaPeso > 2) {
-            recomendacion = "Se recomienda un plan de 3 meses.";
-        } else {
-            recomendacion = "Mantén tu peso actual con una dieta balanceada y ejercicio regular.";
-        }
-
-        return recomendacion;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<MetaDTO> findMetasByClienteId(Integer clienteId) {
-        List<Meta> metas = metaRepository.findByClienteId(clienteId);
-        return metas.stream()
-                .map(metaMapper::toMetaDTO)
-                .toList();
-    }
-
 }
