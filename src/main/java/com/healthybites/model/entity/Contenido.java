@@ -1,5 +1,6 @@
 package com.healthybites.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.healthybites.model.enums.CategoriaContenido;
 import com.healthybites.model.enums.TipoContenido;
 import jakarta.persistence.*;

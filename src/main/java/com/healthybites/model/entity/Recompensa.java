@@ -24,9 +24,4 @@ public class Recompensa {
     @JoinColumn(name = "id_cliente", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "FK_recompensa_cliente"))
     private Cliente cliente;
-
-    @ManyToOne
-    @JoinColumn(name = "id_nutricionista", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "FK_recompensa_nutricionista"))
-    private Nutricionista nutricionista;
 }

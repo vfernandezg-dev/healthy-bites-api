@@ -1,5 +1,6 @@
 package com.healthybites.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -22,11 +23,9 @@ public class Nutricionista {
     @OneToMany(mappedBy = "nutricionista", cascade = CascadeType.ALL)
     private List<PlanAlimenticio> planesAlimenticios;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "nutricionista", cascade = CascadeType.ALL)
     private List<Contenido> contenidos;
-
-    @OneToMany(mappedBy = "nutricionista", cascade = CascadeType.ALL)
-    private List<Recompensa> recompensas;
 
     @OneToOne
     @JoinColumn(name = "id_usuario", referencedColumnName = "id",
