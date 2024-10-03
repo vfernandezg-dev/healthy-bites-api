@@ -1,9 +1,12 @@
 package com.healthybites.dto;
 
 import com.healthybites.model.entity.Cliente;
+import com.healthybites.model.enums.EstadoMeta;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 public class MetaDTO {
@@ -15,5 +18,7 @@ public class MetaDTO {
     @Size(max = 500, message = "La descripcion de la menta debe tener 500 caracteres o menos")
     private String descripcion;
     private double pesoObjetivo;
+    private EstadoMeta estado;
     private ClienteDTO cliente;
+    private List<EstadoMeta> historialEstados;
 }

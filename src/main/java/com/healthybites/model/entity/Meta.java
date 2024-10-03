@@ -1,9 +1,10 @@
 package com.healthybites.model.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.healthybites.model.enums.EstadoMeta;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -23,12 +24,18 @@ public class Meta {
     @Column(name = "peso_objetivo", nullable = false)
     private double pesoObjetivo;
 
-    @JsonIgnore
     @OneToMany(mappedBy = "meta", cascade = CascadeType.ALL)
     private List<Seguimiento> seguimiento;
+
 
     @ManyToOne
     @JoinColumn(name = "id_cliente", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "FK_meta_cliente"))
     private Cliente cliente;
+
+    private EstadoMeta estado;
+
+    @ElementCollection
+    private List<EstadoMeta> historialEstados = new ArrayList<>();
+
 }

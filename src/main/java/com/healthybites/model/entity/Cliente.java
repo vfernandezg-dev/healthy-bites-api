@@ -57,4 +57,8 @@ public class Cliente {
 
     public void setCreatedAt(LocalDateTime now) {
     }
+
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Meta> metas;
+
 }

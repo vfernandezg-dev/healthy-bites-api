@@ -1,7 +1,9 @@
 package com.healthybites.api;
 
+import com.healthybites.dto.ClienteDTO;
 import com.healthybites.dto.MetaDTO;
 import com.healthybites.model.entity.Meta;
+import com.healthybites.model.enums.EstadoMeta;
 import com.healthybites.service.AdminMetaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -58,4 +60,43 @@ public class AdminMetaController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @PostMapping("/recomendacion")
+    public ResponseEntity<String> calcularRecomendacion(@Valid @RequestBody MetaDTO metaDTO) {
+        String recomendacion = adminMetaService.calcularRecomendacion(metaDTO);
+        return new ResponseEntity<>(recomendacion, HttpStatus.OK);
+    }
+
+    @GetMapping("/cliente/{clienteId}")
+    public ResponseEntity<List<MetaDTO>> getMetasByClienteId(@PathVariable("clienteId") Integer clienteId) {
+        List<MetaDTO> metas = adminMetaService.findMetasByClienteId(clienteId);
+        return new ResponseEntity<>(metas, HttpStatus.OK);
+    }
+
+    // en AdminMetaController
+    @PutMapping("/{id}/objetivos")
+    public ResponseEntity<MetaDTO> actualizarObjetivosSalud(@PathVariable("id") Integer id, @Valid @RequestBody MetaDTO metaDTO) {
+        MetaDTO metaActualizada = adminMetaService.actualizarObjetivosSalud(id, metaDTO);
+        return new ResponseEntity<>(metaActualizada, HttpStatus.OK);
+    }
+
+    @PutMapping("/{id}/estado")
+    public ResponseEntity<MetaDTO> actualizarEstadoMeta(
+            @PathVariable("id") Integer id,
+            @RequestBody EstadoMeta nuevoEstado) {
+        MetaDTO updatedMeta = adminMetaService.actualizacionEstadoMeta(id, nuevoEstado);
+        return new ResponseEntity<>(updatedMeta, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/historial")
+    public ResponseEntity<List<EstadoMeta>> getHistorialById(@PathVariable("id") Integer id) {
+        List<EstadoMeta> historial = adminMetaService.getHistorialById(id);
+        return new ResponseEntity<>(historial, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}/perfil")
+    public ResponseEntity<ClienteDTO> getPerfilCliente(@PathVariable("id") Integer id) {
+        // Implementa este método para obtener el perfil actualizado del cliente.
+        ClienteDTO cliente = adminMetaService.getPerfilClienteByMetaId(id);
+        return new ResponseEntity<>(cliente, HttpStatus.OK);
+    }
 }

@@ -29,4 +29,6 @@ public class ClienteDTO {
 
     @Positive(message = "El peso debe ser un número positivo")
     private double peso;
+
+
 }
