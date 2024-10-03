@@ -45,6 +45,10 @@ public class Cliente {
 
     @JsonIgnore
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
+    private List<AccesoContenido> accesoContenidos;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
     private List<Recompensa> recompensas;
 
     @JsonIgnore
