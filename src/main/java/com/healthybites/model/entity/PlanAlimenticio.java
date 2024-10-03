@@ -1,3 +1,4 @@
+// PlanAlimenticio.java
 package com.healthybites.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -32,9 +33,8 @@ public class PlanAlimenticio {
     @OneToMany(mappedBy = "planAlimenticio", cascade = CascadeType.ALL)
     private List<ComidaDiaria> comidasDiarias;
 
-    @ManyToOne
-    @JoinColumn(name = "id_nutricionista", referencedColumnName = "id",
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
+    @JoinColumn(name = "nutricionista_id", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "FK_planalimenticio_nutricionista"))
     private Nutricionista nutricionista;
-
 }

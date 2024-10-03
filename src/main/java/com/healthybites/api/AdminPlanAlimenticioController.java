@@ -1,7 +1,10 @@
 package com.healthybites.api;
 
+import com.healthybites.dto.PlanAlimenticioCreateUpdateDTO;
+import com.healthybites.dto.PlanAlimenticioDetailsDTO;
 import com.healthybites.model.entity.PlanAlimenticio;
 import com.healthybites.service.AdminPlanAlimenticioService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,39 +23,39 @@ public class AdminPlanAlimenticioController {
     private final AdminPlanAlimenticioService adminPlanAlimenticioService;
 
     @GetMapping
-    public ResponseEntity<List<PlanAlimenticio>> getAllPlanAlimenticio() {
-        List<PlanAlimenticio> planAlimenticios = adminPlanAlimenticioService.getAll();
-        return new ResponseEntity<List<PlanAlimenticio>>(planAlimenticios, HttpStatus.OK);
+    public ResponseEntity<List<PlanAlimenticioDetailsDTO>> getAllPlanAlimenticio() {
+        List<PlanAlimenticioDetailsDTO> planAlimenticios = adminPlanAlimenticioService.getAll();
+        return new ResponseEntity<>(planAlimenticios, HttpStatus.OK);
     }
 
     @GetMapping("/page")
-    public ResponseEntity<Page<PlanAlimenticio>> paginatePlanAlimenticios(
+    public ResponseEntity<Page<PlanAlimenticioDetailsDTO>> paginatePlanAlimenticios(
             @PageableDefault(size = 5, sort = "plan_objetivo") Pageable pageable) {
-        Page<PlanAlimenticio> planAlimenticios = adminPlanAlimenticioService.paginate(pageable);
-        return new ResponseEntity<Page<PlanAlimenticio>>(planAlimenticios, HttpStatus.OK);
+        Page<PlanAlimenticioDetailsDTO> planAlimenticios = adminPlanAlimenticioService.paginate(pageable);
+        return new ResponseEntity<>(planAlimenticios, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PlanAlimenticio> getPlanAlimenticioById(@PathVariable("id") Integer id) {
-        PlanAlimenticio planAlimenticio = adminPlanAlimenticioService.findById(id);
-        return new ResponseEntity<PlanAlimenticio>(planAlimenticio, HttpStatus.OK);
+    public ResponseEntity<PlanAlimenticioDetailsDTO> getPlanAlimenticioById(@PathVariable("id") Integer id) {
+        PlanAlimenticioDetailsDTO planAlimenticio = adminPlanAlimenticioService.findById(id);
+        return new ResponseEntity<>(planAlimenticio, HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<PlanAlimenticio> createPlanAlimenticio(@RequestBody PlanAlimenticio planAlimenticio) {
-        PlanAlimenticio newPlanAlimenticio = adminPlanAlimenticioService.create(planAlimenticio);
-        return new ResponseEntity<PlanAlimenticio>(newPlanAlimenticio, HttpStatus.CREATED);
+    public ResponseEntity<PlanAlimenticioDetailsDTO> createPlanAlimenticio(@Valid @RequestBody PlanAlimenticioCreateUpdateDTO planAlimenticio) {
+        PlanAlimenticioDetailsDTO newPlanAlimenticio = adminPlanAlimenticioService.create(planAlimenticio);
+        return new ResponseEntity<>(newPlanAlimenticio, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PlanAlimenticio> updatePlanAlimenticio(@PathVariable("id") Integer id, @RequestBody PlanAlimenticio planAlimenticio) {
-        PlanAlimenticio updatePlanAlimenticio = adminPlanAlimenticioService.update(id, planAlimenticio);
-        return new ResponseEntity<PlanAlimenticio>(updatePlanAlimenticio, HttpStatus.OK);
+    public ResponseEntity<PlanAlimenticioDetailsDTO> updatePlanAlimenticio(@PathVariable("id") Integer id,@Valid @RequestBody PlanAlimenticioCreateUpdateDTO planAlimenticio) {
+        PlanAlimenticioDetailsDTO updatePlanAlimenticio = adminPlanAlimenticioService.update(id, planAlimenticio);
+        return new ResponseEntity<>(updatePlanAlimenticio, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<PlanAlimenticio> deletePlanAlimenticio(@PathVariable("id") Integer id) {
         adminPlanAlimenticioService.delete(id);
-        return new ResponseEntity<PlanAlimenticio>(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
