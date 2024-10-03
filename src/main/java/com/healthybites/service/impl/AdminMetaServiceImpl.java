@@ -32,10 +32,10 @@ public class AdminMetaServiceImpl implements AdminMetaService{
     @Transactional(readOnly = true)
     @Override
     public List<MetaDTO> getAll() {
-            List<Meta> metas = metaRepository.findAll();
-            return metas.stream()
-                    .map(metaMapper::toMetaDTO)
-                    .toList();
+        List<Meta> metas = metaRepository.findAll();
+        return metas.stream()
+                .map(metaMapper::toMetaDTO)
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -74,12 +74,12 @@ public class AdminMetaServiceImpl implements AdminMetaService{
     @Transactional
     public MetaDTO update(Integer id, MetaDTO updateMetaDTO) {
         Meta metaFromDB = metaRepository.findById(id)
-                        .orElseThrow(() -> new ResourceNotFoundException("La meta con ID "+id+" no fue encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("La meta con ID "+id+" no fue encontrado"));
 
         metaRepository.findById(metaFromDB.getId())
                 .filter(existingMeta -> !existingMeta.getId().equals(id))
                 .ifPresent(existingMeta -> {
-                   throw new BadRequestException("La meta ya existe con el mismo ID");
+                    throw new BadRequestException("La meta ya existe con el mismo ID");
                 });
         //Actualizar los campos
         metaFromDB.setNombre(updateMetaDTO.getNombre());
@@ -92,7 +92,7 @@ public class AdminMetaServiceImpl implements AdminMetaService{
     @Transactional
     public void delete(Integer id) {
         Meta meta = metaRepository.findById(id)
-                        .orElseThrow(()-> new ResourceNotFoundException("La meta con ID "+id+" no fue encontrado"));
+                .orElseThrow(()-> new ResourceNotFoundException("La meta con ID "+id+" no fue encontrado"));
         metaRepository.delete(meta);
     }
 }
