@@ -12,4 +12,6 @@ public interface AdminMetaService {
     MetaDTO create(MetaDTO metaDTO);
     MetaDTO update(Integer id, MetaDTO updateMetaDTO);
     void delete(Integer id);
+    String calcularRecomendacion(MetaDTO metaDTO);
+    List<MetaDTO> findMetasByClienteId(Integer clienteId);
 }

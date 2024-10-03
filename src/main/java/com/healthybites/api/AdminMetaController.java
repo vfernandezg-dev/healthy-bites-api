@@ -58,4 +58,15 @@ public class AdminMetaController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @PostMapping("/recomendacion")
+    public ResponseEntity<String> calcularRecomendacion(@Valid @RequestBody MetaDTO metaDTO) {
+        String recomendacion = adminMetaService.calcularRecomendacion(metaDTO);
+        return new ResponseEntity<>(recomendacion, HttpStatus.OK);
+    }
+
+    @GetMapping("/cliente/{clienteId}")
+    public ResponseEntity<List<MetaDTO>> getMetasByClienteId(@PathVariable("clienteId") Integer clienteId) {
+        List<MetaDTO> metas = adminMetaService.findMetasByClienteId(clienteId);
+        return new ResponseEntity<>(metas, HttpStatus.OK);
+    }
 }
