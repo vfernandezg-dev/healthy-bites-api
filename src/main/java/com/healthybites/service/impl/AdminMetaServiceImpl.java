@@ -8,6 +8,7 @@ import com.healthybites.mapper.ClienteMapper;
 import com.healthybites.mapper.MetaMapper;
 import com.healthybites.model.entity.Cliente;
 import com.healthybites.model.entity.Meta;
+import com.healthybites.model.enums.EstadoMeta;
 import com.healthybites.repository.ClienteRepository;
 import com.healthybites.repository.MetaRepository;
 import com.healthybites.service.AdminMetaService;
@@ -16,6 +17,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -74,13 +77,20 @@ public class AdminMetaServiceImpl implements AdminMetaService{
                 .ifPresent(existingMeta -> {
                    throw new BadRequestException("La meta ya existe con el mismo ID");
                 });
+
         //Actualizar los campos
         metaFromDB.setNombre(updateMetaDTO.getNombre());
         metaFromDB.setDescripcion(updateMetaDTO.getDescripcion());
         metaFromDB.setPesoObjetivo(updateMetaDTO.getPesoObjetivo());
+
+        Cliente cliente = metaFromDB.getCliente();
+        cliente.getMetas().remove(metaFromDB);
+        cliente.getMetas().add(metaFromDB);
+
         metaFromDB = metaRepository.save(metaFromDB);
         return metaMapper.toMetaDTO(metaFromDB);
     }
+
 
     @Transactional
     public void delete(Integer id) {
@@ -116,5 +126,84 @@ public class AdminMetaServiceImpl implements AdminMetaService{
                 .map(metaMapper::toMetaDTO)
                 .toList();
     }
+    @Override
+    @Transactional
+    public MetaDTO actualizarObjetivosSalud(Integer id, MetaDTO metaDTO) {
+        Meta metaExistente = metaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("La meta con ID " + id + " no fue encontrada"));
 
+        // Actualizar los campos existentes
+        metaExistente.setNombre(metaDTO.getNombre());
+        metaExistente.setDescripcion(metaDTO.getDescripcion());
+        metaExistente.setPesoObjetivo(metaDTO.getPesoObjetivo());
+
+        metaRepository.save(metaExistente);
+        return metaMapper.toMetaDTO(metaExistente);
+    }
+
+
+    @Override
+    @Transactional
+    public MetaDTO actualizacionEstadoMeta(Integer id, EstadoMeta nuevoEstado) {
+        Meta metaFromDB = metaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("La meta con ID " + id + " no fue encontrado"));
+
+        // Verifica si la meta anterior estaba activa
+        if (metaFromDB.getEstado() == EstadoMeta.ACTIVE) {
+            // Cambia el estado de la meta anterior a COMPLETED
+            metaFromDB.setEstado(EstadoMeta.COMPLETED);
+            metaFromDB.getHistorialEstados().add(EstadoMeta.COMPLETED); // Agrega al historial
+            metaRepository.save(metaFromDB); // Guarda el objetivo anterior como completado
+        }
+
+        // Cambia el estado de la meta existente al nuevo estado recibido
+        metaFromDB.setEstado(nuevoEstado);
+        metaFromDB.getHistorialEstados().add(nuevoEstado);
+        metaRepository.save(metaFromDB); // Guarda el cambio de estado
+        return metaMapper.toMetaDTO(metaFromDB);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<EstadoMeta> getHistorialById(Integer id) {
+        Meta meta = metaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("La meta con ID " + id + " no fue encontrado"));
+        return meta.getHistorialEstados(); // Devuelve el historial de estados
+    }
+
+    @Transactional
+    public MetaDTO nuevoObjetivo(Integer id, EstadoMeta nuevoEstado) {
+        Meta metaFromDB = metaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("La meta con ID " + id + " no fue encontrado"));
+
+        // Verifica si la meta anterior estaba activa
+        if (metaFromDB.getEstado() == EstadoMeta.ACTIVE) {
+            // Cambia el estado de la meta anterior a COMPLETED
+            metaFromDB.setEstado(EstadoMeta.COMPLETED);
+            metaRepository.save(metaFromDB); // Guarda el objetivo anterior como completado
+        }
+
+        // Crea una nueva meta
+        Meta newMeta = new Meta();
+        newMeta.setNombre(metaFromDB.getNombre()); // Puede ser el mismo nombre o uno nuevo
+        newMeta.setDescripcion(metaFromDB.getDescripcion());
+        newMeta.setPesoObjetivo(metaFromDB.getPesoObjetivo()); // Asume que se mantiene el mismo
+        newMeta.setCliente(metaFromDB.getCliente()); // Asigna el cliente existente
+        newMeta.setEstado(EstadoMeta.ACTIVE); // Establece el nuevo objetivo como activo
+
+        // Guarda la nueva meta
+        metaRepository.save(newMeta);
+
+        // Aquí puedes actualizar el perfil del cliente o el gráfico de progreso
+        // Por ejemplo, actualiza el peso del cliente o algún otro dato necesario.
+
+        return metaMapper.toMetaDTO(newMeta);
+    }
+    @Transactional(readOnly = true)
+    public ClienteDTO getPerfilClienteByMetaId(Integer metaId) {
+        Meta meta = metaRepository.findById(metaId)
+                .orElseThrow(() -> new ResourceNotFoundException("La meta con ID " + metaId + " no fue encontrado"));
+        Cliente cliente = meta.getCliente();
+        return clienteMapper.ToDTO(cliente);
+    }
 }

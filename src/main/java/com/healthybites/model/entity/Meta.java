@@ -1,8 +1,10 @@
 package com.healthybites.model.entity;
 
+import com.healthybites.model.enums.EstadoMeta;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -30,4 +32,10 @@ public class Meta {
     @JoinColumn(name = "id_cliente", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "FK_meta_cliente"))
     private Cliente cliente;
+
+    private EstadoMeta estado;
+
+    @ElementCollection
+    private List<EstadoMeta> historialEstados = new ArrayList<>();
+
 }

@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface MetaRepository extends JpaRepository<Meta, Integer> {
     Optional<Meta> findById(int id);
     List<Meta> findByClienteId(Integer clienteId);
+
 }
