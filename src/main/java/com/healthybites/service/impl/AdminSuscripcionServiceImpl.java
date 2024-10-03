@@ -53,8 +53,6 @@ public class AdminSuscripcionServiceImpl implements AdminSuscripcionService {
     public Suscripcion update(Integer id, Suscripcion updateSuscripcion) {
         Suscripcion suscripcionFromDB = findById(id);
 
-        Pago pago = pagoRepository.findById(updateSuscripcion.getPago().getId()).
-                orElseThrow(() -> new RuntimeException("Pago no encontrado por ID: " + updateSuscripcion.getPago().getId()));
         Cliente cliente = clienteRepository.findById(updateSuscripcion.getCliente().getId()).
                 orElseThrow(() -> new RuntimeException("Cliente no encontrado por ID: " + updateSuscripcion.getCliente().getId()));
 
@@ -62,7 +60,6 @@ public class AdminSuscripcionServiceImpl implements AdminSuscripcionService {
         suscripcionFromDB.setPrecio(updateSuscripcion.getPrecio());
         suscripcionFromDB.setFechaInicio(updateSuscripcion.getFechaInicio());
         suscripcionFromDB.setFechaFin(updateSuscripcion.getFechaFin());
-        suscripcionFromDB.setPago(pago);
         suscripcionFromDB.setCliente(cliente);
         return suscripcionRepository.save(suscripcionFromDB);
     }
