@@ -20,6 +20,7 @@ public class Nutricionista {
     @Column(name = "apellido", nullable = false)
     private String apellido;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "nutricionista", cascade = CascadeType.ALL)
     private List<PlanAlimenticio> planesAlimenticios;
 
