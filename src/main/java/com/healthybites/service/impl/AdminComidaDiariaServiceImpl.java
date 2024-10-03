@@ -1,7 +1,9 @@
 package com.healthybites.service.impl;
 
 import com.healthybites.model.entity.ComidaDiaria;
+import com.healthybites.model.entity.PlanAlimenticio;
 import com.healthybites.repository.ComidaDiariaRepository;
+import com.healthybites.repository.PlanAlimenticioRepository;
 import com.healthybites.service.AdminComidaDiariaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -16,6 +18,7 @@ import java.util.List;
 public class AdminComidaDiariaServiceImpl implements AdminComidaDiariaService {
 
     private final ComidaDiariaRepository comidaDiariaRepository;
+    private final PlanAlimenticioRepository planAlimenticioRepository;
 
     @Transactional(readOnly = true)
     @Override
@@ -39,6 +42,8 @@ public class AdminComidaDiariaServiceImpl implements AdminComidaDiariaService {
     @Transactional
     @Override
     public ComidaDiaria create(ComidaDiaria comidaDiaria) {
+        PlanAlimenticio planAlimenticio = planAlimenticioRepository.findById(comidaDiaria.getPlanAlimenticio().getId())
+                .orElseThrow(() -> new RuntimeException("Plan alimenticio no encontrado con Id: " + comidaDiaria.getPlanAlimenticio().getId()));
         return comidaDiariaRepository.save(comidaDiaria);
     }
 
@@ -46,9 +51,13 @@ public class AdminComidaDiariaServiceImpl implements AdminComidaDiariaService {
     @Override
     public ComidaDiaria update(Integer id, ComidaDiaria updateComidaDiaria) {
         ComidaDiaria comidaDiariaFromDB = findById(id);
+        PlanAlimenticio planAlimenticio = planAlimenticioRepository.findById(updateComidaDiaria.getPlanAlimenticio().getId())
+                .orElseThrow(() -> new RuntimeException("Plan alimenticio no encontrado con Id: " + updateComidaDiaria.getPlanAlimenticio().getId()));
+
         comidaDiariaFromDB.setNombreComida(updateComidaDiaria.getNombreComida());
         comidaDiariaFromDB.setCalorias(updateComidaDiaria.getCalorias());
         comidaDiariaFromDB.setCategoria(updateComidaDiaria.getCategoria());
+        comidaDiariaFromDB.setPlanAlimenticio(planAlimenticio);
         return comidaDiariaRepository.save(comidaDiariaFromDB);
     }
 

@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "acceso_contenido")
+@IdClass(AccesoContenido.class)
 public class AccesoContenido {
     @Id
     private Integer cliente;

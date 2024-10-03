@@ -1,6 +1,8 @@
 package com.healthybites.service.impl;
 
+import com.healthybites.model.entity.Meta;
 import com.healthybites.model.entity.Seguimiento;
+import com.healthybites.repository.MetaRepository;
 import com.healthybites.repository.SeguimientoRepository;
 import com.healthybites.service.AdminSeguimientoService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ import java.util.List;
 public class AdminSeguimientoServiceImpl implements AdminSeguimientoService {
 
     private final SeguimientoRepository seguimientoRepository;
+    private final MetaRepository metaRepository;
 
     @Transactional(readOnly = true)
     @Override
@@ -39,6 +42,10 @@ public class AdminSeguimientoServiceImpl implements AdminSeguimientoService {
     @Transactional
     @Override
     public Seguimiento create(Seguimiento seguimiento) {
+        Meta meta = metaRepository.findById(seguimiento.getMeta().getId())
+                .orElseThrow(() -> new RuntimeException("Meta no encontrada con id: " + seguimiento.getMeta().getId()));
+
+        seguimiento.setMeta(meta);
         return seguimientoRepository.save(seguimiento);
     }
 
@@ -46,9 +53,14 @@ public class AdminSeguimientoServiceImpl implements AdminSeguimientoService {
     @Override
     public Seguimiento update(Integer id, Seguimiento updateSeguimiento) {
         Seguimiento seguimientoFromDB = findById(id);
+        Meta meta = metaRepository.findById(updateSeguimiento.getMeta().getId())
+                .orElseThrow(() -> new RuntimeException("Meta no encontrada con id: " + updateSeguimiento.getMeta().getId()));
+
+
         seguimientoFromDB.setFecha(updateSeguimiento.getFecha());
         seguimientoFromDB.setPesoDelDia(updateSeguimiento.getPesoDelDia());
         seguimientoFromDB.setObservaciones(updateSeguimiento.getObservaciones());
+        seguimientoFromDB.setMeta(meta);
         return seguimientoRepository.save(seguimientoFromDB);
     }
 
