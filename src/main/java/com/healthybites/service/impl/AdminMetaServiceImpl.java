@@ -60,7 +60,7 @@ public class AdminMetaServiceImpl implements AdminMetaService{
         Meta meta = metaMapper.toEntity(metaDTO);
         Cliente cliente = clienteRepository.findById(metaDTO.getCliente().getId())
                 .orElseThrow(() -> new BadRequestException("El cliente no fue encontrado"));
-        ClienteDTO clienteDTO = clienteMapper.ToDTO(cliente);
+        ClienteDTO clienteDTO = clienteMapper.toDTO(cliente);
         cliente = clienteRepository.save(cliente);
         meta = metaRepository.save(meta);
         return metaMapper.toMetaDTO(meta);

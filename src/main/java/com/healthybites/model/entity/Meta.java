@@ -1,6 +1,5 @@
 package com.healthybites.model.entity;
 
-import com.healthybites.model.enums.EstadoMeta;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -23,6 +22,7 @@ public class Meta {
 
     @Column(name = "peso_objetivo", nullable = false)
     private double pesoObjetivo;
+
 
     @OneToMany(mappedBy = "meta", cascade = CascadeType.ALL)
     private List<Seguimiento> seguimiento;
