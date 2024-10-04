@@ -1,5 +1,6 @@
 package com.healthybites.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -20,6 +21,7 @@ public class Recompensa {
     @Column(name = "dias_requeridos", nullable = false)
     private int diasRequeridos;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "id_cliente", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "FK_recompensa_cliente"))

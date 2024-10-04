@@ -1,12 +1,16 @@
 package com.healthybites.service.impl;
 
-
+import com.healthybites.dto.RachaDTO;
+import com.healthybites.exception.BadRequestException;
+import com.healthybites.exception.ResourceNotFoundException;
+import com.healthybites.mapper.RachaMapper;
 import com.healthybites.model.entity.Cliente;
 import com.healthybites.model.entity.Racha;
 import com.healthybites.repository.ClienteRepository;
 import com.healthybites.repository.RachaRepository;
 import com.healthybites.service.AdminRachaService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -17,55 +21,92 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service
 public class AdminRachaServiceImpl implements AdminRachaService {
-
+    @Autowired
     private final RachaRepository rachaRepository;
+    @Autowired
     private final ClienteRepository clienteRepository;
+    @Autowired
+    private final RachaMapper rachaMapper; // Mapper para Racha
 
     @Transactional(readOnly = true)
     @Override
-    public List<Racha> getAll() {
-        return rachaRepository.findAll();
+    public List<RachaDTO> getAll() {
+        List<Racha> rachas = rachaRepository.findAll();
+        return rachas.stream()
+                .map(rachaMapper::toDto)
+                .toList();
     }
 
     @Transactional(readOnly = true)
     @Override
-    public Page<Racha> paginate(Pageable pageable) {
-        return rachaRepository.findAll(pageable);
+    public Page<RachaDTO> paginate(Pageable pageable) {
+        Page<Racha> rachas = rachaRepository.findAll(pageable);
+        return rachas.map(rachaMapper::toDto);
     }
 
     @Transactional(readOnly = true)
     @Override
-    public Racha findById(Integer id) {
-        return rachaRepository.findById(id).
-                orElseThrow(() -> new RuntimeException("Racha no encontrada: " + id));
+    public RachaDTO findById(Integer id) {
+        Racha racha = rachaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Racha no encontrada: " + id));
+        return rachaMapper.toDto(racha);
     }
 
     @Transactional
     @Override
-    public Racha create(Racha racha) {
-        Cliente cliente = clienteRepository.findById(racha.getCliente().getId()).orElseThrow(()-> new RuntimeException("Not found with id: " + racha.getCliente().getId()));
+    public RachaDTO create(RachaDTO rachaDTO) {
+        Racha racha = rachaMapper.toEntity(rachaDTO);
 
-                racha.setCliente(cliente);
-                return rachaRepository.save(racha);
-
+        rachaRepository.save(racha);
+        return rachaMapper.toDto(racha);
     }
 
     @Transactional
     @Override
-    public Racha update(Integer id, Racha updateRacha) {
-        Racha rachaFromDB = findById(id);
-        Cliente cliente = clienteRepository.findById(updateRacha.getCliente().getId()).orElseThrow(()-> new RuntimeException("Not found with id: " + updateRacha.getCliente().getId()));
+    public RachaDTO update(Integer id, RachaDTO updateRachaDTO) {
+        Racha rachaFromDb = rachaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Racha no encontrada: " + id));
 
-        rachaFromDB.setDiasConsecutivos(updateRacha.getDiasConsecutivos());
-        rachaFromDB.setUltimaFechaRegistro(updateRacha.getUltimaFechaRegistro());
-        rachaFromDB.setCliente(cliente);
-        return rachaRepository.save(rachaFromDB);
+        Cliente cliente = clienteRepository.findById(updateRachaDTO.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado: " + updateRachaDTO.getId()));
+
+        rachaFromDb.setDiasConsecutivos(updateRachaDTO.getDiasConsecutivos());
+        rachaFromDb.setUltimaFechaRegistro(updateRachaDTO.getUltimaFechaRegistro());
+        rachaFromDb.setCliente(cliente);
+        return rachaMapper.toDto(rachaRepository.save(rachaFromDb));
     }
 
     @Transactional
     @Override
     public void delete(Integer id) {
-        Racha racha = findById(id);
+        Racha racha = rachaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Racha no encontrada: " + id));
         rachaRepository.delete(racha);
     }
+
+    @Override
+    @Transactional
+    public RachaDTO asignarRachaACliente(Integer rachaId, Integer clienteId) {
+        // Busca la racha y el cliente por su ID
+        Racha racha = rachaRepository.findById(rachaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Racha no encontrada: " + rachaId));
+
+        Cliente cliente = clienteRepository.findById(clienteId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado: " + clienteId));
+
+        // Asigna la racha al cliente (puedes hacer ajustes según tu lógica)
+        racha.setCliente(cliente);
+
+        // Guarda la racha actualizada
+        rachaRepository.save(racha);
+
+        // Retorna el DTO de la racha
+        return rachaMapper.toDto(racha);
+    }
+
+
+
 }
+
+
+

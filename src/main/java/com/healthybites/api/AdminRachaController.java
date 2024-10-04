@@ -1,7 +1,10 @@
 package com.healthybites.api;
 
+import com.healthybites.dto.NutricionistaDTO;
+import com.healthybites.dto.RachaDTO;
 import com.healthybites.model.entity.Racha;
 import com.healthybites.service.AdminRachaService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,42 +20,53 @@ import java.util.List;
 @RequestMapping("/admin/racha")
 public class AdminRachaController {
 
-        private final AdminRachaService adminRachaService;
+    private final AdminRachaService adminRachaService;
 
-        @GetMapping
-        public ResponseEntity<List<Racha>> list() {
-            List<Racha> rachas = adminRachaService.getAll();
-            return new ResponseEntity<>(rachas, HttpStatus.OK);
-        }
+    @GetMapping
+    public ResponseEntity<List<RachaDTO>> list() {
+        List<RachaDTO> rachas = adminRachaService.getAll();
+        return new ResponseEntity<>(rachas, HttpStatus.OK);
+    }
 
-        @GetMapping("/page")
-        public ResponseEntity<Page<Racha>> paginateRachas(
-                @PageableDefault(size = 5, sort = "diasConsecutivos") Pageable pageable) {
-            Page<Racha> rachas = adminRachaService.paginate(pageable);
-            return new ResponseEntity<Page<Racha>>(rachas, HttpStatus.OK);
-        }
+    @GetMapping("/page")
+    public ResponseEntity<Page<RachaDTO>> paginateRachas(
+            @PageableDefault(size = 5, sort = "diasConsecutivos") Pageable pageable) {
+        Page<RachaDTO> rachas = adminRachaService.paginate(pageable);
+        return new ResponseEntity<>(rachas, HttpStatus.OK);
+    }
 
-        @GetMapping("/{id}")
-        public ResponseEntity<Racha> getRachaById(@PathVariable("id") Integer id) {
-            Racha racha = adminRachaService.findById(id);
-            return new ResponseEntity<>(racha, HttpStatus.OK);
-        }
+    @GetMapping("/{id}")
+    public ResponseEntity<RachaDTO> getRachaById(@PathVariable("id") Integer id) {
+      RachaDTO rachas = adminRachaService.findById(id);
+        return new ResponseEntity<>(rachas, HttpStatus.OK);
+    }
 
-        @PostMapping
-        public ResponseEntity<Racha> create(@RequestBody Racha racha) {
-            Racha newRacha = adminRachaService.create(racha);
-            return new ResponseEntity<Racha>(newRacha, HttpStatus.CREATED);
-        }
+    @PostMapping
+    public ResponseEntity<RachaDTO> create(@Valid @RequestBody RachaDTO rachaDTO) {
+        RachaDTO newRacha = adminRachaService.create(rachaDTO);
+        return new ResponseEntity<>(newRacha, HttpStatus.CREATED);
+    }
 
-        @PutMapping("/{id}")
-        public ResponseEntity<Racha> updateRacha(@PathVariable("id") Integer id, @RequestBody Racha racha) {
-            Racha updateRacha = adminRachaService.update(id, racha);
-            return new ResponseEntity<Racha>(updateRacha, HttpStatus.OK);
-        }
+    @PutMapping("/{id}")
+    public ResponseEntity<RachaDTO> updateRacha(@PathVariable("id") Integer id, @Valid @RequestBody RachaDTO rachaDTO) {
+        RachaDTO updateRacha = adminRachaService.update(id, rachaDTO);
+        return new ResponseEntity<>(updateRacha, HttpStatus.OK);
+    }
 
-        @DeleteMapping("/{id}")
-        public ResponseEntity<Racha> deleteRacha(@PathVariable("id") Integer id) {
-            adminRachaService.delete(id);
-            return new ResponseEntity<Racha>(HttpStatus.NO_CONTENT);
-        }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteRacha(@PathVariable("id") Integer id) {
+        adminRachaService.delete(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+
+    @PostMapping("/{rachaId}/asignar/{clienteId}")
+    public ResponseEntity<RachaDTO> asignarRacha(
+            @PathVariable Integer rachaId,
+            @PathVariable Integer clienteId) {
+        RachaDTO rachaAsignada = adminRachaService.asignarRachaACliente(rachaId, clienteId);
+        return ResponseEntity.ok(rachaAsignada);
+    }
+
+
 }

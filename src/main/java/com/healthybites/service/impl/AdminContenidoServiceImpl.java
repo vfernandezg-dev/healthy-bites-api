@@ -1,74 +1,102 @@
 package com.healthybites.service.impl;
 
+import com.healthybites.dto.ContenidoDTO;
+import com.healthybites.mapper.ContenidoMapper;
 import com.healthybites.model.entity.Contenido;
-import com.healthybites.model.entity.Nutricionista;
+import com.healthybites.model.enums.CategoriaContenido;
+import com.healthybites.model.enums.TipoContenido;
 import com.healthybites.repository.ContenidoRepository;
 import com.healthybites.repository.NutricionistaRepository;
 import com.healthybites.service.AdminContenidoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
 public class AdminContenidoServiceImpl implements AdminContenidoService {
 
+    @Autowired
     private final ContenidoRepository contenidoRepository;
     private final NutricionistaRepository nutricionistaRepository;
 
+    @Autowired
+    private final ContenidoMapper contenidoMapper;
+
     @Transactional(readOnly = true)
     @Override
-    public List<Contenido> getAll() {
-        return contenidoRepository.findAll();
+    public List<ContenidoDTO> getAll() {
+        List<Contenido> contenidos = contenidoRepository.findAll();
+        return contenidos.stream()
+                .map(contenidoMapper::toDto) // Convertir entidad a DTO
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     @Override
-    public Page<Contenido> paginate(Pageable pageable) {
-        return contenidoRepository.findAll(pageable);
+    public Page<ContenidoDTO> paginate(Pageable pageable) {
+        Page<Contenido> contenidos = contenidoRepository.findAll(pageable);
+        return contenidos.map(contenidoMapper::toDto); // Convertir entidad a DTO
     }
 
     @Transactional(readOnly = true)
     @Override
-    public Contenido findById(Integer id) {
-        return contenidoRepository.findById(id).
-                orElseThrow(() -> new RuntimeException("Contenido no encontrado"));
+    public ContenidoDTO findById(Integer id) {
+        Contenido contenido = contenidoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Contenido no encontrado"));
+        return contenidoMapper.toDto(contenido); // Convertir entidad a DTO
     }
 
     @Transactional
     @Override
-    public Contenido create(Contenido contenido) {
-
-        Nutricionista nutricionista = nutricionistaRepository.findById(contenido.getNutricionista().getId())
-                .orElseThrow(() -> new RuntimeException("Nutricionista no encontrado por ID: " + contenido.getNutricionista().getId()));
-
-        return contenidoRepository.save(contenido);
+    public ContenidoDTO create(ContenidoDTO contenidoDTO) {
+        Contenido contenido = contenidoMapper.toEntity(contenidoDTO); // Convertir DTO a entidad
+        contenido = contenidoRepository.save(contenido);
+        return contenidoMapper.toDto(contenido); // Convertir entidad guardada a DTO
     }
 
     @Transactional
     @Override
-    public Contenido update(Integer id, Contenido updateContenido) {
-        Contenido contenidoFromDB = findById(id);
+    public ContenidoDTO update(Integer id, ContenidoDTO updateContenidoDTO) {
+        Contenido contenidoFromDB = contenidoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Contenido no encontrado"));
 
-        Nutricionista nutricionista = nutricionistaRepository.findById(updateContenido.getNutricionista().getId())
-                .orElseThrow(() -> new RuntimeException("Nutricionista no encontrado por ID: " + updateContenido.getNutricionista().getId()));
+        contenidoFromDB.setTitulo(updateContenidoDTO.getTitulo());
+        contenidoFromDB.setDescripcion(updateContenidoDTO.getDescripcion());
+        contenidoFromDB.setTipoContenido(updateContenidoDTO.getTipoContenido());
+        contenidoFromDB.setCategoriaContenido(updateContenidoDTO.getCategoriaContenido());
+        contenidoFromDB.setEsGratis(updateContenidoDTO.isEsGratis());
 
-        contenidoFromDB.setTitulo(updateContenido.getTitulo());
-        contenidoFromDB.setDescripcion(updateContenido.getDescripcion());
-        contenidoFromDB.setTipoContenido(updateContenido.getTipoContenido());
-        contenidoFromDB.setCategoriaContenido(updateContenido.getCategoriaContenido());
-        contenidoFromDB.setEsGratis(updateContenido.isEsGratis());
-        contenidoFromDB.setNutricionista(updateContenido.getNutricionista());
-        return contenidoRepository.save(contenidoFromDB);
+        Contenido updatedContenido = contenidoRepository.save(contenidoFromDB);
+        return contenidoMapper.toDto(updatedContenido); // Convertir entidad actualizada a DTO
     }
 
     @Override
     public void delete(Integer id) {
-        Contenido contenido = findById(id);
+        Contenido contenido = contenidoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Contenido no encontrado"));
         contenidoRepository.delete(contenido);
     }
+
+    @Override
+    public List<ContenidoDTO> obtenerContenido(TipoContenido tipoContenido, CategoriaContenido categoriaContenido) {
+        // Filtrar contenidos utilizando el repositorio
+        List<Contenido> contenidos = contenidoRepository.findAll(); // Obtener todos los contenidos
+
+        return contenidos.stream()
+                .filter(contenido -> (tipoContenido == null || contenido.getTipoContenido() == tipoContenido) &&
+                        (categoriaContenido == null || contenido.getCategoriaContenido() == categoriaContenido))
+                .map(contenidoMapper::toDto) // Convertir a DTO
+                .collect(Collectors.toList());
+    }
 }
+
+
+
+
