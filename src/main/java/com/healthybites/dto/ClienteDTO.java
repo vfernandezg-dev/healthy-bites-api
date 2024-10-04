@@ -1,5 +1,6 @@
 package com.healthybites.dto;
 
+import com.healthybites.model.entity.Cliente;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
@@ -29,5 +30,25 @@ public class ClienteDTO {
 
     @Positive(message = "El peso debe ser un número positivo")
     private double peso;
+
+    private Integer metaID;
+    private String metaNombre;
+
+    public ClienteDTO(Cliente cliente) {
+        this.id = cliente.getId();
+        this.nombre = cliente.getNombre();
+        this.apellido = cliente.getApellido();
+        this.correo = cliente.getCorreo();
+        this.sexo = cliente.getSexo();
+        this.edad = cliente.getEdad();
+        this.altura = cliente.getAltura();
+        this.peso = cliente.getPeso();
+        this.metaID = cliente.getMeta().getId();
+        this.metaNombre = cliente.getMeta().getNombre();
+    }
+
+
+    private MetaDTO meta;  // Asociación con MetaDTO
+
 }
 

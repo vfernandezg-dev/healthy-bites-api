@@ -61,7 +61,7 @@ public class AdminMetaServiceImpl implements AdminMetaService{
 
 
 
-        ClienteDTO clienteDTO = clienteMapper.ToDTO(cliente);
+        ClienteDTO clienteDTO = clienteMapper.toDTO(cliente);
 
         cliente = clienteRepository.save(cliente);
 

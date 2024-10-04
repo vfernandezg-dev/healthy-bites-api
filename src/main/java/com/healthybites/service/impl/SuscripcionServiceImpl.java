@@ -4,7 +4,7 @@ import com.healthybites.model.entity.Cliente;
 import com.healthybites.model.entity.Suscripcion;
 import com.healthybites.repository.ClienteRepository;
 import com.healthybites.repository.SuscripcionRepository;
-import com.healthybites.service.AdminSuscripcionService;
+import com.healthybites.service.SuscripcionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,12 +15,22 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Service
-public class AdminSuscripcionServiceImpl implements AdminSuscripcionService {
+public class SuscripcionServiceImpl implements SuscripcionService {
 
     private final SuscripcionRepository suscripcionRepository;
     private final ClienteRepository clienteRepository;
 
-    @Transactional(readOnly = true)
+    @Override
+    public Suscripcion createSuscripcion(Suscripcion suscripcion) {
+        return null;
+    }
+
+    @Override
+    public List<Suscripcion> getSuscripcionHistoryByUserId(Integer userId) {
+        return List.of();
+    }
+
+    /*@Transactional(readOnly = true)
     @Override
     public List<Suscripcion> getAll() {
         return suscripcionRepository.findAll();
@@ -71,5 +81,5 @@ public class AdminSuscripcionServiceImpl implements AdminSuscripcionService {
         Suscripcion suscripcion = suscripcionRepository.findById(id).
                 orElseThrow(() -> new RuntimeException("Suscripcion no encontrada por ID: " + id));
         suscripcionRepository.delete(suscripcion);
-    }
+    }*/
 }

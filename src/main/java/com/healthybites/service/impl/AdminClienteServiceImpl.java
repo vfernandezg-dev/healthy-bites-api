@@ -15,6 +15,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.healthybites.model.entity.Meta;
+import com.healthybites.repository.MetaRepository;
+
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -23,13 +26,14 @@ public class AdminClienteServiceImpl implements AdminClienteService {
 
     private final ClienteRepository clienteRepository;
     private final ClienteMapper clienteMapper;
+    private final MetaRepository metaRepository;
 
     @Transactional(readOnly = true)
     @Override
     public List<ClienteDTO> getAll() {
         List<Cliente> clientes = clienteRepository.findAll();
         return clientes.stream()
-                .map(clienteMapper::ToDTO)
+                .map(clienteMapper::toDTO)
                 .toList();
     }
 
@@ -37,7 +41,7 @@ public class AdminClienteServiceImpl implements AdminClienteService {
     @Override
     public Page<ClienteDTO> paginate(Pageable pageable) {
         Page<Cliente> clientes = clienteRepository.findAll(pageable);
-        return clientes.map(clienteMapper::ToDTO);
+        return clientes.map(clienteMapper::toDTO);
     }
 
     @Transactional(readOnly = true)
@@ -45,7 +49,7 @@ public class AdminClienteServiceImpl implements AdminClienteService {
     public ClienteDTO findById(Integer id) {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente con ID: " + id + " no fue encontrado"));
-        return clienteMapper.ToDTO(cliente);
+        return clienteMapper.toDTO(cliente);
     }
 
     @Transactional
@@ -55,10 +59,10 @@ public class AdminClienteServiceImpl implements AdminClienteService {
                 .ifPresent(existeCliente -> {
                     throw new BadRequestException("Cliente ya existe");
                 });
-        Cliente cliente = clienteMapper.ToEntity(clienteDTO);
+        Cliente cliente = clienteMapper.toEntity(clienteDTO);
 
         cliente = clienteRepository.save(cliente);
-        return clienteMapper.ToDTO(cliente);
+        return clienteMapper.toDTO(cliente);
     }
 
     @Transactional
@@ -81,7 +85,7 @@ public class AdminClienteServiceImpl implements AdminClienteService {
         clienteFromDB.setPeso(updateClienteDTO.getPeso());
 
         clienteFromDB = clienteRepository.save(clienteFromDB);
-        return clienteMapper.ToDTO(clienteFromDB);
+        return clienteMapper.toDTO(clienteFromDB);
     }
 
     @Transactional
@@ -90,5 +94,32 @@ public class AdminClienteServiceImpl implements AdminClienteService {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente con ID: " + id + " no fue encontrado"));
         clienteRepository.delete(cliente);
+    }
+
+
+    @Transactional
+    public ClienteDTO updateProfileAndMeta(Integer clienteId, ClienteDTO clienteDTO) {
+        Cliente cliente = clienteRepository.findById(clienteId)
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+
+        cliente.setNombre(clienteDTO.getNombre());
+        cliente.setApellido(clienteDTO.getApellido());
+        cliente.setCorreo(clienteDTO.getCorreo());
+        cliente.setSexo(clienteDTO.getSexo());
+        cliente.setEdad(clienteDTO.getEdad());
+        cliente.setAltura(clienteDTO.getAltura());
+        cliente.setPeso(clienteDTO.getPeso());
+
+        if (clienteDTO.getMeta() != null) {
+            Meta meta = metaRepository.findById(clienteDTO.getMeta().getId())
+                    .orElseThrow(() -> new RuntimeException("Meta no encontrada"));
+            meta.setNombre(clienteDTO.getMeta().getNombre());
+            meta.setDescripcion(clienteDTO.getMeta().getDescripcion());
+            meta.setPesoObjetivo(clienteDTO.getMeta().getPesoObjetivo());
+            cliente.setMeta(meta);
+        }
+
+        Cliente updatedCliente = clienteRepository.save(cliente);
+        return clienteMapper.toDTO(updatedCliente);
     }
 }

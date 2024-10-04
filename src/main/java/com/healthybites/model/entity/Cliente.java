@@ -1,6 +1,7 @@
 package com.healthybites.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -55,9 +56,14 @@ public class Cliente {
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
     private List<Habito> habitos;
 
-    public void setCreatedAt(LocalDateTime now) {
-    }
+    @JsonIgnore
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "meta_id", referencedColumnName = "id")
+    private Meta meta;  // Relación uno a uno con Meta
 
     @Column(name = "reset_password_token")
     private String resetPasswordToken;
+
+    public void setCreatedAt(LocalDateTime now) {
+    }
 }
