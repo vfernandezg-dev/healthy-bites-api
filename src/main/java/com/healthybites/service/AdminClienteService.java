@@ -14,4 +14,7 @@ public interface AdminClienteService {
     ClienteDTO create(ClienteDTO cliente);
     ClienteDTO update(Integer id, ClienteDTO updateClienteDTO);
     void delete(Integer id);
+
+    interface AdminRecompensaService {
+    }
 }

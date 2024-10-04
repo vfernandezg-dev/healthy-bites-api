@@ -39,22 +39,23 @@ public class Cliente {
     @Column(name = "peso", nullable = false)
     private double peso;
 
-    @OneToOne
-    @JoinColumn(name = "id_usuario", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "FK_cliente_usuario"))
-    private Usuario usuario;
+    @ManyToOne
+    @JoinColumn(name = "id_grupo", referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "FK_cliente_grupo"))
+    private Grupo grupo;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
-    private List<AccesoContenido> accesoContenidos;
+    @ManyToOne
+    @JoinColumn(name = "id_meta", referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "FK_cliente_meta"))
+    private Meta meta;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
-    private List<Recompensa> recompensas;
+    @ManyToOne
+    @JoinColumn(name = "id_suscripcion", referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "FK_cliente_suscripcion"))
+    private Suscripcion suscripcion;
 
-    @JsonIgnore
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
-    private List<Habito> habitos;
+    private List<Racha> rachas;
 
     @JsonIgnore
     @OneToOne(cascade = CascadeType.ALL)

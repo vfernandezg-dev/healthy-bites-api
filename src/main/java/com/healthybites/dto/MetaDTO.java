@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class MetaDTO {
     private Integer id;
@@ -18,6 +20,7 @@ public class MetaDTO {
     private String descripcion;
 
     private double pesoObjetivo;
+    private EstadoMeta estado;
     private ClienteDTO cliente;
 
     public MetaDTO() {

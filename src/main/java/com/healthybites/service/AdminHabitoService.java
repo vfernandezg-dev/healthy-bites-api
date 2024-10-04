@@ -1,16 +1,18 @@
 package com.healthybites.service;
 
-import com.healthybites.model.entity.Habito;
+import com.healthybites.dto.HabitoDTO;
+import com.healthybites.dto.RachaDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 public interface AdminHabitoService {
-    List<Habito> getAll();
-    Page<Habito> paginate(Pageable pageable);
-    Habito findById(Integer id);
-    Habito create(Habito habito);
-    Habito update(Integer id, Habito updateHabito);
+    List<HabitoDTO> getAll();
+    Page<HabitoDTO> paginate(Pageable pageable);
+    HabitoDTO findById(Integer id);
+    HabitoDTO create(HabitoDTO habitoDTO);
+    HabitoDTO update(Integer id, HabitoDTO updateHabitoDTO);
     void delete(Integer id);
+    HabitoDTO asignarHabitoACliente(Integer habitoId, Integer clienteId);
 }

@@ -1,15 +1,18 @@
 package com.healthybites.service;
 
-import com.healthybites.model.entity.Recompensa;
+import com.healthybites.dto.ClienteDTO;
+import com.healthybites.dto.RecompensaDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 
 public interface AdminRecompensaService {
-    List<Recompensa> getAll();
-    Page<Recompensa> paginate(Pageable pageable);
-    Recompensa findById(Integer id);
-    Recompensa create(Recompensa recompensa);
-    Recompensa update(Integer id, Recompensa updateRecompensa);
+    List<RecompensaDTO> getAll();
+    Page<RecompensaDTO> paginate(Pageable pageable);
+    RecompensaDTO findById(Integer id);
+    RecompensaDTO create(RecompensaDTO recompensaDTO);
+    RecompensaDTO update(Integer id, RecompensaDTO updateRecompensaDTO);
     void delete(Integer id);
+    RecompensaDTO asignarRecompensaACliente(Integer recompensaId, Integer clienteId);
 }
