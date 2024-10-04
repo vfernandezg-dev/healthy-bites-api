@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -19,6 +20,11 @@ public class Cliente {
 
     @Column(name = "apellido", nullable = false)
     private String apellido;
+
+    @Column(nullable = false, unique = true)
+    private String correo;
+
+    private String contrasena;
 
     @Column(name = "sexo", nullable = false)
     private String sexo;
@@ -49,16 +55,5 @@ public class Cliente {
 
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
     private List<Racha> rachas;
-
-    @OneToOne
-    @JoinColumn(name = "id_usuario", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "FK_cliente_usuario"))
-    private Usuario usuario;
-
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
-    private List<Recompensa> recompensas;
-
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
-    private List<Habito> habitos;
 
 }

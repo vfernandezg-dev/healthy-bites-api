@@ -24,6 +24,7 @@ public class AdminHabitoServiceImpl implements AdminHabitoService {
 
     @Autowired
     private final HabitoRepository habitoRepository;
+    private final ClienteRepository clienteRepository;
 
     @Autowired
     private final HabitoMapper habitoMapper;

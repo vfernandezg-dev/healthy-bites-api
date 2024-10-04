@@ -6,6 +6,7 @@ import com.healthybites.model.entity.Contenido;
 import com.healthybites.model.enums.CategoriaContenido;
 import com.healthybites.model.enums.TipoContenido;
 import com.healthybites.repository.ContenidoRepository;
+import com.healthybites.repository.NutricionistaRepository;
 import com.healthybites.service.AdminContenidoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ public class AdminContenidoServiceImpl implements AdminContenidoService {
 
     @Autowired
     private final ContenidoRepository contenidoRepository;
+    private final NutricionistaRepository nutricionistaRepository;
 
     @Autowired
     private final ContenidoMapper contenidoMapper;

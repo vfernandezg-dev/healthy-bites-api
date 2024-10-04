@@ -71,5 +71,4 @@ public class AdminRecompensaController {
         return ResponseEntity.ok(recompensaAsignada);
     }
 
-
 }

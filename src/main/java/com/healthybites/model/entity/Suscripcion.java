@@ -1,10 +1,12 @@
 package com.healthybites.model.entity;
 
+import com.healthybites.model.enums.EstadoPago;
+import com.healthybites.model.enums.EstadoSuscripcion;
 import com.healthybites.model.enums.TipoSuscripcion;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -18,19 +20,22 @@ public class Suscripcion {
     @Column(name = "tipo_suscripcion", nullable = false)
     private TipoSuscripcion tipoSuscripcion;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado_suscripcion", nullable = false)
+    private EstadoSuscripcion estadoSuscripcion;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado_pago", nullable = false)
+    private EstadoPago estadoPago;
+
     @Column(name = "precio", nullable = false)
     private double precio;
 
     @Column(name = "fecha_inicio", nullable = false)
-    private Date fechaInicio;
+    private LocalDateTime fechaInicio;
 
     @Column(name = "fecha_fin", nullable = false)
-    private Date fechaFin;
-
-    @ManyToOne
-    @JoinColumn(name = "id_pago", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "FK_suscripcion_pago"))
-    private Pago pago;
+    private LocalDateTime fechaFin;
 
     @ManyToOne
     @JoinColumn(name = "id_cliente", referencedColumnName = "id",

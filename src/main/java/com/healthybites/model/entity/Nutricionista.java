@@ -1,5 +1,6 @@
 package com.healthybites.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -19,9 +20,14 @@ public class Nutricionista {
     @Column(name = "apellido", nullable = false)
     private String apellido;
 
+    /*@JsonIgnore
     @OneToMany(mappedBy = "nutricionista", cascade = CascadeType.ALL)
+    private List<PlanAlimenticio> planesAlimenticios;*/
+
+    @OneToMany(mappedBy = "nutricionista")
     private List<PlanAlimenticio> planesAlimenticios;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "nutricionista", cascade = CascadeType.ALL)
     private List<Contenido> contenidos;
 

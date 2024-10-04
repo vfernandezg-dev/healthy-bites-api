@@ -20,38 +20,38 @@ public class AdminComentarioController {
     private final AdminComentarioService adminComentarioService;
 
     @GetMapping
-    public ResponseEntity<List<Comentario>> getAllCliente() {
+    public ResponseEntity<List<Comentario>> getAllComentario() {
         List<Comentario> comentarios = adminComentarioService.getAll();
         return new ResponseEntity<List<Comentario>>(comentarios, HttpStatus.OK);
     }
 
     @GetMapping("/page")
-    public ResponseEntity<Page<Comentario>> paginateClientes(
+    public ResponseEntity<Page<Comentario>> paginateComentarios(
             @PageableDefault(size = 5, sort = "mensaje") Pageable pageable) {
         Page<Comentario> comentarios = adminComentarioService.paginate(pageable);
         return new ResponseEntity<Page<Comentario>>(comentarios, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Comentario> getClienteById(@PathVariable("id") Integer id) {
+    public ResponseEntity<Comentario> getComentarioById(@PathVariable("id") Integer id) {
         Comentario comentarios = adminComentarioService.findById(id);
         return new ResponseEntity<Comentario>(comentarios, HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<Comentario> createCliente(@RequestBody Comentario comentarios) {
-        Comentario newCliente = adminComentarioService.create(comentarios);
-        return new ResponseEntity<Comentario>(newCliente, HttpStatus.CREATED);
+    public ResponseEntity<Comentario> createComentario(@RequestBody Comentario comentarios) {
+        Comentario newComentario = adminComentarioService.create(comentarios);
+        return new ResponseEntity<Comentario>(newComentario, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Comentario> updateCliente(@PathVariable("id") Integer id, @RequestBody Comentario comentarios) {
+    public ResponseEntity<Comentario> updateComentario(@PathVariable("id") Integer id, @RequestBody Comentario comentarios) {
         Comentario updateComentario = adminComentarioService.update(id, comentarios);
         return new ResponseEntity<Comentario>(updateComentario, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Comentario> deleteCliente(@PathVariable("id") Integer id) {
+    public ResponseEntity<Comentario> deleteComentario(@PathVariable("id") Integer id) {
         adminComentarioService.delete(id);
         return new ResponseEntity<Comentario>(HttpStatus.NO_CONTENT);
     }
