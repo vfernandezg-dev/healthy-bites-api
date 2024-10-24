@@ -5,11 +5,13 @@ import com.healthybites.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/user/profile")
+@PreAuthorize("hasAnyRole('CLIENTE','NUTRICIONISTA')")
 public class UserProfileController {
 
     private final UsuarioService usuarioService;

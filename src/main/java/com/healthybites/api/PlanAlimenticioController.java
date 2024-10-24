@@ -7,6 +7,7 @@ import com.healthybites.service.PlanAlimenticioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/plan-alimenticio")
+@PreAuthorize("hasAnyRole('ADMIN','NUTRICIONISTA')")
 public class PlanAlimenticioController {
 
     private final PlanAlimenticioService planAlimenticioService;

@@ -15,6 +15,7 @@ import com.healthybites.repository.ClienteRepository;
 import com.healthybites.repository.NutricionistaRepository;
 import com.healthybites.repository.RoleRepository;
 import com.healthybites.repository.UsuarioRepository;
+import com.healthybites.security.TokenProvider;
 import com.healthybites.security.UserPrincipal;
 import com.healthybites.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     private final UsuarioMapper usuarioMapper;
 
     private final AuthenticationManager authenticationManager;
+    private final TokenProvider tokenProvider;
 
     @Override
     public UserProfileDTO registrarCliente(UserRegistrationDTO registrationDTO) {
@@ -97,11 +99,11 @@ public class UsuarioServiceImpl implements UsuarioService {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
         Usuario user = userPrincipal.getUsuario();
 
-        String token = ""; // Generar un token JWT
+        String token = tokenProvider.createAccessToken(authentication);
 
         AuthResponseDTO authResponseDTO = usuarioMapper.toAuthResponseDTO(user, token);
 
-        return null;
+        return authResponseDTO;
     }
 
     @Override

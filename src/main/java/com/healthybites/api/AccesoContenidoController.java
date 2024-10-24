@@ -7,6 +7,7 @@ import com.healthybites.service.AccesoContenidoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/acceso-contenido")
+@PreAuthorize("hasAnyRole('CLIENTE','ADMIN')")
 public class AccesoContenidoController {
 
     private final AccesoContenidoService accesoContenidoService;
