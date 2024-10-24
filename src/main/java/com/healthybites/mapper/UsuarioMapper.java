@@ -1,5 +1,7 @@
 package com.healthybites.mapper;
 
+import com.healthybites.dto.AuthResponseDTO;
+import com.healthybites.dto.LoginDTO;
 import com.healthybites.dto.UserProfileDTO;
 import com.healthybites.dto.UserRegistrationDTO;
 import com.healthybites.model.entity.Usuario;
@@ -36,5 +38,30 @@ public class UsuarioMapper {
         }
 
         return userProfileDTO;
+    }
+
+    public Usuario toUserEntity(LoginDTO loginDTO) {
+        return modelMapper.map(loginDTO, Usuario.class);
+    }
+
+    public AuthResponseDTO toAuthResponseDTO(Usuario user, String token) {
+        AuthResponseDTO authResponseDTO = new AuthResponseDTO();
+        authResponseDTO.setToken(token); // Asignar el token JWT
+
+        // Obtener el nombre y apellido del usuario
+        String nombre = (user.getNutricionista() != null) ? user.getNutricionista().getNombre()
+                : (user.getCliente() != null) ? user.getCliente().getNombre()
+                : "Admin";
+
+        String apellido = (user.getNutricionista() != null) ? user.getNutricionista().getApellido()
+                : (user.getCliente() != null) ? user.getCliente().getApellido()
+                : "User";
+
+        authResponseDTO.setNombre(nombre);
+        authResponseDTO.setApellido(apellido);
+
+        authResponseDTO.setRole(user.getRol().getNombre().name()); // Obtener el rol del usuario
+
+        return authResponseDTO;
     }
 }
