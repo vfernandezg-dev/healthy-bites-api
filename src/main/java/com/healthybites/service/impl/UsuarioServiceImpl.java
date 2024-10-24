@@ -4,6 +4,7 @@ import com.healthybites.dto.AuthResponseDTO;
 import com.healthybites.dto.LoginDTO;
 import com.healthybites.dto.UserProfileDTO;
 import com.healthybites.dto.UserRegistrationDTO;
+import com.healthybites.exception.RoleNotFoundException;
 import com.healthybites.mapper.UsuarioMapper;
 import com.healthybites.model.entity.Cliente;
 import com.healthybites.model.entity.Nutricionista;
@@ -126,7 +127,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         }
 
         Rol rol = roleRepository.findByNombre(rolEnum)
-                .orElseThrow(() -> new RuntimeException("Error: Rol no encontrado."));
+                .orElseThrow(() -> new RoleNotFoundException("Error: Rol no encontrado."));
 
         registrationDTO.setContrasena(passwordEncoder.encode(registrationDTO.getContrasena()));
 
