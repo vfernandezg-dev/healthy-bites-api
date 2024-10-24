@@ -21,4 +21,7 @@ public class Suscripcion {
 
     @Column(name = "precio", nullable = false)
     private double precio;
+
+    @OneToMany(mappedBy = "suscripcion", cascade = CascadeType.ALL)
+    private List<Usuario> usuario;
 }

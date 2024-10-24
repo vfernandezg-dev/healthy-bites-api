@@ -16,4 +16,6 @@ public class NutricionistaDTO {
     @NotBlank(message = "El apellido es obligatorio")
     @Size(max = 50, message = "El apellido debe tener 50 caracteres o menos")
     private String apellido;
+
+    private String bio;
 }

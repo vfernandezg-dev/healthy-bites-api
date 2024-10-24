@@ -48,11 +48,6 @@ public class Cliente {
             foreignKey = @ForeignKey(name = "FK_cliente_racha"))
     private Racha racha;
 
-    @OneToOne
-    @JoinColumn(name = "id_usuario", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "FK_cliente_usuario"))
-    private Usuario usuario;
-
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
     private List<Habito> habitos;
 
@@ -65,5 +60,8 @@ public class Cliente {
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
     private List<Meta> meta;
 
+    @OneToOne
+    @JoinColumn(name = "id_usuario", referencedColumnName = "id")
+    private Usuario usuario;
 
 }

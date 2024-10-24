@@ -20,6 +20,9 @@ public class Nutricionista {
     @Column(name = "apellido", nullable = false)
     private String apellido;
 
+    @Column(name = "bio", nullable = false)
+    private String bio;
+
     @Column(name = "fecha_creacion", nullable = false)
     private LocalDateTime fechaCreacion;
 
@@ -36,7 +39,6 @@ public class Nutricionista {
     private List<Recompensa> recompensas;
 
     @OneToOne
-    @JoinColumn(name = "id_usuario", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "FK_nutricionista_usuario"))
+    @JoinColumn(name = "id_usuario", referencedColumnName = "id")
     private Usuario usuario;
 }

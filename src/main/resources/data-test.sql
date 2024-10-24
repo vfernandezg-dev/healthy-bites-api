@@ -13,12 +13,12 @@ VALUES
     ('Ana', 'Martinez', 'F', 40, 1.70, 65, 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
     ON CONFLICT DO NOTHING;
 
-INSERT INTO public.nutricionista (nombre, apellido, fecha_creacion, fecha_actualizacion)
+INSERT INTO public.nutricionista (nombre, apellido, bio, fecha_creacion, fecha_actualizacion)
 VALUES
-    ('Carlos', 'García', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('Luis', 'Martínez', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('Elena', 'Gómez', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('Pedro', 'Alonso', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    ('Carlos', 'García', 'Esta es la bio del nutricionista 1', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('Luis', 'Martínez', 'Esta es la bio del nutricionista 2', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('Elena', 'Gómez', 'Esta es la bio del nutricionista 3', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('Pedro', 'Alonso', 'Esta es la bio del nutricionista 4', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
     ON CONFLICT DO NOTHING;
 
 INSERT INTO public.contenido (titulo, descripcion, tipo_contenido, categoria_contenido, es_gratis, fecha_creacion, fecha_actualizacion, id_nutricionista)

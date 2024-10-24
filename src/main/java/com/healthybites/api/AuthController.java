@@ -1,14 +1,13 @@
 package com.healthybites.api;
 
-import com.healthybites.model.entity.Usuario;
+import com.healthybites.dto.UserProfileDTO;
+import com.healthybites.dto.UserRegistrationDTO;
 import com.healthybites.service.UsuarioService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
@@ -16,9 +15,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
     private final UsuarioService usuarioService;
 
-    @PostMapping("/register")
-    public ResponseEntity<Usuario> registerUsuario(@RequestBody Usuario usuario) {
-        Usuario newUsuario = usuarioService.registerUsuario(usuario);
-        return new ResponseEntity<>(newUsuario, HttpStatus.CREATED);
+    // Registro de un cliente
+    @PostMapping("/register/client")
+    public ResponseEntity<UserProfileDTO> registerClient(@Valid @RequestBody UserRegistrationDTO userRegistrationDTO) {
+        UserProfileDTO userProfileDTO = usuarioService.registrarCliente(userRegistrationDTO);
+        return new ResponseEntity<>(userProfileDTO, HttpStatus.CREATED);
+    }
+
+    // Registro de un nutricionista
+    @PostMapping("/register/nutritionist")
+    public ResponseEntity<UserProfileDTO> registerNutritionist(@Valid @RequestBody UserRegistrationDTO userRegistrationDTO) {
+        UserProfileDTO userProfileDTO = usuarioService.registrarNutricionista(userRegistrationDTO);
+        return new ResponseEntity<>(userProfileDTO, HttpStatus.CREATED);
     }
 }

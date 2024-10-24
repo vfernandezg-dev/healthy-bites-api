@@ -18,12 +18,6 @@ public class Usuario {
 
     private String contrasena;
 
-    @Column(name = "fecha_creacion", nullable = false)
-    private LocalDateTime fechaCreacion;
-
-    @Column(name = "fecha_actualizacion", nullable = false)
-    private LocalDateTime fechaActualizacion;
-
     @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Cliente cliente;
 
@@ -31,9 +25,12 @@ public class Usuario {
     @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Nutricionista nutricionista;
 
+    @ManyToOne
+    @JoinColumn(name = "id_suscripcion", referencedColumnName = "id")
+    private Suscripcion suscripcion;
+
     // Relación muchos a uno con Role (para determinar si es cliente o nutricionista)
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_rol", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "FK_usuario_rol"))
+    @JoinColumn(name = "id_rol", referencedColumnName = "id")
     private Rol rol;
 }
