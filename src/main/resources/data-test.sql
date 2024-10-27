@@ -1,16 +1,16 @@
-INSERT INTO public.suscripcion (tipo_suscripcion, precio)
+INSERT INTO roles (nombre)
 VALUES
-    ('BASICO', 0.00),
-    ('PREMIUM', 5.99),
-    ('VIP', 9.99)
+    ('ADMIN'),
+    ('CLIENTE'),
+    ('NUTRICIONISTA')
     ON CONFLICT DO NOTHING;
 
-INSERT INTO public.cliente (nombre, apellido, sexo, edad, altura, peso, id_suscripcion, fecha_creacion, fecha_actualizacion)
+INSERT INTO public.cliente (nombre, apellido, sexo, edad, altura, peso, fecha_creacion, fecha_actualizacion)
 VALUES
-    ('Juan', 'Perez', 'M', 25, 1.75, 70, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('Maria', 'Lopez', 'F', 30, 1.60, 60, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('Pedro', 'Gomez', 'M', 35, 1.80, 80, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('Ana', 'Martinez', 'F', 40, 1.70, 65, 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    ('Juan', 'Perez', 'M', 25, 1.75, 70, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('Maria', 'Lopez', 'F', 30, 1.60, 60, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('Pedro', 'Gomez', 'M', 35, 1.80, 80, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('Ana', 'Martinez', 'F', 40, 1.70, 65, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
     ON CONFLICT DO NOTHING;
 
 INSERT INTO public.nutricionista (nombre, apellido, bio, fecha_creacion, fecha_actualizacion)

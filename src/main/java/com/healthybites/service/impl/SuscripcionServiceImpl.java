@@ -2,14 +2,13 @@ package com.healthybites.service.impl;
 
 import com.healthybites.dto.SuscripcionCreateUpdateDTO;
 import com.healthybites.dto.SuscripcionDetailsDTO;
-import com.healthybites.exception.BadRequestException;
 import com.healthybites.exception.ResourceNotFoundException;
 import com.healthybites.mapper.SuscripcionMapper;
-import com.healthybites.model.entity.Cliente;
 import com.healthybites.model.entity.Suscripcion;
-import com.healthybites.model.enums.TipoSuscripcion;
-import com.healthybites.repository.ClienteRepository;
+import com.healthybites.model.entity.Usuario;
+import com.healthybites.model.enums.EstadoPago;
 import com.healthybites.repository.SuscripcionRepository;
+import com.healthybites.repository.UsuarioRepository;
 import com.healthybites.service.SuscripcionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,7 +22,7 @@ import java.util.List;
 public class SuscripcionServiceImpl implements SuscripcionService {
 
     private final SuscripcionRepository suscripcionRepository;
-    private final ClienteRepository clienteRepository;
+    private final UsuarioRepository usuarioRepository;
     private final SuscripcionMapper suscripcionMapper;
 
     @Transactional(readOnly = true)
@@ -33,6 +32,26 @@ public class SuscripcionServiceImpl implements SuscripcionService {
         return suscripciones.stream()
                 .map(suscripcionMapper::toDTO)
                 .toList();
+    }
+
+    @Override
+    public SuscripcionDetailsDTO confirmSuscripcion(Integer id) {
+        Suscripcion suscripcion = suscripcionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Suscripcion con id " + id + " no encontrado"));
+
+        suscripcion.setEstadoPago(EstadoPago.PAGADO);
+
+        // Guarda la suscripcion
+        Suscripcion updatedSuscripcion = suscripcionRepository.save(suscripcion);
+        return suscripcionMapper.toDTO(updatedSuscripcion);
+    }
+
+    @Override
+    public SuscripcionDetailsDTO getSuscripcionId(Integer id) {
+        Suscripcion suscripcion = suscripcionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Suscripcion con id " + id + " no encontrado"));
+
+        return suscripcionMapper.toDTO(suscripcion);
     }
 
     @Transactional(readOnly = true)
@@ -47,6 +66,12 @@ public class SuscripcionServiceImpl implements SuscripcionService {
     public SuscripcionDetailsDTO create(SuscripcionCreateUpdateDTO suscripcionCreateUpdateDTO) {
         Suscripcion suscripcion = suscripcionMapper.toEntity(suscripcionCreateUpdateDTO);
 
+        // Recuperar el usuario del repositorio usando el id_cliente
+        Usuario usuario = usuarioRepository.findById(suscripcionCreateUpdateDTO.getUsuarioId())
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario con id " + suscripcionCreateUpdateDTO.getUsuarioId() + " no encontrado"));
+
+        suscripcion.setUsuario(usuario);
+
         switch (suscripcion.getTipoSuscripcion()) {
             case BASICO -> {
                 suscripcion.setPrecio(0.00);
@@ -59,30 +84,14 @@ public class SuscripcionServiceImpl implements SuscripcionService {
             }
         }
 
-        return suscripcionMapper.toDTO(suscripcionRepository.save(suscripcion));
-    }
+        suscripcion.setEstadoPago(EstadoPago.PENDIENTE);
+        suscripcion.setFechaCreacion(LocalDateTime.now());
 
-    @Override
-    public SuscripcionDetailsDTO update(Integer id, SuscripcionCreateUpdateDTO updateSuscripcionDTO) {
-        Suscripcion suscripcionFromDb = suscripcionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Suscripcion con id " + id + " no encontrado"));
+        // Guardar la suscripcion
+        Suscripcion suscripcionSaved = suscripcionRepository.save(suscripcion);
 
-
-        suscripcionFromDb.setTipoSuscripcion(updateSuscripcionDTO.getTipoSuscripcion());
-
-        switch (updateSuscripcionDTO.getTipoSuscripcion()) {
-            case BASICO -> {
-                suscripcionFromDb.setPrecio(0.00);
-            }
-            case PREMIUM -> {
-                suscripcionFromDb.setPrecio(5.99);
-            }
-            case VIP -> {
-                suscripcionFromDb.setPrecio(9.99);
-            }
-        }
-
-        return suscripcionMapper.toDTO(suscripcionRepository.save(suscripcionFromDb));
+        // Retornar la suscripcion guardada
+        return suscripcionMapper.toDTO(suscripcionSaved);
     }
 
     @Override

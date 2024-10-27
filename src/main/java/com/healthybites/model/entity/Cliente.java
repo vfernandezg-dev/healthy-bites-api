@@ -38,11 +38,6 @@ public class Cliente {
     @Column(name = "fecha_actualizacion", nullable = false)
     private LocalDateTime fechaActualizacion;
 
-    @ManyToOne
-    @JoinColumn(name = "id_suscripcion", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "FK_cliente_suscripcion"))
-    private Suscripcion suscripcion;
-
     @OneToOne
     @JoinColumn(name = "id_racha", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "FK_cliente_racha"))

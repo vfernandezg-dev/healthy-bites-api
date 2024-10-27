@@ -19,5 +19,4 @@ public class ClienteDetailsDTO {
 
     private double peso;
 
-    private String suscripcionTipo;
 }

@@ -19,9 +19,6 @@ public class ClienteMapper {
 
     public ClienteDetailsDTO toDTO(Cliente cliente) {
         ClienteDetailsDTO clienteDetailsDTO = modelMapper.map(cliente, ClienteDetailsDTO.class);
-
-        clienteDetailsDTO.setSuscripcionTipo(cliente.getSuscripcion().getTipoSuscripcion().toString());
-
         return clienteDetailsDTO;
     }
 

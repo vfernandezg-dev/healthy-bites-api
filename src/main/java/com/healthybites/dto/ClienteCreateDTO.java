@@ -28,6 +28,4 @@ public class ClienteCreateDTO {
     @NotNull(message = "El peso es obligatorio")
     private double peso;
 
-    private Integer suscripcionId;
-
 }

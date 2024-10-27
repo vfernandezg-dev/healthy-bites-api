@@ -1,5 +1,6 @@
 package com.healthybites.model.entity;
 
+import com.healthybites.model.enums.EstadoPago;
 import com.healthybites.model.enums.TipoSuscripcion;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -22,6 +23,15 @@ public class Suscripcion {
     @Column(name = "precio", nullable = false)
     private double precio;
 
-    @OneToMany(mappedBy = "suscripcion", cascade = CascadeType.ALL)
-    private List<Usuario> usuario;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado_pago")
+    private EstadoPago estadoPago;
+
+    @Column(name = "fecha_creacion", nullable = false)
+    private LocalDateTime fechaCreacion;
+
+    @OneToOne
+    @JoinColumn(name = "id_usuario", referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "FK_suscripcion_usuario"))
+    private Usuario usuario;
 }

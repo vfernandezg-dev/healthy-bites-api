@@ -25,8 +25,7 @@ public class Usuario {
     @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Nutricionista nutricionista;
 
-    @ManyToOne
-    @JoinColumn(name = "id_suscripcion", referencedColumnName = "id")
+    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Suscripcion suscripcion;
 
     // Relación muchos a uno con Role (para determinar si es cliente o nutricionista)

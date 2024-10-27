@@ -15,7 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/suscripcion")
-@PreAuthorize("hasAnyRole('CLIENTE','ADMIN')")
+@PreAuthorize("hasAnyRole('CLIENTE','ADMIN')")  // Restrict access to authenticated users
 public class SuscripcionController {
 
     private final SuscripcionService suscripcionService;
@@ -38,15 +38,15 @@ public class SuscripcionController {
         return new ResponseEntity<>(suscripcion, HttpStatus.OK);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<SuscripcionDetailsDTO> update(@PathVariable Integer id, @Valid @RequestBody SuscripcionCreateUpdateDTO suscripcionFormDTO) {
-        SuscripcionDetailsDTO updatedSuscripcion = suscripcionService.update(id, suscripcionFormDTO);
-        return new ResponseEntity<>(updatedSuscripcion, HttpStatus.OK);
-    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         suscripcionService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PutMapping("/confirm/{id}")
+    public ResponseEntity<SuscripcionDetailsDTO> confirmPurchase(@PathVariable Integer id) {
+        SuscripcionDetailsDTO confirmedPurchase = suscripcionService.confirmSuscripcion(id);
+        return ResponseEntity.ok(confirmedPurchase);
     }
 }

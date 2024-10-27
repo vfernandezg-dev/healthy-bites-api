@@ -51,12 +51,6 @@ public class AdminClienteServiceImpl implements AdminClienteService {
         cliente.setFechaCreacion(LocalDateTime.now());
         cliente.setFechaActualizacion(LocalDateTime.now());
 
-        if (clienteCreateDTO.getSuscripcionId() != null) {
-            Suscripcion suscripcion = suscripcionRepository.findById(clienteCreateDTO.getSuscripcionId())
-                    .orElseThrow(() -> new RuntimeException("La Suscripción con id " + clienteCreateDTO.getSuscripcionId() + " no existe"));
-            cliente.setSuscripcion(suscripcion);
-        }
-
         Cliente savedCliente = clienteRepository.save(cliente);
 
         return clienteMapper.toDTO(savedCliente);
@@ -74,12 +68,6 @@ public class AdminClienteServiceImpl implements AdminClienteService {
         cliente.setAltura(updatedClienteCreateDTO.getAltura());
         cliente.setPeso(updatedClienteCreateDTO.getPeso());
         cliente.setFechaActualizacion(LocalDateTime.now());
-
-        if (updatedClienteCreateDTO.getSuscripcionId() != null) {
-            Suscripcion suscripcion = suscripcionRepository.findById(updatedClienteCreateDTO.getSuscripcionId())
-                    .orElseThrow(() -> new RuntimeException("La Suscripción con id " + updatedClienteCreateDTO.getSuscripcionId() + " no existe"));
-            cliente.setSuscripcion(suscripcion);
-        }
 
         Cliente savedCliente = clienteRepository.save(cliente);
 
