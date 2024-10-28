@@ -53,6 +53,12 @@ public class Cliente {
     private List<AccesoPlan> planesAlimenticios;
 
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
+    private List<Grupo> grupos;
+
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
+    private List<Unirse> unirse;
+
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
     private List<Meta> meta;
 
     @OneToOne

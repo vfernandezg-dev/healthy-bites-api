@@ -3,6 +3,7 @@ package com.healthybites.api;
 import com.healthybites.dto.PaymentCaptureResponse;
 import com.healthybites.dto.PaymentOrderResponse;
 import com.healthybites.service.CheckoutService;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +24,7 @@ public class CheckoutController {
             @RequestParam String returnUrl,
             @RequestParam String cancelUrl,
             @RequestParam(required = false, defaultValue = "paypal") String paymentProvider
-    ) {
+    ) throws MessagingException {
         PaymentOrderResponse response = checkoutService.createPayment(suscripcionId, returnUrl, cancelUrl);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -32,7 +33,7 @@ public class CheckoutController {
     public ResponseEntity<PaymentCaptureResponse> capturePayment(
             @RequestParam String orderId,
             @RequestParam(required = false, defaultValue = "paypal") String paymentProvider
-    ) {
+    ) throws MessagingException {
         PaymentCaptureResponse response = checkoutService.capturePayment(orderId);
 
         if (response.isCompleted()) {

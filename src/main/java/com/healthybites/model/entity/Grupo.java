@@ -17,6 +17,9 @@ public class Grupo {
     @Column(name = "nombre", nullable = false)
     private String nombre;
 
+    @Column(name = "cantidad_miembros", nullable = false)
+    private int cantidadMiembros;
+
     @Column(name = "es_privado", nullable = false)
     private boolean esPrivado;
 
@@ -26,9 +29,11 @@ public class Grupo {
     @Column(name = "fecha_actualizacion", nullable = false)
     private LocalDateTime fechaActualizacion;
 
-    /*@OneToMany(mappedBy = "grupo", cascade = CascadeType.ALL)
-    private List<Cliente> clientes;*/
-
     @OneToMany(mappedBy = "grupo", cascade = CascadeType.ALL)
     private List<Publicacion> publicaciones;
+
+    @ManyToOne
+    @JoinColumn(name = "id_cliente", referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "FK_grupo_cliente"))
+    private Cliente cliente;
 }

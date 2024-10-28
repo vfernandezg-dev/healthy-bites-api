@@ -37,11 +37,4 @@ VALUES
     ('DEFICIT', 'Plan de desintoxicación de 7 días basado en jugos y alimentos naturales', 7, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 4)
     ON CONFLICT DO NOTHING;
 
-INSERT INTO public.grupos (nombre, es_privado, fecha_creacion, fecha_actualizacion)
-VALUES
-    ('Grupo de pérdida de peso', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('Grupo de corredores', false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('Grupo de alimentación saludable', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-    ON CONFLICT DO NOTHING;
-
 
