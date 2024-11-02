@@ -8,7 +8,7 @@ import java.util.List;
 public interface ComentarioService {
     List<ComentarioDTO> getAll(Integer publicacionId);
     ComentarioDTO findByIdAndPublicacionId(Integer comentarioId, Integer publicacionId);
-    ComentarioDTO create(ComentarioCreateDTO comentarioCreateDTO);
+    ComentarioDTO create(Integer publicacionId, ComentarioCreateDTO comentarioCreateDTO);
     ComentarioDTO update(Integer comentarioId, Integer publicacionId, ComentarioCreateDTO updatedComentarioDTO);
     void delete(Integer comentarioId, Integer publicacionId);
 }

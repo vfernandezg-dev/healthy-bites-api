@@ -19,14 +19,14 @@ public class AuthController {
     private final UsuarioService usuarioService;
 
     // Registro de un cliente
-    @PostMapping("/register/client")
+    @PostMapping("/register/cliente")
     public ResponseEntity<UserProfileDTO> registerClient(@Valid @RequestBody UserRegistrationDTO userRegistrationDTO) {
         UserProfileDTO userProfileDTO = usuarioService.registrarCliente(userRegistrationDTO);
         return new ResponseEntity<>(userProfileDTO, HttpStatus.CREATED);
     }
 
     // Registro de un nutricionista
-    @PostMapping("/register/nutritionist")
+    @PostMapping("/register/nutricionista")
     public ResponseEntity<UserProfileDTO> registerNutritionist(@Valid @RequestBody UserRegistrationDTO userRegistrationDTO) {
         UserProfileDTO userProfileDTO = usuarioService.registrarNutricionista(userRegistrationDTO);
         return new ResponseEntity<>(userProfileDTO, HttpStatus.CREATED);

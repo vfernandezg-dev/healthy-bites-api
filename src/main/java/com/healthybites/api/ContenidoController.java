@@ -2,7 +2,6 @@ package com.healthybites.api;
 
 import com.healthybites.dto.ContenidoCreateUpdateDTO;
 import com.healthybites.dto.ContenidoDetailsDTO;
-import com.healthybites.model.entity.Contenido;
 import com.healthybites.service.ContenidoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,9 +14,9 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/admin/contenido")
+@RequestMapping("/contenido")
 @PreAuthorize("hasAnyRole('NUTRICIONISTA','ADMIN')")
-public class AdminContenidoController {
+public class ContenidoController {
 
     private final ContenidoService contenidoService;
 

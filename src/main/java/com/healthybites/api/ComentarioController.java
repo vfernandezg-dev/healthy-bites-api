@@ -13,37 +13,38 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/comentario")
+//@RequestMapping("/comentario")
+@RequestMapping("/publicacion/{publicacionId}/comentario")
 @PreAuthorize("hasRole('CLIENTE')")
 public class ComentarioController {
 
     private final ComentarioService comentarioService;
 
-    @GetMapping("/publicacion/{id}")
-    public ResponseEntity<List<ComentarioDTO>> getAll(@PathVariable Integer id) {
-        List<ComentarioDTO> comentarios = comentarioService.getAll(id);
+    @GetMapping
+    public ResponseEntity<List<ComentarioDTO>> getAll(@PathVariable Integer publicacionId) {
+        List<ComentarioDTO> comentarios = comentarioService.getAll(publicacionId);
         return new ResponseEntity<>(comentarios, HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<ComentarioDTO> create(@RequestBody ComentarioCreateDTO comentarioCreateDTO) {
-        ComentarioDTO comentarioDTO = comentarioService.create(comentarioCreateDTO);
+    public ResponseEntity<ComentarioDTO> create(@PathVariable Integer publicacionId, @RequestBody ComentarioCreateDTO comentarioCreateDTO) {
+        ComentarioDTO comentarioDTO = comentarioService.create(publicacionId, comentarioCreateDTO);
         return new ResponseEntity<>(comentarioDTO, HttpStatus.CREATED);
     }
 
-    @GetMapping("/{comentarioId}/publicacion/{publicacionId}")
+    @GetMapping("/{comentarioId}")
     public ResponseEntity<ComentarioDTO> getById(@PathVariable Integer publicacionId, @PathVariable Integer comentarioId) {
         ComentarioDTO comentario = comentarioService.findByIdAndPublicacionId(comentarioId, publicacionId);
         return new ResponseEntity<>(comentario, HttpStatus.OK);
     }
 
-    @PutMapping("/{comentarioId}/publicacion/{publicacionId}")
+    @PutMapping("/{comentarioId}")
     public ResponseEntity<ComentarioDTO> update(@PathVariable Integer publicacionId, @PathVariable Integer comentarioId, @RequestBody ComentarioCreateDTO updatedComentarioDTO) {
         ComentarioDTO comentario = comentarioService.update(comentarioId, publicacionId, updatedComentarioDTO);
         return new ResponseEntity<>(comentario, HttpStatus.OK);
     }
 
-    @DeleteMapping("/{comentarioId}/publicacion/{publicacionId}")
+    @DeleteMapping("/{comentarioId}")
     public ResponseEntity<Void> delete(@PathVariable Integer publicacionId, @PathVariable Integer comentarioId) {
         comentarioService.delete(comentarioId, publicacionId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

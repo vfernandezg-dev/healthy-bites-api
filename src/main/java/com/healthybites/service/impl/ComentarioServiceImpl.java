@@ -43,12 +43,12 @@ public class ComentarioServiceImpl implements ComentarioService {
     }
 
     @Override
-    public ComentarioDTO create(ComentarioCreateDTO comentarioCreateDTO) {
+    public ComentarioDTO create(Integer publicacionId, ComentarioCreateDTO comentarioCreateDTO) {
         Cliente cliente = clienteRepository.findById(comentarioCreateDTO.getClienteId())
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente con id " + comentarioCreateDTO.getClienteId() + " no encontrado"));
 
-        Publicacion publicacion = publicacionRepository.findById(comentarioCreateDTO.getPublicacionId())
-                .orElseThrow(() -> new ResourceNotFoundException("Publicacion con id " + comentarioCreateDTO.getPublicacionId() + " no encontrado"));
+        Publicacion publicacion = publicacionRepository.findById(publicacionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Publicacion con id " + publicacionId + " no encontrado"));
 
         Comentario comentario = comentarioMapper.toEntity(comentarioCreateDTO);
 
