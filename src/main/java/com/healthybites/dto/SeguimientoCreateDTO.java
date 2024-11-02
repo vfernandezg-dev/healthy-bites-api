@@ -2,17 +2,12 @@ package com.healthybites.dto;
 
 import lombok.Data;
 
-import java.time.LocalDateTime;
-
 @Data
-public class SeguimientoCreateUpdateDTO {
-    private Integer id;
-
+public class SeguimientoCreateDTO {
     private String fecha;
 
     private double pesoDelDia;
 
     private String observaciones;
-
 
 }

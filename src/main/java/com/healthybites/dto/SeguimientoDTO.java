@@ -5,7 +5,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class SeguimientoDetailsDTO {
+public class SeguimientoDTO {
     private Integer id;
 
     private LocalDateTime fecha;
@@ -14,5 +14,6 @@ public class SeguimientoDetailsDTO {
 
     private String observaciones;
 
+    private String nombreMeta;
 
 }

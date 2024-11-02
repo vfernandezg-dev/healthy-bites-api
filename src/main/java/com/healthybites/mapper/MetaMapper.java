@@ -2,14 +2,10 @@ package com.healthybites.mapper;
 
 import com.healthybites.dto.MetaCreateDTO;
 import com.healthybites.dto.MetaDTO;
-import com.healthybites.dto.SeguimientoDetailsDTO;
 import com.healthybites.model.entity.Meta;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.stereotype.Component;
-
-import java.util.Collections;
-import java.util.stream.Collectors;
 
 @Component
 public class MetaMapper {

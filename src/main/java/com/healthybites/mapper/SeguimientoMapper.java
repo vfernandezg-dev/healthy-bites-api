@@ -1,7 +1,7 @@
 package com.healthybites.mapper;
 
-import com.healthybites.dto.SeguimientoCreateUpdateDTO;
-import com.healthybites.dto.SeguimientoDetailsDTO;
+import com.healthybites.dto.SeguimientoCreateDTO;
+import com.healthybites.dto.SeguimientoDTO;
 import com.healthybites.model.entity.Seguimiento;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
@@ -23,17 +23,19 @@ public class SeguimientoMapper {
         this.modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
     }
 
-    public SeguimientoDetailsDTO toDTO(Seguimiento seguimiento) {
-        SeguimientoDetailsDTO seguimientoDetailsDTO = modelMapper.map(seguimiento, SeguimientoDetailsDTO.class);
+    public SeguimientoDTO toDTO(Seguimiento seguimiento) {
+        SeguimientoDTO seguimientoDetailsDTO = modelMapper.map(seguimiento, SeguimientoDTO.class);
+
+        seguimientoDetailsDTO.setNombreMeta(seguimiento.getMeta().getNombre());
 
         return seguimientoDetailsDTO;
     }
 
-    public Seguimiento toEntity(SeguimientoCreateUpdateDTO seguimientoCreateUpdateDTO) {
-        Seguimiento seguimiento = modelMapper.map(seguimientoCreateUpdateDTO, Seguimiento.class);
+    public Seguimiento toEntity(SeguimientoCreateDTO seguimientoCreateDTO) {
+        Seguimiento seguimiento = modelMapper.map(seguimientoCreateDTO, Seguimiento.class);
 
         // Convertir el String de fecha a LocalDate
-        LocalDate fecha = LocalDate.parse(seguimientoCreateUpdateDTO.getFecha(), formatter);
+        LocalDate fecha = LocalDate.parse(seguimientoCreateDTO.getFecha(), formatter);
 
         // Obtener la hora actual del sistema
         LocalTime horaActual = LocalTime.now();
@@ -44,7 +46,7 @@ public class SeguimientoMapper {
         return seguimiento;
     }
 
-    public SeguimientoCreateUpdateDTO toCreateUpdateDTO(Seguimiento seguimiento) {
-        return modelMapper.map(seguimiento, SeguimientoCreateUpdateDTO.class);
+    public SeguimientoCreateDTO toCreateUpdateDTO(Seguimiento seguimiento) {
+        return modelMapper.map(seguimiento, SeguimientoCreateDTO.class);
     }
 }
