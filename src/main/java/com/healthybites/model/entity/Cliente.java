@@ -61,6 +61,9 @@ public class Cliente {
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
     private List<Meta> meta;
 
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
+    private List<Publicacion> publicaciones;
+
     @OneToOne
     @JoinColumn(name = "id_usuario", referencedColumnName = "id")
     private Usuario usuario;

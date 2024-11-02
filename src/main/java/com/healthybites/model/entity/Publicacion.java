@@ -30,12 +30,10 @@ public class Publicacion {
     @OneToMany(mappedBy = "publicacion", cascade = CascadeType.ALL)
     private List<Comentario> comentarios;
 
-    /*@ManyToOne
+    @ManyToOne
     @JoinColumn(name = "id_cliente", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "FK_publicacion_cliente"))
-    private Cliente cliente;*/
-
-
+    private Cliente cliente;
 
     @ManyToOne
     @JoinColumn(name = "id_grupo", referencedColumnName = "id",
