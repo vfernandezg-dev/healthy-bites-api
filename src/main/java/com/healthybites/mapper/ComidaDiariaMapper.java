@@ -1,5 +1,6 @@
 package com.healthybites.mapper;
 
+import com.healthybites.dto.ComidaDiariaCreateDTO;
 import com.healthybites.dto.ComidaDiariaDTO;
 import com.healthybites.dto.ContenidoCreateUpdateDTO;
 import com.healthybites.model.entity.ComidaDiaria;
@@ -18,10 +19,14 @@ public class ComidaDiariaMapper {
     }
 
     public ComidaDiariaDTO toDTO(ComidaDiaria comidaDiaria) {
-        return modelMapper.map(comidaDiaria, ComidaDiariaDTO.class);
+        ComidaDiariaDTO comidaDiariaDTO = modelMapper.map(comidaDiaria, ComidaDiariaDTO.class);
+
+        comidaDiariaDTO.setNombrePlanAlimenticio(comidaDiaria.getPlanAlimenticio().getPlanObjetivo());
+
+        return comidaDiariaDTO;
     }
 
-    public ComidaDiaria toEntity(ComidaDiariaDTO comidaDiariaDTO) {
-        return modelMapper.map(comidaDiariaDTO, ComidaDiaria.class);
+    public ComidaDiaria toEntity(ComidaDiariaCreateDTO comidaDiariaCreateDTO) {
+        return modelMapper.map(comidaDiariaCreateDTO, ComidaDiaria.class);
     }
 }

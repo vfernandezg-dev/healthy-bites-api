@@ -1,15 +1,11 @@
 package com.healthybites.service.impl;
 
-import com.healthybites.dto.ComidaDiariaDTO;
 import com.healthybites.dto.PlanAlimenticioCreateDTO;
 import com.healthybites.dto.PlanAlimenticioDTO;
 import com.healthybites.exception.ResourceNotFoundException;
-import com.healthybites.mapper.ComidaDiariaMapper;
 import com.healthybites.mapper.PlanAlimenticioMapper;
-import com.healthybites.model.entity.ComidaDiaria;
 import com.healthybites.model.entity.Nutricionista;
 import com.healthybites.model.entity.PlanAlimenticio;
-import com.healthybites.repository.ComidaDiariaRepository;
 import com.healthybites.repository.NutricionistaRepository;
 import com.healthybites.repository.PlanAlimenticioRepository;
 import com.healthybites.service.PlanAlimenticioService;
@@ -27,9 +23,7 @@ public class PlanAlimenticioServiceImpl implements PlanAlimenticioService {
 
     private final PlanAlimenticioRepository planAlimenticioRepository;
     private final NutricionistaRepository nutricionistaRepository;
-    private final ComidaDiariaRepository comidaDiariaRepository;
     private final PlanAlimenticioMapper planAlimenticioMapper;
-    private final ComidaDiariaMapper comidaDiariaMapper;
 
     @Override
     public List<PlanAlimenticioDTO> getAll(Integer id) {

@@ -7,11 +7,6 @@ import com.healthybites.dto.PlanAlimenticioDTO;
 import java.util.List;
 
 public interface PlanAlimenticioService {
-    /*List<PlanAlimenticioDTO> getAll();
-    PlanAlimenticioDTO findByIdNAndNutricionistaId(Integer planId, Integer nutricionistaId);
-    PlanAlimenticioDTO create(PlanAlimenticioCreateDTO planAlimenticioCreateDTO);
-    PlanAlimenticioDTO update(Integer id, PlanAlimenticioCreateDTO updatedPlanAlimenticioDTO);
-    void delete(Integer id);*/
 
     List<PlanAlimenticioDTO> getAll(Integer id);
     PlanAlimenticioDTO findByIdAndNutricionistaId(Integer planId, Integer nutricionistaId);

@@ -1,6 +1,5 @@
 package com.healthybites.api;
 
-import com.healthybites.dto.ComidaDiariaDTO;
 import com.healthybites.dto.PlanAlimenticioCreateDTO;
 import com.healthybites.dto.PlanAlimenticioDTO;
 import com.healthybites.service.PlanAlimenticioService;
