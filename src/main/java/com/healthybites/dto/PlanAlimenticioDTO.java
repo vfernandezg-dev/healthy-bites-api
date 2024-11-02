@@ -13,6 +13,5 @@ public class PlanAlimenticioDTO {
     private int duracionDias;
     private boolean esGratis;
     private String nutricionistaNombre;
-    private List<ComidaDiariaDTO> comidasDiarias;
     private int CaloriasTotales;
 }

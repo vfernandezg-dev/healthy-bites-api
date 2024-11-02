@@ -4,6 +4,7 @@ import com.healthybites.dto.ComidaDiariaDTO;
 import com.healthybites.dto.ContenidoCreateUpdateDTO;
 import com.healthybites.dto.PlanAlimenticioCreateDTO;
 import com.healthybites.dto.PlanAlimenticioDTO;
+import com.healthybites.model.entity.ComidaDiaria;
 import com.healthybites.model.entity.PlanAlimenticio;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
@@ -25,8 +26,7 @@ public class PlanAlimenticioMapper {
         PlanAlimenticioDTO planAlimenticioDTO = modelMapper.map(planAlimenticio, PlanAlimenticioDTO.class);
 
         planAlimenticioDTO.setNutricionistaNombre(planAlimenticio.getNutricionista().getNombre() + " " + planAlimenticio.getNutricionista().getApellido());
-        planAlimenticioDTO.setCaloriasTotales(planAlimenticio.getComidasDiarias().stream().mapToInt(comidaDiaria -> comidaDiaria.getCalorias()).sum());
-
+        planAlimenticioDTO.setCaloriasTotales(planAlimenticio.getComidasDiarias().stream().mapToInt(ComidaDiaria::getCalorias).sum());
 
         return planAlimenticioDTO;
     }

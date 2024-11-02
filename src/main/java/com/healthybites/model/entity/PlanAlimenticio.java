@@ -35,7 +35,7 @@ public class PlanAlimenticio {
     @Column(name = "fecha_actualizacion", nullable = false)
     private LocalDateTime fechaActualizacion;
 
-    @OneToMany(mappedBy = "planAlimenticio", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "planAlimenticio", cascade = CascadeType.ALL)
     private List<ComidaDiaria> comidasDiarias;
 
     @ManyToOne

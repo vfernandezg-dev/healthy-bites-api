@@ -32,13 +32,75 @@ public class PlanAlimenticioServiceImpl implements PlanAlimenticioService {
     private final ComidaDiariaMapper comidaDiariaMapper;
 
     @Override
-    public List<PlanAlimenticioDTO> getAll() {
-        List<PlanAlimenticio> planAlimenticios = planAlimenticioRepository.findAll();
+    public List<PlanAlimenticioDTO> getAll(Integer id) {
+        List<PlanAlimenticio> planAlimenticios = planAlimenticioRepository.findByNutricionistaId(id);
+
         return planAlimenticios.stream()
                 .map(planAlimenticioMapper::toDTO)
                 .toList();
     }
 
+    @Override
+    public PlanAlimenticioDTO findByIdAndNutricionistaId(Integer planId, Integer nutricionistaId) {
+        PlanAlimenticio planAlimenticio = planAlimenticioRepository.findByIdAndNutricionistaId(planId, nutricionistaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Plan alimenticio con id " + planId + " y nutricionistaId " + nutricionistaId + " no encontrado"));
+        return planAlimenticioMapper.toDTO(planAlimenticio);
+    }
+
+    @Override
+    public PlanAlimenticioDTO create(PlanAlimenticioCreateDTO planAlimenticioCreateDTO) {
+        Nutricionista nutricionista = nutricionistaRepository.findById(planAlimenticioCreateDTO.getNutricionistaId())
+                .orElseThrow(() -> new ResourceNotFoundException("Nutricionista con id " + planAlimenticioCreateDTO.getNutricionistaId() + " no encontrado"));
+
+        // Mapear el DTO a la entidad PlanAlimenticio
+        PlanAlimenticio planAlimenticio = planAlimenticioMapper.toEntity(planAlimenticioCreateDTO);
+
+        // Setear los campos del plan
+        planAlimenticio.setPlanObjetivo(planAlimenticioCreateDTO.getPlanObjetivo());
+        planAlimenticio.setDescripcion(planAlimenticioCreateDTO.getDescripcion());
+        planAlimenticio.setDuracionDias(planAlimenticioCreateDTO.getDuracionDias());
+        planAlimenticio.setEsGratis(planAlimenticioCreateDTO.isEsGratis());
+        planAlimenticio.setNutricionista(nutricionista);
+
+        // Seteamos las calorias totales
+        planAlimenticio.setComidasDiarias(new ArrayList<>()); // Plan sin comidas inicialmente
+
+
+        // Seteamos fechas
+        planAlimenticio.setFechaCreacion(LocalDateTime.now());
+        planAlimenticio.setFechaActualizacion(LocalDateTime.now());
+
+        // Guardamos en la BD y devolvemos el DTO
+        return planAlimenticioMapper.toDTO(planAlimenticioRepository.save(planAlimenticio));
+    }
+
+    @Override
+    public PlanAlimenticioDTO update(Integer planId, Integer nutricionistaId, PlanAlimenticioCreateDTO updatedPlanAlimenticioDTO) {
+        PlanAlimenticio planAlimenticioFromDb = planAlimenticioRepository.findByIdAndNutricionistaId(planId, nutricionistaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Plan alimenticio con id " + planId + " y nutricionistaId " + nutricionistaId + " no encontrado"));
+
+        planAlimenticioFromDb.setPlanObjetivo(updatedPlanAlimenticioDTO.getPlanObjetivo());
+        planAlimenticioFromDb.setDescripcion(updatedPlanAlimenticioDTO.getDescripcion());
+        planAlimenticioFromDb.setDuracionDias(updatedPlanAlimenticioDTO.getDuracionDias());
+        planAlimenticioFromDb.setEsGratis(updatedPlanAlimenticioDTO.isEsGratis());
+
+        planAlimenticioFromDb.setFechaActualizacion(LocalDateTime.now());
+
+        PlanAlimenticio updatedPlanAlimenticio = planAlimenticioRepository.save(planAlimenticioFromDb);
+
+        return planAlimenticioMapper.toDTO(updatedPlanAlimenticio);
+    }
+
+    @Override
+    public void delete(Integer planId, Integer nutricionistaId) {
+        PlanAlimenticio planAlimenticio = planAlimenticioRepository.findByIdAndNutricionistaId(planId, nutricionistaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Plan alimenticio con id " + planId + " y nutricionistaId " + nutricionistaId + " no encontrado"));
+        planAlimenticioRepository.delete(planAlimenticio);
+    }
+
+    //-----------------------------------------------------------------------------------------------------------
+
+    /*
     @Override
     public List<ComidaDiariaDTO> getAllComidasByPlanId(Integer planId) {
         PlanAlimenticio planAlimenticio = planAlimenticioRepository.findById(planId)
@@ -59,32 +121,6 @@ public class PlanAlimenticioServiceImpl implements PlanAlimenticioService {
                 .orElseThrow(() -> new ResourceNotFoundException("Plan alimenticio con id " + id + " no encontrado"));
         return planAlimenticioMapper.toDTO(planAlimenticio);
     }
-
-    @Override
-    public PlanAlimenticioDTO create(PlanAlimenticioCreateDTO planAlimenticioCreateDTO) {
-        // Buscamos el nutricionista relacionado
-        Nutricionista nutricionista = nutricionistaRepository.findById(planAlimenticioCreateDTO.getNutricionistaId())
-                .orElseThrow(() -> new ResourceNotFoundException("Nutricionista con id " + planAlimenticioCreateDTO.getNutricionistaId() + " no encontrado"));
-
-        // Mapear el DTO a la entidad PlanAlimenticio
-        PlanAlimenticio planAlimenticio = planAlimenticioMapper.toEntity(planAlimenticioCreateDTO);
-
-        // Setear los campos del plan
-        planAlimenticio.setPlanObjetivo(planAlimenticioCreateDTO.getPlanObjetivo());
-        planAlimenticio.setDescripcion(planAlimenticioCreateDTO.getDescripcion());
-        planAlimenticio.setDuracionDias(planAlimenticioCreateDTO.getDuracionDias());
-        planAlimenticio.setEsGratis(planAlimenticioCreateDTO.isEsGratis());
-        planAlimenticio.setNutricionista(nutricionista);
-        planAlimenticio.setComidasDiarias(new ArrayList<>()); // Plan sin comidas inicialmente
-
-        // Seteamos fechas
-        planAlimenticio.setFechaCreacion(LocalDateTime.now());
-        planAlimenticio.setFechaActualizacion(LocalDateTime.now());
-
-        // Guardamos en la BD y devolvemos el DTO
-        return planAlimenticioMapper.toDTO(planAlimenticioRepository.save(planAlimenticio));
-    }
-
 
     @Override
     public ComidaDiariaDTO addComidaToPlan(Integer planId, ComidaDiariaDTO comidaDiariaDTO) {
@@ -108,8 +144,6 @@ public class PlanAlimenticioServiceImpl implements PlanAlimenticioService {
         return comidaDiariaMapper.toDTO(comidaDiaria);
     }
 
-
-
     @Override
     public ComidaDiariaDTO getComidaById(Integer planId, Integer comidaId) {
         PlanAlimenticio planAlimenticio = planAlimenticioRepository.findById(planId)
@@ -121,27 +155,6 @@ public class PlanAlimenticioServiceImpl implements PlanAlimenticioService {
                 .orElseThrow(() -> new ResourceNotFoundException("Comida diaria con id " + comidaId + " no encontrada"));
 
         return comidaDiariaMapper.toDTO(comidaDiaria);
-    }
-
-    @Override
-    public PlanAlimenticioDTO update(Integer id, PlanAlimenticioCreateDTO updatedPlanAlimenticioDTO) {
-        PlanAlimenticio planAlimenticioFromDb = planAlimenticioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Plan alimenticio con id " + id + " no encontrado"));
-
-        Nutricionista nutricionista = nutricionistaRepository.findById(updatedPlanAlimenticioDTO.getNutricionistaId())
-                .orElseThrow(() -> new ResourceNotFoundException("Nutricionista con id " + updatedPlanAlimenticioDTO.getNutricionistaId() + " no encontrado"));
-
-        planAlimenticioFromDb.setPlanObjetivo(updatedPlanAlimenticioDTO.getPlanObjetivo());
-        planAlimenticioFromDb.setDescripcion(updatedPlanAlimenticioDTO.getDescripcion());
-        planAlimenticioFromDb.setDuracionDias(updatedPlanAlimenticioDTO.getDuracionDias());
-        planAlimenticioFromDb.setEsGratis(updatedPlanAlimenticioDTO.isEsGratis());
-        planAlimenticioFromDb.setNutricionista(nutricionista);
-
-        planAlimenticioFromDb.setFechaActualizacion(LocalDateTime.now());
-
-        PlanAlimenticio updatedPlanAlimenticio = planAlimenticioRepository.save(planAlimenticioFromDb);
-
-        return planAlimenticioMapper.toDTO(updatedPlanAlimenticio);
     }
 
     @Override
@@ -172,14 +185,6 @@ public class PlanAlimenticioServiceImpl implements PlanAlimenticioService {
         return comidaDiariaMapper.toDTO(comidaDiaria);
     }
 
-
-    @Override
-    public void delete(Integer id) {
-        PlanAlimenticio planAlimenticio = planAlimenticioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Plan alimenticio con id " + id + " no encontrado"));
-        planAlimenticioRepository.delete(planAlimenticio);
-    }
-
     @Override
     public void deleteComida(Integer planId, Integer comidaId) {
         // Buscar el plan alimenticio por su id
@@ -204,5 +209,6 @@ public class PlanAlimenticioServiceImpl implements PlanAlimenticioService {
         // Eliminar la comida de la base de datos
         comidaDiariaRepository.delete(comidaDiaria);
     }
+    */
 
 }
