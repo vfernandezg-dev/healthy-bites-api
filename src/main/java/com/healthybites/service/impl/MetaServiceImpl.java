@@ -30,10 +30,66 @@ public class MetaServiceImpl implements MetaService {
 
     private final MetaRepository metaRepository;
     private final ClienteRepository clienteRepository;
-    private final SeguimientoRepository seguimientoRepository;
     private final MetaMapper metaMapper;
-    private final SeguimientoMapper seguimientoMapper;
 
+    @Override
+    public List<MetaDTO> getAll(Integer id) {
+        List<Meta> metas = metaRepository.findByClienteId(id);
+
+        return metas.stream()
+                .map(metaMapper::toDTO)
+                .toList();
+    }
+
+    @Override
+    public MetaDTO findByIdAndClienteId(Integer metaId, Integer clienteId) {
+        Meta meta = metaRepository.findByIdAndClienteId(metaId, clienteId)
+                .orElseThrow(() -> new ResourceNotFoundException("Meta con id " + metaId + " y cliente con id " + clienteId + " no encontrada"));
+        return metaMapper.toDTO(meta);
+    }
+
+    @Override
+    public MetaDTO create(MetaCreateDTO metaCreateDTO) {
+        Cliente cliente = clienteRepository.findById(metaCreateDTO.getClienteId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente con id " + metaCreateDTO.getClienteId() + " no encontrado"));
+
+        Meta meta = metaMapper.toEntity(metaCreateDTO);
+        meta.setCliente(cliente);
+
+        meta.setNombre(metaCreateDTO.getNombre());
+        meta.setDescripcion(metaCreateDTO.getDescripcion());
+        meta.setPesoObjetivo(metaCreateDTO.getPesoObjetivo());
+
+        meta.setFechaCreacion(LocalDateTime.now());
+        meta.setFechaActualizacion(LocalDateTime.now());
+
+        return metaMapper.toDTO(metaRepository.save(meta));
+    }
+
+    @Override
+    public MetaDTO update(Integer metaId, Integer clienteId, MetaCreateDTO updatedMetaDTO) {
+        Meta meta = metaRepository.findByIdAndClienteId(metaId, clienteId)
+                .orElseThrow(() -> new ResourceNotFoundException("Meta con id " + metaId + " y cliente con id " + clienteId + " no encontrada"));
+
+        meta.setNombre(updatedMetaDTO.getNombre());
+        meta.setDescripcion(updatedMetaDTO.getDescripcion());
+        meta.setPesoObjetivo(updatedMetaDTO.getPesoObjetivo());
+
+        meta.setFechaActualizacion(LocalDateTime.now());
+
+        return metaMapper.toDTO(metaRepository.save(meta));
+    }
+
+    @Override
+    public void delete(Integer metaId, Integer clienteId) {
+        Meta meta = metaRepository.findByIdAndClienteId(metaId, clienteId)
+                .orElseThrow(() -> new ResourceNotFoundException("Meta con id " + metaId + " y cliente con id " + clienteId + " no encontrada"));
+        metaRepository.delete(meta);
+    }
+
+    //----------------------------------------------------------------------------------------------
+
+    /*
     @Override
     public List<MetaDTO> getAll() {
         List<Meta> metas = metaRepository.findAll();
@@ -41,21 +97,6 @@ public class MetaServiceImpl implements MetaService {
                 .map(metaMapper::toDTO)
                 .toList();
     }
-
-    @Override
-    public List<SeguimientoDetailsDTO> getAllSeguimientosByMetaId(Integer metaId) {
-        Meta meta = metaRepository.findById(metaId)
-                .orElseThrow(() -> new ResourceNotFoundException("Meta con id " + metaId + " no encontrada"));
-
-        // Recuperar todos los seguimientos asociados a la meta
-        List<Seguimiento> seguimientos = seguimientoRepository.findByMetaId(metaId);
-
-        // Mapear a DTOs
-        return seguimientos.stream()
-                .map(seguimientoMapper::toDTO)
-                .toList();
-    }
-
 
     @Override
     public MetaDTO findById(Integer id) {
@@ -75,6 +116,48 @@ public class MetaServiceImpl implements MetaService {
         meta.setFechaActualizacion(LocalDateTime.now());
 
         return metaMapper.toDTO(metaRepository.save(meta));
+    }
+
+    @Override
+    public MetaDTO update(Integer id, MetaCreateDTO updatedMetaDTO) {
+        Meta meta = metaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Meta con id " + id + " no encontrada"));
+
+        Cliente cliente = clienteRepository.findById(updatedMetaDTO.getClienteId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente con id " + updatedMetaDTO.getClienteId() + " no encontrado"));
+
+        meta.setCliente(cliente);
+        meta.setNombre(updatedMetaDTO.getNombre());
+        meta.setDescripcion(updatedMetaDTO.getDescripcion());
+        meta.setPesoObjetivo(updatedMetaDTO.getPesoObjetivo());
+
+        meta.setFechaActualizacion(LocalDateTime.now());
+
+        return metaMapper.toDTO(metaRepository.save(meta));
+    }
+
+    @Override
+    public void delete(Integer id) {
+        Meta meta = metaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Meta con id " + id + " no encontrada"));
+        metaRepository.delete(meta);
+    }*/
+
+    //----------------------------------------------------------------------------------------------
+
+    /*
+    @Override
+    public List<SeguimientoDetailsDTO> getAllSeguimientosByMetaId(Integer metaId) {
+        Meta meta = metaRepository.findById(metaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Meta con id " + metaId + " no encontrada"));
+
+        // Recuperar todos los seguimientos asociados a la meta
+        List<Seguimiento> seguimientos = seguimientoRepository.findByMetaId(metaId);
+
+        // Mapear a DTOs
+        return seguimientos.stream()
+                .map(seguimientoMapper::toDTO)
+                .toList();
     }
 
     @Override
@@ -108,24 +191,6 @@ public class MetaServiceImpl implements MetaService {
         return seguimientoMapper.toDTO(seguimiento);
     }
 
-
-    @Override
-    public MetaDTO update(Integer id, MetaCreateDTO updatedMetaDTO) {
-        Meta meta = metaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Meta con id " + id + " no encontrada"));
-
-        Cliente cliente = clienteRepository.findById(updatedMetaDTO.getClienteId())
-                .orElseThrow(() -> new ResourceNotFoundException("Cliente con id " + updatedMetaDTO.getClienteId() + " no encontrado"));
-
-        meta.setCliente(cliente);
-        meta.setNombre(updatedMetaDTO.getNombre());
-        meta.setDescripcion(updatedMetaDTO.getDescripcion());
-        meta.setPesoObjetivo(updatedMetaDTO.getPesoObjetivo());
-
-        meta.setFechaActualizacion(LocalDateTime.now());
-
-        return metaMapper.toDTO(metaRepository.save(meta));
-    }
 
     @Override
     public SeguimientoDetailsDTO updateSeguimiento(Integer metaId, Integer seguimientoId, SeguimientoCreateUpdateDTO seguimientoUpdateDTO) {
@@ -166,13 +231,6 @@ public class MetaServiceImpl implements MetaService {
     }
 
     @Override
-    public void delete(Integer id) {
-        Meta meta = metaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Meta con id " + id + " no encontrada"));
-        metaRepository.delete(meta);
-    }
-
-    @Override
     public void deleteSeguimiento(Integer metaId, Integer seguimientoId) {
         Meta meta = metaRepository.findById(metaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Meta con id " + metaId + " no encontrada"));
@@ -185,7 +243,5 @@ public class MetaServiceImpl implements MetaService {
         }
 
         seguimientoRepository.delete(seguimiento); // Elimina el seguimiento específico
-    }
-
-
+    }*/
 }

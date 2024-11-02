@@ -11,5 +11,5 @@ public class MetaDTO {
     private String descripcion;
     private double pesoObjetivo;
     private String clienteNombre;
-    private List<SeguimientoDetailsDTO> seguimientos;
+    //private List<SeguimientoDetailsDTO> seguimientos;
 }

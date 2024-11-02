@@ -27,17 +27,6 @@ public class MetaMapper {
 
         metaDTO.setClienteNombre(meta.getCliente().getNombre() + " " + meta.getCliente().getApellido());
 
-        // Convertir la lista de seguimientos a seguimientos DTO
-        if (meta.getSeguimiento() != null && !meta.getSeguimiento().isEmpty()) {
-            metaDTO.setSeguimientos(
-                    meta.getSeguimiento().stream()
-                            .map(s -> modelMapper.map(s, SeguimientoDetailsDTO.class))
-                            .collect(Collectors.toList())
-            );
-        } else {
-            metaDTO.setSeguimientos(Collections.emptyList()); // En caso de no tener seguimientos
-        }
-
         return metaDTO;
     }
 
