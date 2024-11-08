@@ -38,10 +38,8 @@ public class Cliente {
     @Column(name = "fecha_actualizacion", nullable = false)
     private LocalDateTime fechaActualizacion;
 
-    @OneToOne
-    @JoinColumn(name = "id_racha", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "FK_cliente_racha"))
-    private Racha racha;
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
+    private List<Racha> rachas;
 
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
     private List<Habito> habitos;

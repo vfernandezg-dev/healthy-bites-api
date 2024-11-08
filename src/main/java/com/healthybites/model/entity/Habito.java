@@ -16,6 +16,9 @@ public class Habito {
     @Column(name = "nombre", nullable = false)
     private String nombre;
 
+    @Column(name = "fecha_registro", nullable = false)
+    private LocalDateTime fechaRegistro;
+
     @Column(name = "hidratacion", nullable = false)
     private float hidratacion;
 
@@ -27,9 +30,6 @@ public class Habito {
 
     @Column(name = "calidad_de_sueno", nullable = false)
     private float calidadDeSueno;
-
-    @Column(name = "fecha_creacion", nullable = false)
-    private LocalDateTime fechaCreacion;
 
     @Column(name = "fecha_actualizacion", nullable = false)
     private LocalDateTime fechaActualizacion;

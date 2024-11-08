@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Entity
@@ -28,10 +29,8 @@ public class Recompensa {
     @Column(name = "fecha_actualizacion", nullable = false)
     private LocalDateTime fechaActualizacion;
 
-    @OneToOne
-    @JoinColumn(name = "id_racha", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "FK_recompensa_racha"))
-    private Racha racha;
+    @OneToMany(mappedBy = "recompensa", cascade = CascadeType.ALL)
+    private List<Racha> rachas;
 
     @ManyToOne
     @JoinColumn(name = "id_nutricionista", referencedColumnName = "id",
