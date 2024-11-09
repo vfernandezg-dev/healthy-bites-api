@@ -47,10 +47,6 @@ public class MetaServiceImpl implements MetaService {
         Meta meta = metaMapper.toEntity(metaCreateDTO);
         meta.setCliente(cliente);
 
-        meta.setNombre(metaCreateDTO.getNombre());
-        meta.setDescripcion(metaCreateDTO.getDescripcion());
-        meta.setPesoObjetivo(metaCreateDTO.getPesoObjetivo());
-
         meta.setFechaCreacion(LocalDateTime.now());
         meta.setFechaActualizacion(LocalDateTime.now());
 
@@ -62,9 +58,7 @@ public class MetaServiceImpl implements MetaService {
         Meta meta = metaRepository.findByIdAndClienteId(metaId, clienteId)
                 .orElseThrow(() -> new ResourceNotFoundException("Meta con id " + metaId + " y cliente con id " + clienteId + " no encontrada"));
 
-        meta.setNombre(updatedMetaDTO.getNombre());
-        meta.setDescripcion(updatedMetaDTO.getDescripcion());
-        meta.setPesoObjetivo(updatedMetaDTO.getPesoObjetivo());
+        metaMapper.updateFromDTO(updatedMetaDTO, meta);
 
         meta.setFechaActualizacion(LocalDateTime.now());
 

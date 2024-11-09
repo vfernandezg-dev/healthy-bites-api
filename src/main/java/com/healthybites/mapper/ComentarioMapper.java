@@ -30,7 +30,7 @@ public class ComentarioMapper {
         return modelMapper.map(comentarioCreateDTO, Comentario.class);
     }
 
-    public ComentarioDTO toCreateUpdateDTO(Comentario comentario) {
-        return modelMapper.map(comentario, ComentarioDTO.class);
+    public void updateFromDTO(ComentarioCreateDTO comentarioCreateDTO, Comentario comentario) {
+        modelMapper.map(comentarioCreateDTO, comentario);
     }
 }

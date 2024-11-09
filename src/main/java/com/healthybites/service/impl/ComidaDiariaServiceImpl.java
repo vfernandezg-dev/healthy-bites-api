@@ -46,9 +46,6 @@ public class ComidaDiariaServiceImpl implements ComidaDiariaService {
 
         ComidaDiaria comidaDiaria = comidaDiariaMapper.toEntity(comidaDiariaCreateDTO);
 
-        comidaDiaria.setNombreComida(comidaDiariaCreateDTO.getNombreComida());
-        comidaDiaria.setCategoria(comidaDiariaCreateDTO.getCategoria());
-        comidaDiaria.setCalorias(comidaDiariaCreateDTO.getCalorias());
         comidaDiaria.setPlanAlimenticio(planAlimenticio);
 
         comidaDiaria.setFechaCreacion(LocalDateTime.now());
@@ -62,9 +59,8 @@ public class ComidaDiariaServiceImpl implements ComidaDiariaService {
         ComidaDiaria comidaDiariaFromDb = comidaDiariaRepository.findByIdAndPlanAlimenticioId(comidaDiariaId, planId)
                 .orElseThrow(() -> new RuntimeException("Comida con id " + comidaDiariaId + " y Plan Alimenticio con Id " + planId + " no encontrada"));
 
-        comidaDiariaFromDb.setNombreComida(updatedComidaDiariaDTO.getNombreComida());
-        comidaDiariaFromDb.setCategoria(updatedComidaDiariaDTO.getCategoria());
-        comidaDiariaFromDb.setCalorias(updatedComidaDiariaDTO.getCalorias());
+        comidaDiariaMapper.updateFromDTO(updatedComidaDiariaDTO, comidaDiariaFromDb);
+
         comidaDiariaFromDb.setFechaActualizacion(LocalDateTime.now());
 
         return comidaDiariaMapper.toDTO(comidaDiariaRepository.save(comidaDiariaFromDb));

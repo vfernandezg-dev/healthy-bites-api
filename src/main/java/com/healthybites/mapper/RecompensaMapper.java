@@ -39,7 +39,7 @@ public class RecompensaMapper {
         return modelMapper.map(recompensaCreateUpdateDTO, Recompensa.class);
     }
 
-    public RecompensaCreateUpdateDTO toCreateUpdateDTO(Recompensa recompensa) {
-        return modelMapper.map(recompensa, RecompensaCreateUpdateDTO.class);
+    public void updateFromDTO(RecompensaCreateUpdateDTO recompensaCreateUpdateDTO, Recompensa recompensa) {
+        modelMapper.map(recompensaCreateUpdateDTO, recompensa);
     }
 }

@@ -3,6 +3,7 @@ package com.healthybites.api;
 import com.healthybites.dto.HabitoCreateDTO;
 import com.healthybites.dto.HabitoDTO;
 import com.healthybites.service.HabitoService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,20 +20,20 @@ public class HabitoController {
 
     private final HabitoService habitoService;
 
-    @GetMapping
-    public ResponseEntity<List<HabitoDTO>> getAllHabitos() {
-        List<HabitoDTO> habitos = habitoService.getAll();
-        return new ResponseEntity<>(habitos, HttpStatus.OK);
+    @GetMapping("/cliente/{clienteId}")
+    public ResponseEntity<List<HabitoDTO>> getAllHabitosByClienteId(@PathVariable Integer clienteId) {
+        List<HabitoDTO> habitos = habitoService.getAll(clienteId);
+        return ResponseEntity.ok(habitos);
     }
 
     @PostMapping
-    public ResponseEntity<HabitoDTO> registrarHabito(@RequestBody HabitoCreateDTO habitoCreateDTO) {
+    public ResponseEntity<HabitoDTO> registrarHabito(@Valid @RequestBody HabitoCreateDTO habitoCreateDTO) {
         HabitoDTO habitoDTO = habitoService.registrarHabito(habitoCreateDTO);
         return new ResponseEntity<>(habitoDTO, HttpStatus.CREATED);
     }
 
     @PutMapping("/{habitoId}")
-    public ResponseEntity<HabitoDTO> actualizarHabito(@PathVariable Integer habitoId, @RequestBody HabitoCreateDTO habitoCreateDTO) {
+    public ResponseEntity<HabitoDTO> actualizarHabito(@PathVariable Integer habitoId, @Valid @RequestBody HabitoCreateDTO habitoCreateDTO) {
         HabitoDTO habitoDTO = habitoService.actualizarHabito(habitoId, habitoCreateDTO);
         return new ResponseEntity<>(habitoDTO, HttpStatus.OK);
     }

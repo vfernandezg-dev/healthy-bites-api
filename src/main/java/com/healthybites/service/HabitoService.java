@@ -6,7 +6,7 @@ import com.healthybites.dto.HabitoDTO;
 import java.util.List;
 
 public interface HabitoService {
-    List<HabitoDTO> getAll();
+    List<HabitoDTO> getAll(Integer id);
     HabitoDTO registrarHabito(HabitoCreateDTO habitoCreateDTO);
     HabitoDTO actualizarHabito(Integer habitoId, HabitoCreateDTO habitoCreateDTO);
     void delete(Integer habitoId);

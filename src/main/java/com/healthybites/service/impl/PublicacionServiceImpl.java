@@ -51,15 +51,14 @@ public class PublicacionServiceImpl implements PublicacionService {
 
         Publicacion publicacion = publicacionMapper.toEntity(publicacionCreateDTO);
 
-        publicacion.setTitulo(publicacionCreateDTO.getTitulo());
-        publicacion.setDescripcion(publicacionCreateDTO.getDescripcion());
-
         publicacion.setCliente(cliente);
         publicacion.setGrupo(grupo);
         publicacion.setFechaCreacion(LocalDateTime.now());
         publicacion.setFechaActualizacion(LocalDateTime.now());
 
-        return publicacionMapper.toDTO(publicacionRepository.save(publicacion));
+        Publicacion savedPublicacion = publicacionRepository.save(publicacion);
+
+        return publicacionMapper.toDTO(savedPublicacion);
     }
 
     @Override
@@ -67,8 +66,7 @@ public class PublicacionServiceImpl implements PublicacionService {
         Publicacion publicacion = publicacionRepository.findByIdAndClienteId(publicacionId, clienteId)
                 .orElseThrow(() -> new ResourceNotFoundException("Publicacion con id " + publicacionId + " y clienteId " + clienteId + " no encontrado"));
 
-        publicacion.setTitulo(updatedPublicacionDTO.getTitulo());
-        publicacion.setDescripcion(updatedPublicacionDTO.getDescripcion());
+        publicacionMapper.updateFromDTO(updatedPublicacionDTO, publicacion);
 
         publicacion.setFechaActualizacion(LocalDateTime.now());
 

@@ -38,9 +38,4 @@ public class SuscripcionMapper {
 
     }
 
-    public SuscripcionCreateUpdateDTO toCreateUpdateDTO(Suscripcion suscripcion) {
-        return modelMapper.map(suscripcion, SuscripcionCreateUpdateDTO.class);
-    }
-
-
 }

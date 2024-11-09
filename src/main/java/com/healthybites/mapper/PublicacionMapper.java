@@ -30,7 +30,7 @@ public class PublicacionMapper {
         return modelMapper.map(publicacionCreateDTO, Publicacion.class);
     }
 
-    public PublicacionDTO toCreateUpdateDTO(Publicacion publicacion) {
-        return modelMapper.map(publicacion, PublicacionDTO.class);
+    public void updateFromDTO(PublicacionCreateDTO publicacionCreateDTO, Publicacion publicacion) {
+        modelMapper.map(publicacionCreateDTO, publicacion);
     }
 }

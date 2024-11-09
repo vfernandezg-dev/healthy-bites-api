@@ -46,9 +46,7 @@ public class GrupoServiceImpl implements GrupoService {
         Grupo grupo = grupoMapper.toEntity(grupoCreateDTO);
 
         grupo.setCliente(cliente);
-        grupo.setEsPrivado(grupoCreateDTO.isEsPrivado());
         grupo.setCantidadMiembros(1);
-
         grupo.setFechaCreacion(LocalDateTime.now());
         grupo.setFechaActualizacion(LocalDateTime.now());
 
@@ -63,9 +61,9 @@ public class GrupoServiceImpl implements GrupoService {
         Cliente cliente = clienteRepository.findById(updatedGrupoDTO.getClienteId())
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente con id " + updatedGrupoDTO.getClienteId() + " no encontrado"));
 
-        grupo.setCliente(cliente);
-        grupo.setEsPrivado(updatedGrupoDTO.isEsPrivado());
+        grupoMapper.updateFromDTO(updatedGrupoDTO, grupo);
 
+        grupo.setCliente(cliente);
         grupo.setFechaActualizacion(LocalDateTime.now());
 
         return grupoMapper.toDTO(grupoRepository.save(grupo));

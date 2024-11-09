@@ -49,23 +49,18 @@ public class PlanAlimenticioServiceImpl implements PlanAlimenticioService {
         // Mapear el DTO a la entidad PlanAlimenticio
         PlanAlimenticio planAlimenticio = planAlimenticioMapper.toEntity(planAlimenticioCreateDTO);
 
-        // Setear los campos del plan
-        planAlimenticio.setPlanObjetivo(planAlimenticioCreateDTO.getPlanObjetivo());
-        planAlimenticio.setDescripcion(planAlimenticioCreateDTO.getDescripcion());
-        planAlimenticio.setDuracionDias(planAlimenticioCreateDTO.getDuracionDias());
-        planAlimenticio.setEsGratis(planAlimenticioCreateDTO.isEsGratis());
         planAlimenticio.setNutricionista(nutricionista);
 
         // Seteamos las calorias totales
         planAlimenticio.setComidasDiarias(new ArrayList<>()); // Plan sin comidas inicialmente
-
-
         // Seteamos fechas
         planAlimenticio.setFechaCreacion(LocalDateTime.now());
         planAlimenticio.setFechaActualizacion(LocalDateTime.now());
 
+        PlanAlimenticio savedPlanAlimenticio = planAlimenticioRepository.save(planAlimenticio);
+
         // Guardamos en la BD y devolvemos el DTO
-        return planAlimenticioMapper.toDTO(planAlimenticioRepository.save(planAlimenticio));
+        return planAlimenticioMapper.toDTO(savedPlanAlimenticio);
     }
 
     @Override
@@ -73,10 +68,7 @@ public class PlanAlimenticioServiceImpl implements PlanAlimenticioService {
         PlanAlimenticio planAlimenticioFromDb = planAlimenticioRepository.findByIdAndNutricionistaId(planId, nutricionistaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Plan alimenticio con id " + planId + " y nutricionistaId " + nutricionistaId + " no encontrado"));
 
-        planAlimenticioFromDb.setPlanObjetivo(updatedPlanAlimenticioDTO.getPlanObjetivo());
-        planAlimenticioFromDb.setDescripcion(updatedPlanAlimenticioDTO.getDescripcion());
-        planAlimenticioFromDb.setDuracionDias(updatedPlanAlimenticioDTO.getDuracionDias());
-        planAlimenticioFromDb.setEsGratis(updatedPlanAlimenticioDTO.isEsGratis());
+        planAlimenticioMapper.updateFromDTO(updatedPlanAlimenticioDTO, planAlimenticioFromDb);
 
         planAlimenticioFromDb.setFechaActualizacion(LocalDateTime.now());
 

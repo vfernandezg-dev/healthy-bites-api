@@ -3,6 +3,7 @@ package com.healthybites.api;
 import com.healthybites.dto.SeguimientoCreateDTO;
 import com.healthybites.dto.SeguimientoDTO;
 import com.healthybites.service.SeguimientoService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class SeguimientoController {
     }
 
     @PostMapping
-    public ResponseEntity<SeguimientoDTO> create(@PathVariable Integer metaId, @RequestBody SeguimientoCreateDTO seguimientoCreateDTO) {
+    public ResponseEntity<SeguimientoDTO> create(@PathVariable Integer metaId, @Valid @RequestBody SeguimientoCreateDTO seguimientoCreateDTO) {
         SeguimientoDTO seguimientoDTO = seguimientoService.create(metaId, seguimientoCreateDTO);
         return new ResponseEntity<>(seguimientoDTO, HttpStatus.CREATED);
     }
@@ -40,7 +41,7 @@ public class SeguimientoController {
     @PutMapping("/{seguimientoId}")
     public ResponseEntity<SeguimientoDTO> update(@PathVariable Integer metaId,
                                                   @PathVariable Integer seguimientoId,
-                                                  @RequestBody SeguimientoCreateDTO updatedSeguimientoDTO) {
+                                                  @Valid @RequestBody SeguimientoCreateDTO updatedSeguimientoDTO) {
         SeguimientoDTO updatedSeguimiento = seguimientoService.update(metaId, seguimientoId, updatedSeguimientoDTO);
         return new ResponseEntity<>(updatedSeguimiento, HttpStatus.OK);
     }

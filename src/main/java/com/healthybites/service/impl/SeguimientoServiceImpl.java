@@ -69,7 +69,7 @@ public class SeguimientoServiceImpl implements SeguimientoService {
         }
 
         // Actualiza los campos del seguimiento
-        seguimientoMapper.toEntity(updatedSeguimientoDTO);
+        seguimientoMapper.updateFromDTO(updatedSeguimientoDTO, seguimiento);
 
         // Convertir la fecha del string a LocalDate y obtener la hora actual
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
@@ -83,8 +83,6 @@ public class SeguimientoServiceImpl implements SeguimientoService {
 
         // Combinar la fecha con la hora actual del sistema
         seguimiento.setFecha(LocalDateTime.of(fecha, horaActual));
-        seguimiento.setPesoDelDia(updatedSeguimientoDTO.getPesoDelDia());
-        seguimiento.setObservaciones(updatedSeguimientoDTO.getObservaciones());
         seguimiento.setFechaActualizacion(LocalDateTime.now());
 
         // Guarda los cambios

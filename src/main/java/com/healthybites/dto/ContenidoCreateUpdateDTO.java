@@ -9,8 +9,6 @@ import lombok.Data;
 
 @Data
 public class ContenidoCreateUpdateDTO {
-    private Integer id;
-
     @NotBlank(message= "Debes ingresar un título.")
     @Size(max = 60, message = "El título no debe superar los 60 caracteres.")
     private String titulo;
@@ -30,4 +28,5 @@ public class ContenidoCreateUpdateDTO {
 
     @NotNull(message= "Debes ingresar el id del nutricionista.")
     private Integer nutricionistaId;
+
 }

@@ -42,21 +42,7 @@ public interface RachaRepository extends JpaRepository<Racha, RachaPK> {
     @Query("SELECT COUNT(r) > 0 FROM Racha r WHERE r.cliente.id = :clienteId AND r.recompensa.id = :recompensaId")
     boolean existsByClienteIdAndRecompensaId(@Param("clienteId") Integer clienteId, @Param("recompensaId") Integer recompensaId);
 
-    // Este query es para actualizar el contador de días de una recompensa
-    @Modifying
-    @Transactional
-    @Query(value = "UPDATE racha SET contador_dias = :contadorDias, ultima_fecha_registro = :ultimaFechaRegistro WHERE cliente_id = :clienteId AND recompensa_id = :recompensaId", nativeQuery = true)
-    void updateContadorDias(@Param("clienteId") Integer clienteId,
-                            @Param("recompensaId") Integer recompensaId,
-                            @Param("contadorDias") Integer contadorDias,
-                            @Param("ultimaFechaRegistro") String ultimaFechaRegistro);
-
     @Query("SELECT r FROM Racha r WHERE r.cliente.id = :clienteId")
     List<Racha> findByCliente(@Param("clienteId") Integer clienteId);
 
-    Optional<Racha> findByClienteIdAndRecompensaIdAndUltimaFechaRegistroBetween(
-            Integer clienteId, Integer recompensaId, LocalDate startOfDay, LocalDate endOfDay);
-
-    @Query("SELECT r FROM Racha r WHERE r.cliente.id = :clienteId AND r.recompensa.id = :recompensaId")
-    Optional<Racha> findByClienteAndRecompensa(Integer clienteId, Integer recompensaId);
 }

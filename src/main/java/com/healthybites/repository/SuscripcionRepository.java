@@ -8,8 +8,5 @@ import java.util.List;
 import java.util.Optional;
 
 public interface SuscripcionRepository extends JpaRepository<Suscripcion, Integer> {
-    //Optional<Suscripcion> findByTipoSuscripcion(TipoSuscripcion tipoSuscripcion);
-
-    //List<Suscripcion> findByUsuarioId(Integer usuarioId);
 
 }

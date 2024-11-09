@@ -3,6 +3,7 @@ package com.healthybites.api;
 import com.healthybites.dto.MetaCreateDTO;
 import com.healthybites.dto.MetaDTO;
 import com.healthybites.service.MetaService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class MetaController {
     }
 
     @PostMapping
-    public ResponseEntity<MetaDTO> create(@RequestBody MetaCreateDTO metaCreateDTO) {
+    public ResponseEntity<MetaDTO> create(@Valid @RequestBody MetaCreateDTO metaCreateDTO) {
         MetaDTO createdMeta = metaService.create(metaCreateDTO);
         return new ResponseEntity<>(createdMeta, HttpStatus.CREATED);
     }
@@ -40,7 +41,7 @@ public class MetaController {
     @PutMapping("/{metaId}/cliente/{clienteId}")
     public ResponseEntity<MetaDTO> update(@PathVariable Integer clienteId,
                                           @PathVariable Integer metaId,
-                                          @RequestBody MetaCreateDTO updatedMetaDTO) {
+                                          @Valid @RequestBody MetaCreateDTO updatedMetaDTO) {
         MetaDTO updatedMeta = metaService.update(metaId, clienteId, updatedMetaDTO);
         return new ResponseEntity<>(updatedMeta, HttpStatus.OK);
     }

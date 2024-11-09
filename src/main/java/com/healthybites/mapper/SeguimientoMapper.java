@@ -46,7 +46,7 @@ public class SeguimientoMapper {
         return seguimiento;
     }
 
-    public SeguimientoCreateDTO toCreateUpdateDTO(Seguimiento seguimiento) {
-        return modelMapper.map(seguimiento, SeguimientoCreateDTO.class);
+    public void updateFromDTO(SeguimientoCreateDTO seguimientoCreateDTO, Seguimiento seguimiento) {
+        modelMapper.map(seguimientoCreateDTO, seguimiento);
     }
 }

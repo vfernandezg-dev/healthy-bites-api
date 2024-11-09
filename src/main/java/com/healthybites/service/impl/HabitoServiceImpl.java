@@ -25,8 +25,8 @@ public class HabitoServiceImpl implements HabitoService {
     private final HabitoMapper habitoMapper;
 
     @Override
-    public List<HabitoDTO> getAll() {
-        List<Habito> habitos = habitoRepository.findAll();
+    public List<HabitoDTO> getAll(Integer id) {
+        List<Habito> habitos = habitoRepository.findByClienteId(id);
         return habitos.stream()
                 .map(habitoMapper::toDTO)
                 .toList();

@@ -30,7 +30,7 @@ public class MetaMapper {
         return modelMapper.map(metaCreateDTO, Meta.class);
     }
 
-    public MetaDTO toCreateUpdateDTO(Meta meta) {
-        return modelMapper.map(meta, MetaDTO.class);
+    public void updateFromDTO(MetaCreateDTO metaCreateDTO, Meta meta) {
+        modelMapper.map(metaCreateDTO, meta);
     }
 }

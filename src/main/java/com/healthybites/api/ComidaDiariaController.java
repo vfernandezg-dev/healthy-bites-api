@@ -3,6 +3,7 @@ package com.healthybites.api;
 import com.healthybites.dto.ComidaDiariaCreateDTO;
 import com.healthybites.dto.ComidaDiariaDTO;
 import com.healthybites.service.ComidaDiariaService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class ComidaDiariaController {
     }
 
     @PostMapping
-    public ResponseEntity<ComidaDiariaDTO> create(@PathVariable Integer planId, @RequestBody ComidaDiariaCreateDTO comidaDiariaCreateDTO) {
+    public ResponseEntity<ComidaDiariaDTO> create(@PathVariable Integer planId, @Valid @RequestBody ComidaDiariaCreateDTO comidaDiariaCreateDTO) {
         ComidaDiariaDTO comidaDiariaDTO = comidaDiariaService.create(planId, comidaDiariaCreateDTO);
         return new ResponseEntity<>(comidaDiariaDTO, HttpStatus.CREATED);
     }
@@ -40,7 +41,7 @@ public class ComidaDiariaController {
     @PutMapping("/{comidaId}")
     public ResponseEntity<ComidaDiariaDTO> update(@PathVariable Integer planId,
                                                   @PathVariable Integer comidaId,
-                                                  @RequestBody ComidaDiariaCreateDTO updatedComidaDiariaDTO) {
+                                                  @Valid @RequestBody ComidaDiariaCreateDTO updatedComidaDiariaDTO) {
         ComidaDiariaDTO updatedComidaDiaria = comidaDiariaService.update(planId, comidaId, updatedComidaDiariaDTO);
         return new ResponseEntity<>(updatedComidaDiaria, HttpStatus.OK);
     }

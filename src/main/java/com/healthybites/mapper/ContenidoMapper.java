@@ -28,7 +28,7 @@ public class ContenidoMapper {
         return modelMapper.map(contenidoCreateUpdateDTO, Contenido.class);
     }
 
-    public ContenidoCreateUpdateDTO toCreateUpdateDTO(Contenido contenido) {
-        return modelMapper.map(contenido, ContenidoCreateUpdateDTO.class);
+    public void updateFromDTO(ContenidoCreateUpdateDTO contenidoCreateUpdateDTO, Contenido contenido) {
+        modelMapper.map(contenidoCreateUpdateDTO, contenido);
     }
 }

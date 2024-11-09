@@ -35,7 +35,7 @@ public class PlanAlimenticioMapper {
         return modelMapper.map(planAlimenticioCreateDTO, PlanAlimenticio.class);
     }
 
-    public PlanAlimenticioDTO toCreateUpdateDTO(PlanAlimenticio planAlimenticio) {
-        return modelMapper.map(planAlimenticio, PlanAlimenticioDTO.class);
+    public void updateFromDTO(PlanAlimenticioCreateDTO planAlimenticioCreateDTO, PlanAlimenticio planAlimenticio) {
+        modelMapper.map(planAlimenticioCreateDTO, planAlimenticio);
     }
 }

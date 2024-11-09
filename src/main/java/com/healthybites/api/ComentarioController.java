@@ -3,6 +3,7 @@ package com.healthybites.api;
 import com.healthybites.dto.ComentarioCreateDTO;
 import com.healthybites.dto.ComentarioDTO;
 import com.healthybites.service.ComentarioService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +28,7 @@ public class ComentarioController {
     }
 
     @PostMapping
-    public ResponseEntity<ComentarioDTO> create(@PathVariable Integer publicacionId, @RequestBody ComentarioCreateDTO comentarioCreateDTO) {
+    public ResponseEntity<ComentarioDTO> create(@PathVariable Integer publicacionId, @Valid @RequestBody ComentarioCreateDTO comentarioCreateDTO) {
         ComentarioDTO comentarioDTO = comentarioService.create(publicacionId, comentarioCreateDTO);
         return new ResponseEntity<>(comentarioDTO, HttpStatus.CREATED);
     }
@@ -39,7 +40,7 @@ public class ComentarioController {
     }
 
     @PutMapping("/{comentarioId}")
-    public ResponseEntity<ComentarioDTO> update(@PathVariable Integer publicacionId, @PathVariable Integer comentarioId, @RequestBody ComentarioCreateDTO updatedComentarioDTO) {
+    public ResponseEntity<ComentarioDTO> update(@PathVariable Integer publicacionId, @PathVariable Integer comentarioId, @Valid @RequestBody ComentarioCreateDTO updatedComentarioDTO) {
         ComentarioDTO comentario = comentarioService.update(comentarioId, publicacionId, updatedComentarioDTO);
         return new ResponseEntity<>(comentario, HttpStatus.OK);
     }

@@ -52,13 +52,11 @@ public class ComentarioServiceImpl implements ComentarioService {
 
         Comentario comentario = comentarioMapper.toEntity(comentarioCreateDTO);
 
-        comentario.setMensaje(comentarioCreateDTO.getMensaje());
         comentario.setCliente(cliente);
         comentario.setPublicacion(publicacion);
 
         comentario.setFechaCreacion(LocalDateTime.now());
         comentario.setFechaActualizacion(LocalDateTime.now());
-
 
         return comentarioMapper.toDTO(comentarioRepository.save(comentario));
     }
@@ -68,7 +66,8 @@ public class ComentarioServiceImpl implements ComentarioService {
         Comentario comentario = comentarioRepository.findByIdAndPublicacionId(comentarioId, publicacionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comentario con id " + comentarioId + " y publicacionId " + publicacionId + " no encontrado"));
 
-        comentario.setMensaje(updatedComentarioDTO.getMensaje());
+        comentarioMapper.updateFromDTO(updatedComentarioDTO, comentario);
+
         comentario.setFechaActualizacion(LocalDateTime.now());
 
         return comentarioMapper.toDTO(comentarioRepository.save(comentario));

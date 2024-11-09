@@ -3,6 +3,7 @@ package com.healthybites.api;
 import com.healthybites.dto.PublicacionCreateDTO;
 import com.healthybites.dto.PublicacionDTO;
 import com.healthybites.service.PublicacionService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class PublicacionController {
     }
 
     @PostMapping
-    public ResponseEntity<PublicacionDTO> create(@RequestBody PublicacionCreateDTO publicacionCreateDTO) {
+    public ResponseEntity<PublicacionDTO> create(@Valid @RequestBody PublicacionCreateDTO publicacionCreateDTO) {
         PublicacionDTO publicacionDTO = publicacionService.create(publicacionCreateDTO);
         return new ResponseEntity<>(publicacionDTO, HttpStatus.CREATED);
     }
@@ -38,7 +39,7 @@ public class PublicacionController {
     }
 
     @PutMapping("/{publicacionId}/cliente/{clienteId}")
-    public ResponseEntity<PublicacionDTO> update(@PathVariable Integer clienteId, @PathVariable Integer publicacionId, @RequestBody PublicacionCreateDTO updatedPublicacionDTO) {
+    public ResponseEntity<PublicacionDTO> update(@PathVariable Integer clienteId, @PathVariable Integer publicacionId, @Valid @RequestBody PublicacionCreateDTO updatedPublicacionDTO) {
         PublicacionDTO publicacion = publicacionService.update(publicacionId, clienteId, updatedPublicacionDTO);
         return new ResponseEntity<>(publicacion, HttpStatus.OK);
     }

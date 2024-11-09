@@ -3,6 +3,7 @@ package com.healthybites.api;
 import com.healthybites.dto.RecompensaCreateUpdateDTO;
 import com.healthybites.dto.RecompensaDetailsDTO;
 import com.healthybites.service.RecompensaService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class RecompensaController {
     }
 
     @PostMapping
-    public ResponseEntity<RecompensaDetailsDTO> create(@RequestBody RecompensaCreateUpdateDTO recompensaFormDTO) {
+    public ResponseEntity<RecompensaDetailsDTO> create(@Valid @RequestBody RecompensaCreateUpdateDTO recompensaFormDTO) {
         RecompensaDetailsDTO recompensaDetailsDTO = recompensaService.create(recompensaFormDTO);
         return new ResponseEntity<>(recompensaDetailsDTO, HttpStatus.CREATED);
     }
@@ -38,7 +39,7 @@ public class RecompensaController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<RecompensaDetailsDTO> update(@PathVariable Integer id, @RequestBody RecompensaCreateUpdateDTO recompensaFormDTO) {
+    public ResponseEntity<RecompensaDetailsDTO> update(@PathVariable Integer id, @Valid @RequestBody RecompensaCreateUpdateDTO recompensaFormDTO) {
         RecompensaDetailsDTO updatedRecompensa = recompensaService.update(id, recompensaFormDTO);
         return new ResponseEntity<>(updatedRecompensa, HttpStatus.OK);
     }

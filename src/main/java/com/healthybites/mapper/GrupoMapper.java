@@ -29,7 +29,7 @@ public class GrupoMapper {
         return modelMapper.map(grupoCreateDTO, Grupo.class);
     }
 
-    public GrupoDTO toCreateUpdateDTO(Grupo grupo) {
-        return modelMapper.map(grupo, GrupoDTO.class);
+    public void updateFromDTO(GrupoCreateDTO grupoCreateDTO, Grupo grupo) {
+        modelMapper.map(grupoCreateDTO, grupo);
     }
 }

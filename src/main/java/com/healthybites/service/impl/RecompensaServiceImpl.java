@@ -72,9 +72,8 @@ public class RecompensaServiceImpl implements RecompensaService {
         Nutricionista nutricionista = nutricionistaRepository.findById(updateRecompensaDTO.getNutricionistaId())
                 .orElseThrow(() -> new ResourceNotFoundException("Nutricionista con id " + updateRecompensaDTO.getNutricionistaId() + " no encontrado"));
 
-        recompensaFromDb.setNombre(updateRecompensaDTO.getNombre());
-        recompensaFromDb.setDescripcion(updateRecompensaDTO.getDescripcion());
-        recompensaFromDb.setDiasRequeridos(updateRecompensaDTO.getDiasRequeridos());
+        recompensaMapper.updateFromDTO(updateRecompensaDTO, recompensaFromDb);
+
         recompensaFromDb.setNutricionista(nutricionista);
 
         // Actualizar contenido o plan si se proporcionan IDs
@@ -87,7 +86,6 @@ public class RecompensaServiceImpl implements RecompensaService {
                     .orElseThrow(() -> new ResourceNotFoundException("Plan alimenticio con id " + updateRecompensaDTO.getPlanAlimenticioId() + " no encontrado"));
             recompensaFromDb.setPlanAlimenticio(plan);
         }
-
 
         recompensaFromDb.setFechaActualizacion(LocalDateTime.now());
 

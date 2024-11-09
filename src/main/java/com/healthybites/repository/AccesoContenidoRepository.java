@@ -28,13 +28,7 @@ public interface AccesoContenidoRepository extends JpaRepository<AccesoContenido
     @Query(value = "DELETE FROM acceso_contenido WHERE cliente_id = :clienteId AND contenido_id = :contenidoId", nativeQuery = true)
     void deleteByClienteAndContenido(@Param("clienteId") Integer cliente,@Param("contenidoId") Integer contenido);
 
-    // Esta query es para listar todos los contenidos por cliente
-    @Query("SELECT ac.contenido FROM AccesoContenido ac WHERE ac.cliente = :cliente ")
-    List<Contenido> findAccesoContenidoByCliente(Cliente cliente);
-
-
+    // Esta query es para obtener contenido de cliente
     @Query("SELECT ac FROM AccesoContenido ac WHERE ac.cliente = :cliente ")
     List<AccesoContenido> findByCliente(Cliente cliente);
-
-
 }

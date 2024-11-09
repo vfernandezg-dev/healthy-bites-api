@@ -49,9 +49,4 @@ public class HabitoMapper {
             habito.setFechaRegistro(LocalDateTime.of(fecha, horaActual));
         }
     }
-
-
-    public HabitoCreateDTO toCreateUpdateDTO(Habito habito) {
-        return modelMapper.map(habito, HabitoCreateDTO.class);
-    }
 }

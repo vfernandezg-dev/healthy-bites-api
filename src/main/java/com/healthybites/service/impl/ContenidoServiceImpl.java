@@ -63,25 +63,18 @@ public class ContenidoServiceImpl implements ContenidoService {
 
     @Override
     public ContenidoDetailsDTO update(Integer id, ContenidoCreateUpdateDTO updateContenidoDTO) {
-        // Find the contenido
-        Contenido contenidoFromDb = contenidoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Contenido con id " + id + " no encontrado"));
-
         contenidoRepository.findByTitulo(updateContenidoDTO.getTitulo())
                 .ifPresent(contenidoExistente -> {
                     throw new BadRequestException("Contenido con titulo " + updateContenidoDTO.getTitulo() + " ya existe");
                 });
 
-        // Find the nutricionista
         Nutricionista nutricionista = nutricionistaRepository.findById(updateContenidoDTO.getNutricionistaId())
                 .orElseThrow(() -> new ResourceNotFoundException("Nutricionista con id " + updateContenidoDTO.getNutricionistaId() + " no encontrado"));
 
-        // Update the fields
-        contenidoFromDb.setTitulo(updateContenidoDTO.getTitulo());
-        contenidoFromDb.setDescripcion(updateContenidoDTO.getDescripcion());
-        contenidoFromDb.setTipoContenido(updateContenidoDTO.getTipoContenido());
-        contenidoFromDb.setCategoriaContenido(updateContenidoDTO.getCategoriaContenido());
-        contenidoFromDb.setEsGratis(updateContenidoDTO.isEsGratis());
+        Contenido contenidoFromDb = contenidoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Contenido con id " + id + " no encontrado"));
+
+        contenidoMapper.updateFromDTO(updateContenidoDTO, contenidoFromDb);
         contenidoFromDb.setNutricionista(nutricionista);
 
         return contenidoMapper.toDTO(contenidoRepository.save(contenidoFromDb));

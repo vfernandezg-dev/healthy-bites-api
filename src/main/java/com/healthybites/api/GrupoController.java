@@ -3,6 +3,7 @@ package com.healthybites.api;
 import com.healthybites.dto.GrupoCreateDTO;
 import com.healthybites.dto.GrupoDTO;
 import com.healthybites.service.GrupoService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class GrupoController {
     }
 
     @PostMapping
-    public ResponseEntity<GrupoDTO> create(@RequestBody GrupoCreateDTO grupoCreateDTO) {
+    public ResponseEntity<GrupoDTO> create(@Valid @RequestBody GrupoCreateDTO grupoCreateDTO) {
         GrupoDTO grupoDTO = grupoService.create(grupoCreateDTO);
         return new ResponseEntity<>(grupoDTO, HttpStatus.CREATED);
     }
@@ -38,7 +39,7 @@ public class GrupoController {
     }
 
     @PutMapping("/{grupoId}/cliente/{clienteId}")
-    public ResponseEntity<GrupoDTO> update(@PathVariable Integer clienteId, @PathVariable Integer grupoId, @RequestBody GrupoCreateDTO updatedGrupoDTO) {
+    public ResponseEntity<GrupoDTO> update(@PathVariable Integer clienteId, @PathVariable Integer grupoId,@Valid @RequestBody GrupoCreateDTO updatedGrupoDTO) {
         GrupoDTO grupo = grupoService.update(grupoId, clienteId, updatedGrupoDTO);
         return new ResponseEntity<>(grupo, HttpStatus.OK);
     }

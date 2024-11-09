@@ -29,4 +29,8 @@ public class ComidaDiariaMapper {
     public ComidaDiaria toEntity(ComidaDiariaCreateDTO comidaDiariaCreateDTO) {
         return modelMapper.map(comidaDiariaCreateDTO, ComidaDiaria.class);
     }
+
+    public void updateFromDTO(ComidaDiariaCreateDTO comidaDiariaCreateDTO, ComidaDiaria comidaDiaria) {
+        modelMapper.map(comidaDiariaCreateDTO, comidaDiaria);
+    }
 }

@@ -3,6 +3,7 @@ package com.healthybites.api;
 import com.healthybites.dto.PlanAlimenticioCreateDTO;
 import com.healthybites.dto.PlanAlimenticioDTO;
 import com.healthybites.service.PlanAlimenticioService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class PlanAlimenticioController {
     }
 
     @PostMapping
-    public ResponseEntity<PlanAlimenticioDTO> create(@RequestBody PlanAlimenticioCreateDTO planAlimenticioCreateDTO) {
+    public ResponseEntity<PlanAlimenticioDTO> create(@Valid @RequestBody PlanAlimenticioCreateDTO planAlimenticioCreateDTO) {
         PlanAlimenticioDTO planAlimenticioDTO = planAlimenticioService.create(planAlimenticioCreateDTO);
         return new ResponseEntity<>(planAlimenticioDTO, HttpStatus.CREATED);
     }
@@ -40,7 +41,7 @@ public class PlanAlimenticioController {
     @PutMapping("/{planId}/nutricionista/{nutricionistaId}")
     public ResponseEntity<PlanAlimenticioDTO> update(@PathVariable Integer nutricionistaId,
                                                      @PathVariable Integer planId,
-                                                     @RequestBody PlanAlimenticioCreateDTO updatedPlanAlimenticioDTO) {
+                                                     @Valid @RequestBody PlanAlimenticioCreateDTO updatedPlanAlimenticioDTO) {
         PlanAlimenticioDTO updatedPlanAlimenticio = planAlimenticioService.update(planId, nutricionistaId, updatedPlanAlimenticioDTO);
         return new ResponseEntity<>(updatedPlanAlimenticio, HttpStatus.OK);
     }

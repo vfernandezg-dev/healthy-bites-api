@@ -7,6 +7,5 @@ import java.util.List;
 import java.util.Optional;
 
 public interface RecompensaRepository extends JpaRepository<Recompensa, Integer> {
-    List<Recompensa> findByNutricionistaId(Integer nutricionistaId);
-    Optional<Recompensa> findByIdAndNutricionistaId(Integer recompensaId, Integer nutricionistaId);
+
 }
