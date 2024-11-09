@@ -37,5 +37,12 @@ public class Recompensa {
             foreignKey = @ForeignKey(name = "FK_recompensa_nutricionista"))
     private Nutricionista nutricionista;
 
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "contenido_id", referencedColumnName = "id")
+    private Contenido contenido;
+
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "plan_alimenticio_id", referencedColumnName = "id")
+    private PlanAlimenticio planAlimenticio;
 
 }

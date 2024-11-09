@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @RestController
@@ -45,5 +46,13 @@ public class AccesoContenidoController {
         List<ContenidoDetailsDTO> contenidos = accesoContenidoService.getAllContentByClient(clientId);
         return new ResponseEntity<>(contenidos, HttpStatus.OK);
     }
+
+    @GetMapping("/{clientId}/contenido/{contentId}")
+    public ResponseEntity<ContenidoDetailsDTO> getContentForClient(@PathVariable Integer clientId,
+                                                                   @PathVariable Integer contentId) {
+        ContenidoDetailsDTO contenidoDetailsDTO = accesoContenidoService.addContentToClient(clientId, contentId);
+        return new ResponseEntity<>(contenidoDetailsDTO, HttpStatus.OK);
+    }
+
 
 }

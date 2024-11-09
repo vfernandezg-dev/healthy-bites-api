@@ -48,4 +48,6 @@ public class RecompensaController {
         recompensaService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+
 }

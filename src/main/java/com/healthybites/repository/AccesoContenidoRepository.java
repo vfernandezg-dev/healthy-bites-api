@@ -32,4 +32,9 @@ public interface AccesoContenidoRepository extends JpaRepository<AccesoContenido
     @Query("SELECT ac.contenido FROM AccesoContenido ac WHERE ac.cliente = :cliente ")
     List<Contenido> findAccesoContenidoByCliente(Cliente cliente);
 
+
+    @Query("SELECT ac FROM AccesoContenido ac WHERE ac.cliente = :cliente ")
+    List<AccesoContenido> findByCliente(Cliente cliente);
+
+
 }

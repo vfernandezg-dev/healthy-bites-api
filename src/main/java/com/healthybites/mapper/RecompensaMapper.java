@@ -20,8 +20,20 @@ public class RecompensaMapper {
     public RecompensaDetailsDTO toDTO(Recompensa recompensa) {
         RecompensaDetailsDTO recompensaDetailsDTO = modelMapper.map(recompensa, RecompensaDetailsDTO.class);
         recompensaDetailsDTO.setNutricionistaNombre(recompensa.getNutricionista().getNombre() + " " + recompensa.getNutricionista().getApellido());
+
+        // Verificar si 'contenido' no es null antes de obtener el título
+        if (recompensa.getContenido() != null) {
+            recompensaDetailsDTO.setContenidoTitulo(recompensa.getContenido().getTitulo());
+        }
+
+        // Verificar si 'planAlimenticio' no es null antes de obtener el título
+        if (recompensa.getPlanAlimenticio() != null) {
+            recompensaDetailsDTO.setPlanAlimenticioTitulo(recompensa.getPlanAlimenticio().getPlanObjetivo());
+        }
+
         return recompensaDetailsDTO;
     }
+
 
     public Recompensa toEntity(RecompensaCreateUpdateDTO recompensaCreateUpdateDTO) {
         return modelMapper.map(recompensaCreateUpdateDTO, Recompensa.class);

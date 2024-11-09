@@ -56,4 +56,7 @@ public interface RachaRepository extends JpaRepository<Racha, RachaPK> {
 
     Optional<Racha> findByClienteIdAndRecompensaIdAndUltimaFechaRegistroBetween(
             Integer clienteId, Integer recompensaId, LocalDate startOfDay, LocalDate endOfDay);
+
+    @Query("SELECT r FROM Racha r WHERE r.cliente.id = :clienteId AND r.recompensa.id = :recompensaId")
+    Optional<Racha> findByClienteAndRecompensa(Integer clienteId, Integer recompensaId);
 }

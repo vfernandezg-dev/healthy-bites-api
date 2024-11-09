@@ -75,16 +75,18 @@ public class SuscripcionServiceImpl implements SuscripcionService {
         switch (suscripcion.getTipoSuscripcion()) {
             case BASICO -> {
                 suscripcion.setPrecio(0.00);
+                suscripcion.setEstadoPago(EstadoPago.PAGADO);
             }
             case PREMIUM -> {
                 suscripcion.setPrecio(5.99);
+                suscripcion.setEstadoPago(EstadoPago.PENDIENTE);
             }
             case VIP -> {
                 suscripcion.setPrecio(9.99);
+                suscripcion.setEstadoPago(EstadoPago.PENDIENTE);
             }
         }
 
-        suscripcion.setEstadoPago(EstadoPago.PENDIENTE);
         suscripcion.setFechaCreacion(LocalDateTime.now());
 
         // Guardar la suscripcion

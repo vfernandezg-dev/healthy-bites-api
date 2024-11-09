@@ -5,20 +5,13 @@ import com.healthybites.dto.HabitoDTO;
 import com.healthybites.exception.ResourceNotFoundException;
 import com.healthybites.mapper.HabitoMapper;
 import com.healthybites.model.entity.*;
-import com.healthybites.repository.ClienteRepository;
-import com.healthybites.repository.HabitoRepository;
-import com.healthybites.repository.RachaRepository;
-import com.healthybites.repository.RecompensaRepository;
+import com.healthybites.repository.*;
 import com.healthybites.service.HabitoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -27,7 +20,8 @@ public class HabitoServiceImpl implements HabitoService {
     private final HabitoRepository habitoRepository;
     private final RachaRepository rachaRepository;
     private final ClienteRepository clienteRepository;
-    private final RecompensaRepository recompensaRepository;
+    private final AccesoContenidoRepository accesoContenidoRepository;
+    private final AccesoPlanRepository accesoPlanRepository;
     private final HabitoMapper habitoMapper;
 
     @Override
@@ -77,33 +71,39 @@ public class HabitoServiceImpl implements HabitoService {
     }
 
     private void incrementarContadorRachas(Integer clienteId, LocalDateTime now) {
-        // Obtiene todas las rachas del cliente
         List<Racha> rachas = rachaRepository.findByCliente(clienteId);
 
         for (Racha racha : rachas) {
-            // Solo incrementar si la recompensa no ha sido entregada aún
             if (!racha.isEntregada()) {
-                // Incrementa el contador de días
                 racha.setContadorDias(racha.getContadorDias() + 1);
                 racha.setUltimaFechaRegistro(now);
 
-                // Verificar si el cliente alcanzó la recompensa
                 Recompensa recompensa = racha.getRecompensa();
                 if (racha.getContadorDias() >= recompensa.getDiasRequeridos()) {
-                    // Mensaje de recompensa alcanzada
-                    System.out.println("¡Felicidades! Has alcanzado la recompensa: " + recompensa.getNombre());
-
-                    // Marca la recompensa como entregada para este cliente
+                    System.out.println("¡Felicidades! Has alcanzado una recompensa.");
                     racha.setEntregada(true);
+
+                    // Verifica el tipo de recompensa
+                    if (recompensa.getContenido() != null) {
+                        otorgarAccesoAContenido(clienteId, recompensa.getContenido());
+                    } else if (recompensa.getPlanAlimenticio() != null) {
+                        otorgarAccesoAPlan(clienteId, recompensa.getPlanAlimenticio());
+                    }
                 }
 
-                // Guarda los cambios en la base de datos
                 rachaRepository.save(racha);
             }
         }
     }
 
+    private void otorgarAccesoAContenido(Integer clienteId, Contenido contenido) {
+        LocalDateTime now = LocalDateTime.now();
+        accesoContenidoRepository.addContenidoToCliente(clienteId, contenido.getId(), now);
+    }
 
-
+    private void otorgarAccesoAPlan(Integer clienteId, PlanAlimenticio plan) {
+        LocalDateTime now = LocalDateTime.now();
+        accesoPlanRepository.addPlanToCliente(clienteId, plan.getId(), now);
+    }
 
 }

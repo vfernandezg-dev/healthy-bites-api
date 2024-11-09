@@ -4,10 +4,8 @@ import com.healthybites.dto.RecompensaCreateUpdateDTO;
 import com.healthybites.dto.RecompensaDetailsDTO;
 import com.healthybites.exception.ResourceNotFoundException;
 import com.healthybites.mapper.RecompensaMapper;
-import com.healthybites.model.entity.Nutricionista;
-import com.healthybites.model.entity.Recompensa;
-import com.healthybites.repository.NutricionistaRepository;
-import com.healthybites.repository.RecompensaRepository;
+import com.healthybites.model.entity.*;
+import com.healthybites.repository.*;
 import com.healthybites.service.RecompensaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,6 +17,8 @@ import java.util.List;
 @Service
 public class RecompensaServiceImpl implements RecompensaService {
 
+    private final ContenidoRepository contenidoRepository;
+    private final PlanAlimenticioRepository planAlimenticioRepository;
     private final RecompensaRepository recompensaRepository;
     private final NutricionistaRepository nutricionistaRepository;
     private final RecompensaMapper recompensaMapper;
@@ -46,6 +46,17 @@ public class RecompensaServiceImpl implements RecompensaService {
 
         Recompensa recompensa = recompensaMapper.toEntity(recompensaCreateUpdateDTO);
 
+        // Asignar contenido o plan si los IDs están presentes
+        if (recompensaCreateUpdateDTO.getContenidoId() != null) {
+            Contenido contenido = contenidoRepository.findById(recompensaCreateUpdateDTO.getContenidoId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Contenido con id " + recompensaCreateUpdateDTO.getContenidoId() + " no encontrado"));
+            recompensa.setContenido(contenido);
+        } else if (recompensaCreateUpdateDTO.getPlanAlimenticioId() != null) {
+            PlanAlimenticio plan = planAlimenticioRepository.findById(recompensaCreateUpdateDTO.getPlanAlimenticioId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Plan alimenticio con id " + recompensaCreateUpdateDTO.getPlanAlimenticioId() + " no encontrado"));
+            recompensa.setPlanAlimenticio(plan);
+        }
+
         recompensa.setNutricionista(nutricionista);
         recompensa.setFechaCreacion(LocalDateTime.now());
         recompensa.setFechaActualizacion(LocalDateTime.now());
@@ -65,10 +76,24 @@ public class RecompensaServiceImpl implements RecompensaService {
         recompensaFromDb.setDescripcion(updateRecompensaDTO.getDescripcion());
         recompensaFromDb.setDiasRequeridos(updateRecompensaDTO.getDiasRequeridos());
         recompensaFromDb.setNutricionista(nutricionista);
+
+        // Actualizar contenido o plan si se proporcionan IDs
+        if (updateRecompensaDTO.getContenidoId() != null) {
+            Contenido contenido = contenidoRepository.findById(updateRecompensaDTO.getContenidoId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Contenido con id " + updateRecompensaDTO.getContenidoId() + " no encontrado"));
+            recompensaFromDb.setContenido(contenido);
+        } else if (updateRecompensaDTO.getPlanAlimenticioId() != null) {
+            PlanAlimenticio plan = planAlimenticioRepository.findById(updateRecompensaDTO.getPlanAlimenticioId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Plan alimenticio con id " + updateRecompensaDTO.getPlanAlimenticioId() + " no encontrado"));
+            recompensaFromDb.setPlanAlimenticio(plan);
+        }
+
+
         recompensaFromDb.setFechaActualizacion(LocalDateTime.now());
 
         return recompensaMapper.toDTO(recompensaRepository.save(recompensaFromDb));
     }
+
 
     @Override
     public void delete(Integer id) {
@@ -77,4 +102,5 @@ public class RecompensaServiceImpl implements RecompensaService {
 
         recompensaRepository.delete(recompensa);
     }
+
 }

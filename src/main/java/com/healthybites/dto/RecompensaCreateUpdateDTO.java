@@ -8,4 +8,7 @@ public class RecompensaCreateUpdateDTO {
     private String descripcion;
     private int diasRequeridos;
     private Integer nutricionistaId;
+
+    private Integer contenidoId;
+    private Integer planAlimenticioId;
 }
