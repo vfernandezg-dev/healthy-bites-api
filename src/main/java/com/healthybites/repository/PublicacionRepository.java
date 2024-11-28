@@ -8,5 +8,6 @@ import java.util.Optional;
 
 public interface PublicacionRepository extends JpaRepository<Publicacion, Integer> {
     List<Publicacion> findByClienteId(Integer clienteId);
+    List<Publicacion> findByGrupoId(Integer grupoId);
     Optional<Publicacion> findByIdAndClienteId(Integer publicacionId, Integer clienteId);
 }

@@ -15,7 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/plan-alimenticio")
-@PreAuthorize("hasAnyRole('ADMIN','NUTRICIONISTA')")
+@PreAuthorize("hasAnyRole('CLIENTE','NUTRICIONISTA')")
 public class PlanAlimenticioController {
 
     private final PlanAlimenticioService planAlimenticioService;
@@ -24,6 +24,18 @@ public class PlanAlimenticioController {
     public ResponseEntity<List<PlanAlimenticioDTO>> getAll(@PathVariable Integer id) {
         List<PlanAlimenticioDTO> planAlimenticios = planAlimenticioService.getAll(id);
         return new ResponseEntity<>(planAlimenticios, HttpStatus.OK);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<PlanAlimenticioDTO>> listAll() {
+        List<PlanAlimenticioDTO> planAlimenticios = planAlimenticioService.listAll();
+        return new ResponseEntity<>(planAlimenticios, HttpStatus.OK);
+    }
+
+    @GetMapping("/{planId}")
+    public ResponseEntity<PlanAlimenticioDTO> getById(@PathVariable Integer planId) {
+        PlanAlimenticioDTO planAlimenticio = planAlimenticioService.findById(planId);
+        return new ResponseEntity<>(planAlimenticio, HttpStatus.OK);
     }
 
     @PostMapping

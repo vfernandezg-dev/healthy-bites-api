@@ -10,6 +10,8 @@ import com.healthybites.repository.MetaRepository;
 import com.healthybites.repository.SeguimientoRepository;
 import com.healthybites.service.SeguimientoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -34,6 +36,26 @@ public class SeguimientoServiceImpl implements SeguimientoService {
         return seguimientos.stream()
                 .map(seguimientoMapper::toDTO)
                 .toList();
+    }
+
+    @Override
+    public List<SeguimientoDTO> getAllSeguimientosByMetaIdAndClienteId(Integer metaId, Integer clienteId) {
+        List<Seguimiento> seguimientos = seguimientoRepository.findByMetaIdAndMetaClienteId(metaId, clienteId);
+        return seguimientos.stream()
+                .map(seguimientoMapper::toDTO)
+                .toList();
+    }
+
+    @Override
+    public Page<SeguimientoDTO> paginateSeguimientosByMetaIdAndClienteId(Integer metaId, Integer clienteId, Pageable pageable) {
+        return seguimientoRepository.findByMetaIdAndMetaClienteId(metaId, clienteId, pageable)
+                .map(seguimientoMapper::toDTO);
+    }
+
+    @Override
+    public Page<SeguimientoDTO> paginate(Pageable pageable) {
+        return seguimientoRepository.findAll(pageable)
+                .map(seguimientoMapper::toDTO);
     }
 
     @Override

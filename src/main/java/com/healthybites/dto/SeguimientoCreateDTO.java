@@ -5,7 +5,6 @@ import lombok.Data;
 
 @Data
 public class SeguimientoCreateDTO {
-    @NotBlank(message = "El campo fecha es obligatorio y debe tener el formato DD-MM-YYYY")
     private String fecha;
 
     @Positive(message = "El campo peso del día debe ser un número positivo")

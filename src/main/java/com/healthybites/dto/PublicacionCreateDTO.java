@@ -12,6 +12,8 @@ public class PublicacionCreateDTO {
     @Size(max = 100, message = "La descripción debe tener 100 caracteres o menos")
     private String descripcion;
 
+    private String publicacionPath;
+
     private Integer clienteId;
     private Integer grupoId;
 }

@@ -7,7 +7,8 @@ import java.util.List;
 
 public interface ComidaDiariaService {
 
-    List<ComidaDiariaDTO> getAll(Integer planId);
+    List<ComidaDiariaDTO> getAllByPlanId(Integer planId);
+    List<ComidaDiariaDTO> getAllByNutricionisitaId(Integer nutricionistaId);
     ComidaDiariaDTO findByIdAndPlanId(Integer comidaDiariaId, Integer planId);
     ComidaDiariaDTO create(Integer planId, ComidaDiariaCreateDTO comidaDiariaCreateDTO);
     ComidaDiariaDTO update(Integer planId, Integer comidaDiariaId, ComidaDiariaCreateDTO updatedComidaDiariaDTO);

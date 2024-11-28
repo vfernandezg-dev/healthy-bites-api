@@ -11,4 +11,6 @@ public interface ContenidoRepository extends JpaRepository<Contenido, Integer> {
     Optional<Contenido> findByTitulo(String titulo);
     List<Contenido> findByEsGratisTrue();
 
+    List<Contenido> findAllByNutricionistaId(Integer nutricionistaId);
+
 }

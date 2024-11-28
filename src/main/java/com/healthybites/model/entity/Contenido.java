@@ -21,6 +21,9 @@ public class Contenido {
     @Column(name = "descripcion", nullable = false)
     private String descripcion;
 
+    @Column(unique = true, nullable = false)
+    private String slug;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_contenido", nullable = false)
     private TipoContenido tipoContenido;
@@ -28,6 +31,12 @@ public class Contenido {
     @Enumerated(EnumType.STRING)
     @Column(name = "categoria_contenido", nullable = false)
     private CategoriaContenido categoriaContenido;
+
+    @Column(name = "cover_path")
+    private String coverPath;
+
+    @Column(name = "file_path")
+    private String filePath;
 
     @Column(name = "es_gratis", nullable = false)
     private boolean esGratis;

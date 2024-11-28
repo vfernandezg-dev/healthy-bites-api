@@ -26,6 +26,18 @@ public class GrupoController {
         return new ResponseEntity<>(grupos, HttpStatus.OK);
     }
 
+    @GetMapping
+    public ResponseEntity<List<GrupoDTO>> getAllGrupos() {
+        List<GrupoDTO> grupos = grupoService.getAllGrupos();
+        return new ResponseEntity<>(grupos, HttpStatus.OK);
+    }
+
+    @GetMapping("/{grupoId}")
+    public ResponseEntity<GrupoDTO> getGrupoById(@PathVariable Integer grupoId) {
+        GrupoDTO grupo = grupoService.getGrupoById(grupoId);
+        return new ResponseEntity<>(grupo, HttpStatus.OK);
+    }
+
     @PostMapping
     public ResponseEntity<GrupoDTO> create(@Valid @RequestBody GrupoCreateDTO grupoCreateDTO) {
         GrupoDTO grupoDTO = grupoService.create(grupoCreateDTO);

@@ -5,6 +5,9 @@ import com.healthybites.dto.SeguimientoDTO;
 import com.healthybites.service.SeguimientoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,6 +27,28 @@ public class SeguimientoController {
     public ResponseEntity<List<SeguimientoDTO>> getAll(@PathVariable Integer metaId) {
         List<SeguimientoDTO> seguimientos = seguimientoService.getAll(metaId);
         return new ResponseEntity<>(seguimientos, HttpStatus.OK);
+    }
+
+    @GetMapping("/cliente/{clienteId}")
+    public ResponseEntity<List<SeguimientoDTO>> getAllByClienteId(@PathVariable Integer metaId, @PathVariable Integer clienteId) {
+        List<SeguimientoDTO> seguimientos = seguimientoService.getAllSeguimientosByMetaIdAndClienteId(metaId, clienteId);
+        return new ResponseEntity<>(seguimientos, HttpStatus.OK);
+    }
+
+    @GetMapping("/cliente/{clienteId}/page")
+    public ResponseEntity<Page<SeguimientoDTO>> paginateByClienteId(
+            @PathVariable Integer metaId,
+            @PathVariable Integer clienteId,
+            @PageableDefault(size = 5, sort = "fecha") Pageable pageable) {
+        Page<SeguimientoDTO> page = seguimientoService.paginateSeguimientosByMetaIdAndClienteId(metaId, clienteId, pageable);
+        return new ResponseEntity<>(page, HttpStatus.OK);
+    }
+
+    @GetMapping("/page")
+    public ResponseEntity<Page<SeguimientoDTO>>paginate(
+            @PageableDefault(size = 5, sort = "fecha") Pageable pageable) {
+        Page<SeguimientoDTO> page = seguimientoService.paginate(pageable);
+        return new ResponseEntity<>(page, HttpStatus.OK);
     }
 
     @PostMapping

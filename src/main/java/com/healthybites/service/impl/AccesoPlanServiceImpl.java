@@ -73,5 +73,18 @@ public class AccesoPlanServiceImpl implements AccesoPlanService {
                 .map(planAlimenticioMapper::toDTO)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public boolean isClientePremiumOrVip(Integer clientId) {
+        Cliente cliente = clienteRepository.findById(clientId)
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+
+        TipoSuscripcion tipoSuscripcion = cliente.getUsuario().getSuscripcion().getTipoSuscripcion();
+        if (tipoSuscripcion == TipoSuscripcion.BASICO) {
+            return false;
+        } else {
+            return tipoSuscripcion == TipoSuscripcion.PREMIUM || tipoSuscripcion == TipoSuscripcion.VIP;
+        }
+    }
 }
 

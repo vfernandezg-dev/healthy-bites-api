@@ -20,12 +20,20 @@ public class SwaggerAPIConfig {
     @Value("${healthybites.openapi.dev-url}")
     private String devUrl;
 
+    @Value("${healthybites.openapi.prod-url}")
+    private String prodUrl;
+
     @Bean
     public OpenAPI myOpenAPI() {
         // Definir el servidor de desarrollo
         Server devServer = new Server();
         devServer.setUrl(devUrl);
         devServer.setDescription("Development server");
+
+        // Definir el servidor de producción
+        Server prodServer = new Server();
+        prodServer.setUrl(prodUrl);
+        prodServer.setDescription("Produccion server");
 
         // Informacion de contacto
         Contact contact = new Contact();
@@ -59,7 +67,7 @@ public class SwaggerAPIConfig {
 
         return new OpenAPI()
                 .info(info)
-                .servers(List.of(devServer))
+                .servers(List.of(devServer, prodServer))
                 .addSecurityItem(securityRequirement)
                 .components(components);
     }

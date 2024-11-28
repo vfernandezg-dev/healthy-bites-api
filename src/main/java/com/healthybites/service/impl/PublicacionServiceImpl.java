@@ -26,8 +26,25 @@ public class PublicacionServiceImpl implements PublicacionService {
     private final PublicacionMapper publicacionMapper;
 
     @Override
+    public List<PublicacionDTO> getAll() {
+        List<Publicacion> publicaciones = publicacionRepository.findAll();
+        return publicaciones.stream()
+                .map(publicacionMapper::toDTO)
+                .toList();
+    }
+
+    @Override
     public List<PublicacionDTO> getAll(Integer id) {
         List<Publicacion> publicaciones = publicacionRepository.findByClienteId(id);
+
+        return publicaciones.stream()
+                .map(publicacionMapper::toDTO)
+                .toList();
+    }
+
+    @Override
+    public List<PublicacionDTO> getPublicacionesByGrupoId(Integer grupoId) {
+        List<Publicacion> publicaciones = publicacionRepository.findByGrupoId(grupoId);
 
         return publicaciones.stream()
                 .map(publicacionMapper::toDTO)

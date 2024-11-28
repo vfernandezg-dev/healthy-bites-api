@@ -23,12 +23,14 @@ public class UsuarioMapper {
         UserProfileDTO userProfileDTO = modelMapper.map(user, UserProfileDTO.class);
 
         if (user.getNutricionista() != null) {
+            userProfileDTO.setId(user.getNutricionista().getId());
             userProfileDTO.setNombre(user.getNutricionista().getNombre());
             userProfileDTO.setApellido(user.getNutricionista().getApellido());
             userProfileDTO.setBio(user.getNutricionista().getBio());
         }
 
         if (user.getCliente() != null) {
+            userProfileDTO.setId(user.getCliente().getId());
             userProfileDTO.setNombre(user.getCliente().getNombre());
             userProfileDTO.setApellido(user.getCliente().getApellido());
             userProfileDTO.setSexo(user.getCliente().getSexo());
@@ -57,8 +59,12 @@ public class UsuarioMapper {
                 : (user.getCliente() != null) ? user.getCliente().getApellido()
                 : "User";
 
+        authResponseDTO.setId(user.getId());
         authResponseDTO.setNombre(nombre);
         authResponseDTO.setApellido(apellido);
+
+        authResponseDTO.setClienteId(user.getCliente() != null ? user.getCliente().getId() : null); // Obtener el id del cliente
+        authResponseDTO.setNutricionistaId(user.getNutricionista() != null ? user.getNutricionista().getId() : null); // Obtener el id del nutricionista
 
         authResponseDTO.setRole(user.getRol().getNombre().name()); // Obtener el rol del usuario
 

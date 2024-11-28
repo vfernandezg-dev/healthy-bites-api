@@ -1,7 +1,7 @@
 package com.healthybites.mapper;
 
 import com.healthybites.dto.ContenidoCreateUpdateDTO;
-import com.healthybites.dto.ContenidoDetailsDTO;
+import com.healthybites.dto.ContenidoDTO;
 import com.healthybites.model.entity.Contenido;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
@@ -16,8 +16,8 @@ public class ContenidoMapper {
         this.modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
     }
 
-    public ContenidoDetailsDTO toDTO(Contenido contenido) {
-        ContenidoDetailsDTO contenidoDetailsDTO = modelMapper.map(contenido, ContenidoDetailsDTO.class);
+    public ContenidoDTO toDTO(Contenido contenido) {
+        ContenidoDTO contenidoDetailsDTO = modelMapper.map(contenido, ContenidoDTO.class);
 
         contenidoDetailsDTO.setNutricionistaNombre(contenido.getNutricionista().getNombre() + " " + contenido.getNutricionista().getApellido());
 

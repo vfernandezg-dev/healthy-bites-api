@@ -9,6 +9,8 @@ import lombok.Data;
 @Data
 public class UserRegistrationDTO {
 
+    private Integer id;
+
     @NotBlank(message = "El nombre es obligatorio")
     private String nombre;
 

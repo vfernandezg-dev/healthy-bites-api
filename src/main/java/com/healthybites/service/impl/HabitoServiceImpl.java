@@ -33,6 +33,13 @@ public class HabitoServiceImpl implements HabitoService {
     }
 
     @Override
+    public HabitoDTO findById(Integer id) {
+        Habito habito = habitoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Hábito no encontrado con id: " + id));
+        return habitoMapper.toDTO(habito);
+    }
+
+    @Override
     public HabitoDTO registrarHabito(HabitoCreateDTO habitoCreateDTO) {
         LocalDateTime now = LocalDateTime.now();
         Integer clienteId = habitoCreateDTO.getClienteId();

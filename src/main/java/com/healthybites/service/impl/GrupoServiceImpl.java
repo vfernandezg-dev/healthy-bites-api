@@ -32,6 +32,21 @@ public class GrupoServiceImpl implements GrupoService {
     }
 
     @Override
+    public List<GrupoDTO> getAllGrupos() {
+        List<Grupo> grupos = grupoRepository.findAll();
+        return grupos.stream()
+                .map(grupoMapper::toDTO)
+                .toList();
+    }
+
+    @Override
+    public GrupoDTO getGrupoById(Integer grupoId) {
+        GrupoDTO grupoDTO = grupoMapper.toDTO(grupoRepository.findById(grupoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Grupo con id " + grupoId + " no encontrado")));
+        return grupoDTO;
+    }
+
+    @Override
     public GrupoDTO findByIdAndClienteId(Integer grupoId, Integer clienteId) {
         Grupo grupo = grupoRepository.findByIdAndClienteId(grupoId, clienteId)
                 .orElseThrow(() -> new ResourceNotFoundException("Grupo con id " + grupoId + " y clienteId " + clienteId + " no encontrado"));

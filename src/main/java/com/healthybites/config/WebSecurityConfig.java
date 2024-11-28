@@ -43,7 +43,7 @@ public class WebSecurityConfig {
                         // Permitir acceso a los endpoints de registro y login sin autenticación
                         .requestMatchers(antMatcher("/auth/login")).permitAll()
                         .requestMatchers(antMatcher("/auth/register/**")).permitAll()
-                        //.requestMatchers(antMatcher("/books/recent")).permitAll()
+                        .requestMatchers(antMatcher("/media/**")).permitAll()
                         .requestMatchers(antMatcher("/mail/**")).permitAll()
                         .requestMatchers("/api/v1/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/webjars/**").permitAll()
                         // Cualquier otra solicitud requiere autenticación

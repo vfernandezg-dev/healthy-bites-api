@@ -43,4 +43,10 @@ public class AccesoPlanController {
         List<PlanAlimenticioDTO> planes = accesoPlanService.getAllPlansByClient(clientId);
         return new ResponseEntity<>(planes, HttpStatus.OK);
     }
+
+    @GetMapping("/{clientId}/is-premium-or-vip")
+    public ResponseEntity<Boolean> isClientePremiumOrVip(@PathVariable Integer clientId) {
+        boolean isPremiumOrVip = accesoPlanService.isClientePremiumOrVip(clientId);
+        return new ResponseEntity<>(isPremiumOrVip, HttpStatus.OK);
+    }
 }

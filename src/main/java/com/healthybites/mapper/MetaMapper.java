@@ -22,6 +22,7 @@ public class MetaMapper {
         MetaDTO metaDTO = modelMapper.map(meta, MetaDTO.class);
 
         metaDTO.setClienteNombre(meta.getCliente().getNombre() + " " + meta.getCliente().getApellido());
+        metaDTO.setMetaId(meta.getId());
 
         return metaDTO;
     }

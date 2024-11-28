@@ -1,6 +1,6 @@
 package com.healthybites.service.impl;
 
-import com.healthybites.dto.ContenidoDetailsDTO;
+import com.healthybites.dto.ContenidoDTO;
 import com.healthybites.mapper.ContenidoMapper;
 import com.healthybites.model.entity.AccesoContenido;
 import com.healthybites.model.entity.Cliente;
@@ -14,7 +14,6 @@ import com.healthybites.service.AccesoContenidoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.lang.ref.PhantomReference;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,7 +28,7 @@ public class AccesoContenidoServiceImpl implements AccesoContenidoService {
     private final ClienteRepository clienteRepository;
 
     @Override
-    public ContenidoDetailsDTO addContentToClient(Integer clientId, Integer contentId) {
+    public ContenidoDTO addContentToClient(Integer clientId, Integer contentId) {
         Cliente cliente = clienteRepository.findById(clientId)
                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
 
@@ -57,7 +56,7 @@ public class AccesoContenidoServiceImpl implements AccesoContenidoService {
     }
 
     @Override
-    public List<ContenidoDetailsDTO> getAllContentByClient(Integer clientId) {
+    public List<ContenidoDTO> getAllContentByClient(Integer clientId) {
         Cliente cliente = clienteRepository.findById(clientId)
                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
 
@@ -85,5 +84,18 @@ public class AccesoContenidoServiceImpl implements AccesoContenidoService {
                 .collect(Collectors.toList());
     }
 
+
+    @Override
+    public boolean isClientePremiumOrVip(Integer clientId) {
+        Cliente cliente = clienteRepository.findById(clientId)
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+
+        TipoSuscripcion tipoSuscripcion = cliente.getUsuario().getSuscripcion().getTipoSuscripcion();
+        if (tipoSuscripcion == TipoSuscripcion.BASICO) {
+            return false;
+        } else {
+            return tipoSuscripcion == TipoSuscripcion.PREMIUM || tipoSuscripcion == TipoSuscripcion.VIP;
+        }
+    }
 }
 

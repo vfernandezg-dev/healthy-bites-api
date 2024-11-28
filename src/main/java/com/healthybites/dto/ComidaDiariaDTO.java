@@ -11,4 +11,5 @@ public class ComidaDiariaDTO {
     private int calorias;
     private CategoriaComida categoria;
     private PlanObjetivo nombrePlanAlimenticio;
+    private Integer planAlimenticioId;
 }

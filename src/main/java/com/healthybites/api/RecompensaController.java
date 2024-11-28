@@ -15,7 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/recompensa")
-@PreAuthorize("hasAnyRole('NUTRICIONISTA','ADMIN')")
+@PreAuthorize("hasAnyRole('NUTRICIONISTA','CLIENTE')")
 public class RecompensaController {
 
     private final RecompensaService recompensaService;

@@ -14,31 +14,37 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/plan-alimenticio/{planId}/comidas")
-@PreAuthorize("hasAnyRole('ADMIN','NUTRICIONISTA')")
+@RequestMapping("/plan-alimenticio")
+@PreAuthorize("hasAnyRole('CLIENTE','NUTRICIONISTA')")
 public class ComidaDiariaController {
 
     private final ComidaDiariaService comidaDiariaService;
 
-    @GetMapping
-    public ResponseEntity<List<ComidaDiariaDTO>> getAll(@PathVariable Integer planId) {
-        List<ComidaDiariaDTO> comidasDiarias = comidaDiariaService.getAll(planId);
+    @GetMapping("/{planId}/comidas")
+    public ResponseEntity<List<ComidaDiariaDTO>> getAllByPlanId(@PathVariable Integer planId) {
+        List<ComidaDiariaDTO> comidasDiarias = comidaDiariaService.getAllByPlanId(planId);
         return new ResponseEntity<>(comidasDiarias, HttpStatus.OK);
     }
 
-    @PostMapping
+    @GetMapping("/comidas/nutricionista/{nutricionistaId}")
+    public ResponseEntity<List<ComidaDiariaDTO>> getAllByNutricionistaId(@PathVariable Integer nutricionistaId) {
+        List<ComidaDiariaDTO> comidasDiarias = comidaDiariaService.getAllByNutricionisitaId(nutricionistaId);
+        return new ResponseEntity<>(comidasDiarias, HttpStatus.OK);
+    }
+
+    @PostMapping("/{planId}/comidas")
     public ResponseEntity<ComidaDiariaDTO> create(@PathVariable Integer planId, @Valid @RequestBody ComidaDiariaCreateDTO comidaDiariaCreateDTO) {
         ComidaDiariaDTO comidaDiariaDTO = comidaDiariaService.create(planId, comidaDiariaCreateDTO);
         return new ResponseEntity<>(comidaDiariaDTO, HttpStatus.CREATED);
     }
 
-    @GetMapping("/{comidaId}")
+    @GetMapping("/{planId}/comidas/{comidaId}")
     public ResponseEntity<ComidaDiariaDTO> getById(@PathVariable Integer planId, @PathVariable Integer comidaId) {
         ComidaDiariaDTO comidaDiaria = comidaDiariaService.findByIdAndPlanId(comidaId, planId);
         return new ResponseEntity<>(comidaDiaria, HttpStatus.OK);
     }
 
-    @PutMapping("/{comidaId}")
+    @PutMapping("/{planId}/comidas/{comidaId}")
     public ResponseEntity<ComidaDiariaDTO> update(@PathVariable Integer planId,
                                                   @PathVariable Integer comidaId,
                                                   @Valid @RequestBody ComidaDiariaCreateDTO updatedComidaDiariaDTO) {
@@ -46,7 +52,7 @@ public class ComidaDiariaController {
         return new ResponseEntity<>(updatedComidaDiaria, HttpStatus.OK);
     }
 
-    @DeleteMapping("/{comidaId}")
+    @DeleteMapping("/{planId}/comidas/{comidaId}")
     public ResponseEntity<Void> delete(@PathVariable Integer planId, @PathVariable Integer comidaId) {
         comidaDiariaService.delete(planId, comidaId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

@@ -12,4 +12,5 @@ public interface RachaService {
 
     List<RecompensaDetailsDTO> getAllRecompensasByClient(Integer clientId);
 
+
 }

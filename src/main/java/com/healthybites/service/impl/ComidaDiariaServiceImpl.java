@@ -24,8 +24,20 @@ public class ComidaDiariaServiceImpl implements ComidaDiariaService {
     private final ComidaDiariaMapper comidaDiariaMapper;
 
     @Override
-    public List<ComidaDiariaDTO> getAll(Integer planId) {
+    public List<ComidaDiariaDTO> getAllByPlanId(Integer planId) {
         List<ComidaDiaria> comidaDiarias = comidaDiariaRepository.findByPlanAlimenticioId(planId);
+
+        return comidaDiarias.stream()
+                .map(comidaDiariaMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ComidaDiariaDTO> getAllByNutricionisitaId(Integer nutricionistaId) {
+        List<ComidaDiaria> comidaDiarias = planAlimenticioRepository.findByNutricionistaId(nutricionistaId).stream()
+                .map(PlanAlimenticio::getComidasDiarias)
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
 
         return comidaDiarias.stream()
                 .map(comidaDiariaMapper::toDTO)

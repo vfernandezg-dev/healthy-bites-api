@@ -35,6 +35,21 @@ public class PlanAlimenticioServiceImpl implements PlanAlimenticioService {
     }
 
     @Override
+    public List<PlanAlimenticioDTO> listAll() {
+        List<PlanAlimenticio> planAlimenticios = planAlimenticioRepository.findAll();
+        return planAlimenticios.stream()
+                .map(planAlimenticioMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public PlanAlimenticioDTO findById(Integer planId) {
+        PlanAlimenticio planAlimenticio = planAlimenticioRepository.findById(planId)
+                .orElseThrow(() -> new ResourceNotFoundException("Plan alimenticio con id " + planId + " no encontrado"));
+        return planAlimenticioMapper.toDTO(planAlimenticio);
+    }
+
+    @Override
     public PlanAlimenticioDTO findByIdAndNutricionistaId(Integer planId, Integer nutricionistaId) {
         PlanAlimenticio planAlimenticio = planAlimenticioRepository.findByIdAndNutricionistaId(planId, nutricionistaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Plan alimenticio con id " + planId + " y nutricionistaId " + nutricionistaId + " no encontrado"));

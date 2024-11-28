@@ -20,9 +20,21 @@ public class PublicacionController {
 
     private final PublicacionService publicacionService;
 
+    @GetMapping
+    public ResponseEntity<List<PublicacionDTO>> getAllPublicacion() {
+        List<PublicacionDTO> publicaciones = publicacionService.getAll();
+        return new ResponseEntity<>(publicaciones, HttpStatus.OK);
+    }
+
     @GetMapping("/cliente/{id}")
     public ResponseEntity<List<PublicacionDTO>> getAll(@PathVariable Integer id) {
         List<PublicacionDTO> publicaciones = publicacionService.getAll(id);
+        return new ResponseEntity<>(publicaciones, HttpStatus.OK);
+    }
+
+    @GetMapping("/grupo/{grupoId}")
+    public ResponseEntity<List<PublicacionDTO>> getPublicacionesByGrupoId(@PathVariable Integer grupoId) {
+        List<PublicacionDTO> publicaciones = publicacionService.getPublicacionesByGrupoId(grupoId);
         return new ResponseEntity<>(publicaciones, HttpStatus.OK);
     }
 

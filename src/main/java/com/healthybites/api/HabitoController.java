@@ -26,6 +26,12 @@ public class HabitoController {
         return ResponseEntity.ok(habitos);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<HabitoDTO> getHabitoById(@PathVariable Integer id) {
+        HabitoDTO habitoDTO = habitoService.findById(id);
+        return ResponseEntity.ok(habitoDTO);
+    }
+
     @PostMapping
     public ResponseEntity<HabitoDTO> registrarHabito(@Valid @RequestBody HabitoCreateDTO habitoCreateDTO) {
         HabitoDTO habitoDTO = habitoService.registrarHabito(habitoCreateDTO);
@@ -39,7 +45,7 @@ public class HabitoController {
     }
 
     @DeleteMapping("/{habitoId}")
-    public ResponseEntity<Void> deleteHabito(@PathVariable Integer habitoId) {
+    public ResponseEntity<Void> deleteHabito(@PathVariable Integer habitoId)    {
         habitoService.delete(habitoId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

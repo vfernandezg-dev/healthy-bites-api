@@ -4,6 +4,7 @@ import com.healthybites.dto.AuthResponseDTO;
 import com.healthybites.dto.LoginDTO;
 import com.healthybites.dto.UserProfileDTO;
 import com.healthybites.dto.UserRegistrationDTO;
+import com.healthybites.exception.BadRequestException;
 import com.healthybites.exception.RoleNotFoundException;
 import com.healthybites.mapper.UsuarioMapper;
 import com.healthybites.model.entity.Cliente;
@@ -22,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,6 +71,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         if (user.getCliente() != null) {
             Cliente cliente = user.getCliente();
+            cliente.setId(profileDTO.getId());
             cliente.setNombre(profileDTO.getNombre());
             cliente.setApellido(profileDTO.getApellido());
             cliente.setSexo(profileDTO.getSexo());
@@ -78,6 +81,7 @@ public class UsuarioServiceImpl implements UsuarioService {
             cliente.setFechaActualizacion(LocalDateTime.now());
         } else if (user.getNutricionista() != null) {
             Nutricionista nutricionista = user.getNutricionista();
+            nutricionista.setId(profileDTO.getId());
             nutricionista.setNombre(profileDTO.getNombre());
             nutricionista.setApellido(profileDTO.getApellido());
             nutricionista.setBio(profileDTO.getBio());
@@ -98,6 +102,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
         Usuario user = userPrincipal.getUsuario();
+
 
         String token = tokenProvider.createAccessToken(authentication);
 

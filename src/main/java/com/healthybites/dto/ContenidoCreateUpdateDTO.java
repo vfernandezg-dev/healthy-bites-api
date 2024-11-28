@@ -17,11 +17,19 @@ public class ContenidoCreateUpdateDTO {
     @Size(max = 4000, message = "La descripción ha superado los 4000 caracteres.")
     private String descripcion;
 
+    @NotBlank(message = "El slug es obligatorio")
+    @Size(max = 255, message = "El slug debe tener 255 caracteres o menos")
+    private String slug;
+
     @NotNull(message= "Debes ingresar un tipo de contenido.")
     private TipoContenido tipoContenido;
 
     @NotNull(message= "Debes indicar que categoría de contenido estás ingresando.")
     private CategoriaContenido categoriaContenido;
+
+    private String coverPath;
+
+    private String filePath;
 
     @NotNull(message= "Debes indicar si el contenido es gratis o no.")
     private boolean esGratis;

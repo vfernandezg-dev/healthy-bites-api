@@ -9,6 +9,8 @@ import java.util.List;
 public interface PlanAlimenticioService {
 
     List<PlanAlimenticioDTO> getAll(Integer id);
+    List<PlanAlimenticioDTO> listAll();
+    PlanAlimenticioDTO findById(Integer planId);
     PlanAlimenticioDTO findByIdAndNutricionistaId(Integer planId, Integer nutricionistaId);
     PlanAlimenticioDTO create(PlanAlimenticioCreateDTO planAlimenticioCreateDTO);
     PlanAlimenticioDTO update(Integer planId, Integer nutricionistaId, PlanAlimenticioCreateDTO updatedPlanAlimenticioDTO);

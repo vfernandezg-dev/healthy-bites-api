@@ -13,4 +13,6 @@ public interface AccesoPlanService {
 
     // Metodo para obtener todos los planes de un cliente
     List<PlanAlimenticioDTO> getAllPlansByClient(Integer clientId);
+
+    boolean isClientePremiumOrVip(Integer clientId);
 }

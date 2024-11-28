@@ -1,7 +1,7 @@
 package com.healthybites.service.impl;
 
 import com.healthybites.dto.ContenidoCreateUpdateDTO;
-import com.healthybites.dto.ContenidoDetailsDTO;
+import com.healthybites.dto.ContenidoDTO;
 import com.healthybites.exception.BadRequestException;
 import com.healthybites.exception.ResourceNotFoundException;
 import com.healthybites.mapper.ContenidoMapper;
@@ -27,8 +27,16 @@ public class ContenidoServiceImpl implements ContenidoService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<ContenidoDetailsDTO> getAll() {
+    public List<ContenidoDTO> getAll() {
         List<Contenido> contenidos = contenidoRepository.findAll();
+        return contenidos.stream()
+                .map(contenidoMapper::toDTO)
+                .toList();
+    }
+
+    @Override
+    public List<ContenidoDTO> getAllByNutricionistaId(Integer nutricionistaId) {
+        List<Contenido> contenidos = contenidoRepository.findAllByNutricionistaId(nutricionistaId);
         return contenidos.stream()
                 .map(contenidoMapper::toDTO)
                 .toList();
@@ -36,14 +44,14 @@ public class ContenidoServiceImpl implements ContenidoService {
 
     @Transactional(readOnly = true)
     @Override
-    public ContenidoDetailsDTO findById(Integer id) {
+    public ContenidoDTO findById(Integer id) {
         Contenido contenido = contenidoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Contenido con id " + id + " no encontrado"));
         return contenidoMapper.toDTO(contenido);
     }
 
     @Override
-    public ContenidoDetailsDTO create(ContenidoCreateUpdateDTO contenidoCreateUpdateDTO) {
+    public ContenidoDTO create(ContenidoCreateUpdateDTO contenidoCreateUpdateDTO) {
         contenidoRepository.findByTitulo(contenidoCreateUpdateDTO.getTitulo())
                 .ifPresent(contenido -> {
                     throw new BadRequestException("Contenido con titulo " + contenidoCreateUpdateDTO.getTitulo() + " ya existe");
@@ -62,7 +70,7 @@ public class ContenidoServiceImpl implements ContenidoService {
     }
 
     @Override
-    public ContenidoDetailsDTO update(Integer id, ContenidoCreateUpdateDTO updateContenidoDTO) {
+    public ContenidoDTO update(Integer id, ContenidoCreateUpdateDTO updateContenidoDTO) {
         contenidoRepository.findByTitulo(updateContenidoDTO.getTitulo())
                 .ifPresent(contenidoExistente -> {
                     throw new BadRequestException("Contenido con titulo " + updateContenidoDTO.getTitulo() + " ya existe");

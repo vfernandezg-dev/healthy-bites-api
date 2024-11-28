@@ -1,8 +1,6 @@
 package com.healthybites.api;
 
-import com.healthybites.dto.ContenidoDetailsDTO;
-import com.healthybites.model.entity.AccesoContenido;
-import com.healthybites.model.entity.Contenido;
+import com.healthybites.dto.ContenidoDTO;
 import com.healthybites.service.AccesoContenidoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -11,7 +9,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @RestController
@@ -24,9 +21,9 @@ public class AccesoContenidoController {
     // Metodo para agregar un contenido a un cliente
     //http://localhost:8080/acceso-contenido/1/add-contenido?contentId=1
     @PostMapping("/{clientId}/add-contenido")
-    public ResponseEntity<ContenidoDetailsDTO> addContentToClient(@PathVariable Integer clientId,
-                                                                  @RequestParam Integer contentId) {
-        ContenidoDetailsDTO contenidoDetailsDTO = accesoContenidoService.addContentToClient(clientId, contentId);
+    public ResponseEntity<ContenidoDTO> addContentToClient(@PathVariable Integer clientId,
+                                                           @RequestParam Integer contentId) {
+        ContenidoDTO contenidoDetailsDTO = accesoContenidoService.addContentToClient(clientId, contentId);
         return new ResponseEntity<>(contenidoDetailsDTO, HttpStatus.CREATED);
     }
 
@@ -42,17 +39,22 @@ public class AccesoContenidoController {
     // Metodo para obtener todos los contenidos de un cliente
     //http://localhost:8080/acceso-contenido/1/all-contenidos
     @GetMapping("/{clientId}/all-contenidos")
-    public ResponseEntity<List<ContenidoDetailsDTO>> getAllContentByClient(@PathVariable Integer clientId) {
-        List<ContenidoDetailsDTO> contenidos = accesoContenidoService.getAllContentByClient(clientId);
+    public ResponseEntity<List<ContenidoDTO>> getAllContentByClient(@PathVariable Integer clientId) {
+        List<ContenidoDTO> contenidos = accesoContenidoService.getAllContentByClient(clientId);
         return new ResponseEntity<>(contenidos, HttpStatus.OK);
     }
 
     @GetMapping("/{clientId}/contenido/{contentId}")
-    public ResponseEntity<ContenidoDetailsDTO> getContentForClient(@PathVariable Integer clientId,
-                                                                   @PathVariable Integer contentId) {
-        ContenidoDetailsDTO contenidoDetailsDTO = accesoContenidoService.addContentToClient(clientId, contentId);
+    public ResponseEntity<ContenidoDTO> getContentForClient(@PathVariable Integer clientId,
+                                                            @PathVariable Integer contentId) {
+        ContenidoDTO contenidoDetailsDTO = accesoContenidoService.addContentToClient(clientId, contentId);
         return new ResponseEntity<>(contenidoDetailsDTO, HttpStatus.OK);
     }
 
+    @GetMapping("/{clientId}/is-premium-or-vip")
+    public ResponseEntity<Boolean> isClientePremiumOrVip(@PathVariable Integer clientId) {
+        boolean isPremiumOrVip = accesoContenidoService.isClientePremiumOrVip(clientId);
+        return new ResponseEntity<>(isPremiumOrVip, HttpStatus.OK);
+    }
 
 }

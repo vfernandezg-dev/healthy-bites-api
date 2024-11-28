@@ -22,6 +22,7 @@ public class PublicacionMapper {
 
         publicacionDTO.setNombreCliente(publicacion.getCliente().getNombre() + " " + publicacion.getCliente().getApellido());
         publicacionDTO.setNombreGrupo(publicacion.getGrupo().getNombre());
+        publicacionDTO.setClienteId(publicacion.getCliente().getId());
 
         return publicacionDTO;
     }

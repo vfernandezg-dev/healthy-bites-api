@@ -22,6 +22,7 @@ public class ComidaDiariaMapper {
         ComidaDiariaDTO comidaDiariaDTO = modelMapper.map(comidaDiaria, ComidaDiariaDTO.class);
 
         comidaDiariaDTO.setNombrePlanAlimenticio(comidaDiaria.getPlanAlimenticio().getPlanObjetivo());
+        comidaDiariaDTO.setPlanAlimenticioId(comidaDiaria.getPlanAlimenticio().getId());
 
         return comidaDiariaDTO;
     }
