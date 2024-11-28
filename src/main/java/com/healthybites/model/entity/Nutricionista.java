@@ -20,7 +20,7 @@ public class Nutricionista {
     @Column(name = "apellido", nullable = false)
     private String apellido;
 
-    @Column(name = "bio", nullable = false)
+    @Column(name = "bio")
     private String bio;
 
     @Column(name = "fecha_creacion", nullable = false)

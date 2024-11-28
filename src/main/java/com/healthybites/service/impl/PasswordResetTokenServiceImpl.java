@@ -46,7 +46,7 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
         passwordResetTokenRepository.save(passwordResetToken);
 
         Map<String, Object> model = new HashMap<>();
-        String resetUrl = "http://localhost:4200/auth/reset-password/" + passwordResetToken.getToken();
+        String resetUrl = "https://healthy-bites-v1.netlify.app/auth/reset-password/" + passwordResetToken.getToken();
         model.put("user", usuario.getCorreo());
         model.put("resetUrl", resetUrl);
 

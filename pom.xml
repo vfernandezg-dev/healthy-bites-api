@@ -11,7 +11,7 @@
     <groupId>com.healthybites</groupId>
     <artifactId>healthy-bites</artifactId>
     <!--<version>0.0.1-SNAPSHOT</version>-->
-    <version>0.0.1</version>
+    <version>1.0.0</version>
     <name>healthy-bites</name>
     <description>healthy-bites</description>
     <url/>

@@ -2,7 +2,7 @@
 FROM openjdk:21-jdk-slim
 
 # Define la variable del archivo JAR
-ARG JAR_FILE=target/healthy-bites-0.0.1.jar
+ARG JAR_FILE=target/healthy-bites-1.0.0.jar
 
 # Copia el archivo JAR al contenedor
 COPY ${JAR_FILE} healthy-bites.jar

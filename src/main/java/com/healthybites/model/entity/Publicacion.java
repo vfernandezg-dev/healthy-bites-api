@@ -18,7 +18,7 @@ public class Publicacion {
     @Column(name = "titulo", nullable = false)
     private String titulo;
 
-    @Column(name = "descripcion", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "descripcion", nullable = false)
     private String descripcion;
 
     @Column(name = "publicacion_path")
