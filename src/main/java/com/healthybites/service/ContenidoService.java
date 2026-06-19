@@ -1,14 +1,15 @@
 package com.healthybites.service;
 
-import com.healthybites.dto.ContenidoCreateUpdateDTO;
-import com.healthybites.dto.ContenidoDetailsDTO;
+import com.healthybites.model.entity.Contenido;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 public interface ContenidoService {
-    List<ContenidoDetailsDTO> getAll();
-    ContenidoDetailsDTO findById(Integer id);
-    ContenidoDetailsDTO create(ContenidoCreateUpdateDTO contenidoCreateUpdateDTO);
-    ContenidoDetailsDTO update(Integer id, ContenidoCreateUpdateDTO updateContenidoDTO);
-    void delete(Integer id);
+    Contenido createContenido(Contenido contenido);
+    List<Contenido> getAllContenidoByUser(Integer userId);
+    Contenido getContenidoById(Integer contenidoId);
+    Contenido updateContenido(Integer contenidoId, Contenido contenido);
+    void deleteContenido(Integer contenidoId);
 }

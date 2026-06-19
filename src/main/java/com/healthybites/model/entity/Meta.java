@@ -3,7 +3,7 @@ package com.healthybites.model.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -23,17 +23,19 @@ public class Meta {
     @Column(name = "peso_objetivo", nullable = false)
     private double pesoObjetivo;
 
-    @Column(name = "fecha_creacion", nullable = false)
-    private LocalDateTime fechaCreacion;
-
-    @Column(name = "fecha_actualizacion", nullable = false)
-    private LocalDateTime fechaActualizacion;
 
     @OneToMany(mappedBy = "meta", cascade = CascadeType.ALL)
     private List<Seguimiento> seguimiento;
+
 
     @ManyToOne
     @JoinColumn(name = "id_cliente", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "FK_meta_cliente"))
     private Cliente cliente;
+
+    private EstadoMeta estado;
+
+    @ElementCollection
+    private List<EstadoMeta> historialEstados = new ArrayList<>();
+
 }

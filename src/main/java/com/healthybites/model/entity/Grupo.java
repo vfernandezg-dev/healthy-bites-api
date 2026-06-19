@@ -1,9 +1,9 @@
 package com.healthybites.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -20,15 +20,10 @@ public class Grupo {
     @Column(name = "es_privado", nullable = false)
     private boolean esPrivado;
 
-    @Column(name = "fecha_creacion", nullable = false)
-    private LocalDateTime fechaCreacion;
+    @OneToMany(mappedBy = "grupo", cascade = CascadeType.ALL)
+    private List<Unirse> unirse;
 
-    @Column(name = "fecha_actualizacion", nullable = false)
-    private LocalDateTime fechaActualizacion;
-
-    /*@OneToMany(mappedBy = "grupo", cascade = CascadeType.ALL)
-    private List<Cliente> clientes;*/
-
+    @JsonIgnore
     @OneToMany(mappedBy = "grupo", cascade = CascadeType.ALL)
     private List<Publicacion> publicaciones;
 }

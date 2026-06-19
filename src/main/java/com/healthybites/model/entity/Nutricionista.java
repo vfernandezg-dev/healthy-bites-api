@@ -1,9 +1,9 @@
 package com.healthybites.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -20,20 +20,16 @@ public class Nutricionista {
     @Column(name = "apellido", nullable = false)
     private String apellido;
 
-    @Column(name = "fecha_creacion", nullable = false)
-    private LocalDateTime fechaCreacion;
-
-    @Column(name = "fecha_actualizacion", nullable = false)
-    private LocalDateTime fechaActualizacion;
-
+    /*@JsonIgnore
     @OneToMany(mappedBy = "nutricionista", cascade = CascadeType.ALL)
+    private List<PlanAlimenticio> planesAlimenticios;*/
+
+    @OneToMany(mappedBy = "nutricionista")
     private List<PlanAlimenticio> planesAlimenticios;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "nutricionista", cascade = CascadeType.ALL)
     private List<Contenido> contenidos;
-
-    @OneToMany(mappedBy = "nutricionista", cascade = CascadeType.ALL)
-    private List<Recompensa> recompensas;
 
     @OneToOne
     @JoinColumn(name = "id_usuario", referencedColumnName = "id",

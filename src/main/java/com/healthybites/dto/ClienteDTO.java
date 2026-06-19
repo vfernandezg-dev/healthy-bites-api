@@ -1,32 +1,55 @@
 package com.healthybites.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import com.healthybites.model.entity.Cliente;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 @Data
 public class ClienteDTO {
     private Integer id;
-
     @NotBlank(message = "El nombre es obligatorio")
-    @Size(max = 50, message = "El nombre debe tener 50 caracteres o menos")
+    @Size(max = 50, message = "El nombre no puede tener más de 50 caracteres")
     private String nombre;
 
-    @NotBlank(message = "El apellido es obligatorio")
-    @Size(max = 50, message = "El apellido debe tener 50 caracteres o menos")
+    @NotBlank(message = "El apellido no es obligatorio")
+    @Size(max = 50, message = "El apellido no puede tener más de 50 caracteres")
     private String apellido;
 
-    @NotBlank(message = "El sexo es obligatorio")
+    @Size(max = 10, message = "Masculino o femenino")
     private String sexo;
 
-    @NotNull(message = "La edad es obligatorio")
+    @Email(message = "El correo debe ser un email válido")
+    @NotBlank(message = "El correo es obligatorio")
+    private String correo;
+
+    @Positive(message = "La edad debe ser un número positivo")
     private int edad;
 
-    @NotNull(message = "La altura es obligatorio")
+    @Positive(message = "La altura debe ser un número positivo")
     private double altura;
 
-    @NotNull(message = "El peso es obligatorio")
+    @Positive(message = "El peso debe ser un número positivo")
     private double peso;
 
+    private Integer metaID;
+    private String metaNombre;
+
+    public ClienteDTO(Cliente cliente) {
+        this.id = cliente.getId();
+        this.nombre = cliente.getNombre();
+        this.apellido = cliente.getApellido();
+        this.correo = cliente.getCorreo();
+        this.sexo = cliente.getSexo();
+        this.edad = cliente.getEdad();
+        this.altura = cliente.getAltura();
+        this.peso = cliente.getPeso();
+        this.metaID = cliente.getMeta().getId();
+        this.metaNombre = cliente.getMeta().getNombre();
+    }
+
+
+    private MetaDTO meta;  // Asociación con MetaDTO
+
+
 }
+

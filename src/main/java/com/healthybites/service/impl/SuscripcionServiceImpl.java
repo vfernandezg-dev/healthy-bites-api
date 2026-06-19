@@ -1,21 +1,16 @@
 package com.healthybites.service.impl;
 
-import com.healthybites.dto.SuscripcionCreateUpdateDTO;
-import com.healthybites.dto.SuscripcionDetailsDTO;
-import com.healthybites.exception.BadRequestException;
-import com.healthybites.exception.ResourceNotFoundException;
-import com.healthybites.mapper.SuscripcionMapper;
 import com.healthybites.model.entity.Cliente;
 import com.healthybites.model.entity.Suscripcion;
-import com.healthybites.model.enums.TipoSuscripcion;
 import com.healthybites.repository.ClienteRepository;
 import com.healthybites.repository.SuscripcionRepository;
 import com.healthybites.service.SuscripcionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -24,73 +19,67 @@ public class SuscripcionServiceImpl implements SuscripcionService {
 
     private final SuscripcionRepository suscripcionRepository;
     private final ClienteRepository clienteRepository;
-    private final SuscripcionMapper suscripcionMapper;
 
-    @Transactional(readOnly = true)
     @Override
-    public List<SuscripcionDetailsDTO> getAll() {
-        List<Suscripcion> suscripciones = suscripcionRepository.findAll();
-        return suscripciones.stream()
-                .map(suscripcionMapper::toDTO)
-                .toList();
+    public Suscripcion createSuscripcion(Suscripcion suscripcion) {
+        return null;
+    }
+
+    @Override
+    public List<Suscripcion> getSuscripcionHistoryByUserId(Integer userId) {
+        return List.of();
+    }
+
+    /*@Transactional(readOnly = true)
+    @Override
+    public List<Suscripcion> getAll() {
+        return suscripcionRepository.findAll();
     }
 
     @Transactional(readOnly = true)
     @Override
-    public SuscripcionDetailsDTO findById(Integer id) {
-        Suscripcion suscripcion = suscripcionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Suscripcion con id " + id + " no encontrado"));
-        return suscripcionMapper.toDTO(suscripcion);
+    public Page<Suscripcion> paginate(Pageable pageable) {
+        return suscripcionRepository.findAll(pageable);
     }
 
+    @Transactional(readOnly = true)
     @Override
-    public SuscripcionDetailsDTO create(SuscripcionCreateUpdateDTO suscripcionCreateUpdateDTO) {
+    public Suscripcion findById(Integer id) {
+        return suscripcionRepository.findById(id).
+                orElseThrow(() -> new RuntimeException("Suscripcion no encontrada"));
+    }
 
-        Cliente cliente = clienteRepository.findById(suscripcionCreateUpdateDTO.getClienteId())
-                .orElseThrow(() -> new ResourceNotFoundException("Cliente con id " + suscripcionCreateUpdateDTO.getClienteId() + " no encontrado"));
-
-        Suscripcion suscripcion = suscripcionMapper.toEntity(suscripcionCreateUpdateDTO);
+    @Transactional
+    @Override
+    public Suscripcion create(Suscripcion suscripcion) {
+         Cliente cliente = clienteRepository.findById(suscripcion.getCliente().getId()).
+                orElseThrow(() -> new RuntimeException("Cliente no encontrado por ID: " + suscripcion.getCliente().getId()));
 
         suscripcion.setCliente(cliente);
-        if (suscripcion.getTipoSuscripcion() == TipoSuscripcion.BASICO) {
-            suscripcion.setFechaInicio(LocalDateTime.now());
-            suscripcion.setFechaFin(LocalDateTime.now().plusYears(100));
-            suscripcion.setPrecio(0.00);
-        } else if (suscripcion.getTipoSuscripcion() == TipoSuscripcion.PREMIUM) {
-            suscripcion.setFechaInicio(LocalDateTime.now());
-            suscripcion.setFechaFin(LocalDateTime.now().plusMonths(1));
-            suscripcion.setPrecio(9.99);
-
-        }
-
-        return suscripcionMapper.toDTO(suscripcionRepository.save(suscripcion));
+        return suscripcionRepository.save(suscripcion);
     }
 
+    @Transactional
     @Override
-    public SuscripcionDetailsDTO update(Integer id, SuscripcionCreateUpdateDTO updateSuscripcionDTO) {
-        Suscripcion suscripcionFromDb = suscripcionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Suscripcion con id " + id + " no encontrado"));
+    public Suscripcion update(Integer id, Suscripcion updateSuscripcion) {
+        Suscripcion suscripcionFromDB = findById(id);
 
-        Cliente cliente = clienteRepository.findById(updateSuscripcionDTO.getClienteId())
-                .orElseThrow(() -> new ResourceNotFoundException("Cliente con id " + updateSuscripcionDTO.getClienteId() + " no encontrado"));
+        Cliente cliente = clienteRepository.findById(updateSuscripcion.getCliente().getId()).
+                orElseThrow(() -> new RuntimeException("Cliente no encontrado por ID: " + updateSuscripcion.getCliente().getId()));
 
-
-        suscripcionFromDb.setTipoSuscripcion(updateSuscripcionDTO.getTipoSuscripcion());
-
-         if (updateSuscripcionDTO.getTipoSuscripcion() == TipoSuscripcion.PREMIUM) {
-             suscripcionFromDb.setFechaInicio(LocalDateTime.now());
-             suscripcionFromDb.setFechaFin(LocalDateTime.now().plusMonths(1));
-             suscripcionFromDb.setPrecio(9.99);
-        }
-         suscripcionFromDb.setCliente(cliente);
-
-        return suscripcionMapper.toDTO(suscripcionRepository.save(suscripcionFromDb));
+        suscripcionFromDB.setTipoSuscripcion(updateSuscripcion.getTipoSuscripcion());
+        suscripcionFromDB.setPrecio(updateSuscripcion.getPrecio());
+        suscripcionFromDB.setFechaInicio(updateSuscripcion.getFechaInicio());
+        suscripcionFromDB.setFechaFin(updateSuscripcion.getFechaFin());
+        suscripcionFromDB.setCliente(cliente);
+        return suscripcionRepository.save(suscripcionFromDB);
     }
 
+    @Transactional
     @Override
     public void delete(Integer id) {
-        Suscripcion suscripcion = suscripcionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Suscripcion con id " + id + " no encontrado"));
+        Suscripcion suscripcion = suscripcionRepository.findById(id).
+                orElseThrow(() -> new RuntimeException("Suscripcion no encontrada por ID: " + id));
         suscripcionRepository.delete(suscripcion);
-    }
+    }*/
 }
