@@ -2,6 +2,7 @@ package com.healthybites.dto;
 
 import com.healthybites.model.enums.CategoriaContenido;
 import com.healthybites.model.enums.TipoContenido;
+
 import lombok.Data;
 
 @Data
