@@ -1,5 +1,7 @@
 package com.healthybites.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -20,6 +22,11 @@ public class Cliente {
     @Column(name = "apellido", nullable = false)
     private String apellido;
 
+    @Column(nullable = false, unique = true)
+    private String correo;
+
+    private String contrasena;
+
     @Column(name = "sexo", nullable = false)
     private String sexo;
 
@@ -32,11 +39,10 @@ public class Cliente {
     @Column(name = "peso", nullable = false)
     private double peso;
 
-    @Column(name = "fecha_creacion", nullable = false)
-    private LocalDateTime fechaCreacion;
-
-    @Column(name = "fecha_actualizacion", nullable = false)
-    private LocalDateTime fechaActualizacion;
+    @ManyToOne
+    @JoinColumn(name = "id_grupo", referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "FK_cliente_grupo"))
+    private Grupo grupo;
 
     @ManyToOne
     @JoinColumn(name = "id_meta", referencedColumnName = "id",
@@ -48,26 +54,17 @@ public class Cliente {
             foreignKey = @ForeignKey(name = "FK_cliente_suscripcion"))
     private Suscripcion suscripcion;
 
-    @ManyToOne
-    @JoinColumn(name = "id_racha", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "FK_cliente_racha"))
-    private Racha racha;
-
-    @OneToOne
-    @JoinColumn(name = "id_usuario", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "FK_cliente_usuario"))
-    private Usuario usuario;
-
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
-    private List<Recompensa> recompensas;
+    private List<Racha> rachas;
 
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
-    private List<Habito> habitos;
+    @JsonIgnore
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "meta_id", referencedColumnName = "id")
+    private Meta meta;  // Relación uno a uno con Meta
 
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
-    private List<AccesoContenido> accesoContenidos;
+    @Column(name = "reset_password_token")
+    private String resetPasswordToken;
 
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
-    private List<AccesoPlan> planesAlimenticios;
-
+    public void setCreatedAt(LocalDateTime now) {
+    }
 }

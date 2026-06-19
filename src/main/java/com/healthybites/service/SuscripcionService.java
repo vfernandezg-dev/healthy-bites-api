@@ -1,14 +1,18 @@
 package com.healthybites.service;
 
-import com.healthybites.dto.SuscripcionCreateUpdateDTO;
-import com.healthybites.dto.SuscripcionDetailsDTO;
-
+import com.healthybites.model.entity.Suscripcion;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface SuscripcionService {
-    List<SuscripcionDetailsDTO> getAll();
-    SuscripcionDetailsDTO findById(Integer id);
-    SuscripcionDetailsDTO create(SuscripcionCreateUpdateDTO suscripcionCreateUpdateDTO);
-    SuscripcionDetailsDTO update(Integer id, SuscripcionCreateUpdateDTO updateSuscripcionDTO);
-    void delete(Integer id);
+    /*List<Suscripcion> getAll();
+    Page<Suscripcion> paginate(Pageable pageable);
+    Suscripcion findById(Integer id);
+    Suscripcion create(Suscripcion suscripcion);
+    Suscripcion update(Integer id, Suscripcion updateSuscripcion);
+    void delete(Integer id);*/
+
+    Suscripcion createSuscripcion(Suscripcion suscripcion);
+    List<Suscripcion> getSuscripcionHistoryByUserId(Integer userId);
 }

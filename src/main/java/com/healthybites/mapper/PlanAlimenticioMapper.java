@@ -1,8 +1,7 @@
 package com.healthybites.mapper;
 
-import com.healthybites.dto.ComidaDiariaDetailsDTO;
-import com.healthybites.dto.PlanAlimenticioCreateDTO;
-import com.healthybites.dto.PlanAlimenticioDTO;
+import com.healthybites.dto.PlanAlimenticioCreateUpdateDTO;
+import com.healthybites.dto.PlanAlimenticioDetailsDTO;
 import com.healthybites.model.entity.PlanAlimenticio;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class PlanAlimenticioMapper {
-
     private final ModelMapper modelMapper;
 
     public PlanAlimenticioMapper(ModelMapper modelMapper) {
@@ -18,22 +16,19 @@ public class PlanAlimenticioMapper {
         this.modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
     }
 
-    public PlanAlimenticioDTO toDTO(PlanAlimenticio planAlimenticio) {
-        PlanAlimenticioDTO planAlimenticioDTO = modelMapper.map(planAlimenticio, PlanAlimenticioDTO.class);
-
-        planAlimenticioDTO.setNutricionistaNombre(planAlimenticio.getNutricionista().getNombre() + " " + planAlimenticio.getNutricionista().getApellido());
-        planAlimenticioDTO.setCaloriasTotales(planAlimenticio.getComidasDiarias().stream().mapToInt(comidaDiaria -> comidaDiaria.getCalorias()).sum());
-        planAlimenticioDTO.getComidasDiarias().forEach(comidaDiaria -> {
-            comidaDiaria.setNombrePlanAlimenticio(planAlimenticio.getPlanObjetivo().toString());
-        });
-        return planAlimenticioDTO;
+    public PlanAlimenticioDetailsDTO toDetailsDTO(PlanAlimenticio planAlimenticio) {
+        PlanAlimenticioDetailsDTO planAlimenticioDetailsDTO = modelMapper.map(planAlimenticio, PlanAlimenticioDetailsDTO.class);
+        planAlimenticioDetailsDTO.setNutricionistaNombre(planAlimenticio.getNutricionista().getNombre() + " " + planAlimenticio.getNutricionista().getApellido());
+        return planAlimenticioDetailsDTO;
     }
 
-    public PlanAlimenticio toEntity(PlanAlimenticioCreateDTO planAlimenticioCreateDTO) {
-        return modelMapper.map(planAlimenticioCreateDTO, PlanAlimenticio.class);
+    public PlanAlimenticio toEntity(PlanAlimenticioCreateUpdateDTO planAlimenticioCreateUpdateDTO) {
+        return modelMapper.map(planAlimenticioCreateUpdateDTO, PlanAlimenticio.class);
     }
 
-    public PlanAlimenticioDTO toCreateUpdateDTO(PlanAlimenticio planAlimenticio) {
-        return modelMapper.map(planAlimenticio, PlanAlimenticioDTO.class);
+    public PlanAlimenticioCreateUpdateDTO toCreateUpdateDTO(PlanAlimenticio planAlimenticio) {
+        return modelMapper.map(planAlimenticio, PlanAlimenticioCreateUpdateDTO.class);
     }
+
+
 }

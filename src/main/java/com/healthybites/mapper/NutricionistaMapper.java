@@ -8,17 +8,18 @@ import org.springframework.stereotype.Component;
 @Component
 public class NutricionistaMapper {
 
-    private final ModelMapper modelMapper;
+    private ModelMapper modelMapper;
 
     public NutricionistaMapper(ModelMapper modelMapper) {
         this.modelMapper = modelMapper;
     }
 
-    public NutricionistaDTO toDTO(Nutricionista nutricionista) {
+    public NutricionistaDTO toDto(Nutricionista nutricionista) {
         return modelMapper.map(nutricionista, NutricionistaDTO.class);
     }
 
     public Nutricionista toEntity(NutricionistaDTO nutricionistaDTO) {
         return modelMapper.map(nutricionistaDTO, Nutricionista.class);
     }
+
 }

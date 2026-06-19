@@ -36,4 +36,5 @@ public class Usuario {
     @JoinColumn(name = "id_rol", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "FK_usuario_rol"))
     private Rol rol;
+
 }

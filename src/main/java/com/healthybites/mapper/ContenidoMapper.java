@@ -1,34 +1,27 @@
 package com.healthybites.mapper;
 
-import com.healthybites.dto.ContenidoCreateUpdateDTO;
-import com.healthybites.dto.ContenidoDetailsDTO;
+import com.healthybites.dto.ContenidoDTO;
 import com.healthybites.model.entity.Contenido;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ContenidoMapper {
+
     private final ModelMapper modelMapper;
 
     public ContenidoMapper(ModelMapper modelMapper) {
         this.modelMapper = modelMapper;
-        this.modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
     }
 
-    public ContenidoDetailsDTO toDTO(Contenido contenido) {
-        ContenidoDetailsDTO contenidoDetailsDTO = modelMapper.map(contenido, ContenidoDetailsDTO.class);
-
-        contenidoDetailsDTO.setNutricionistaNombre(contenido.getNutricionista().getNombre() + " " + contenido.getNutricionista().getApellido());
-
-        return contenidoDetailsDTO;
+    public ContenidoDTO toDto(Contenido contenido) {
+        // Convertir la entidad Contenido al DTO
+        return modelMapper.map(contenido, ContenidoDTO.class);
     }
 
-    public Contenido toEntity(ContenidoCreateUpdateDTO contenidoCreateUpdateDTO) {
-        return modelMapper.map(contenidoCreateUpdateDTO, Contenido.class);
-    }
-
-    public ContenidoCreateUpdateDTO toCreateUpdateDTO(Contenido contenido) {
-        return modelMapper.map(contenido, ContenidoCreateUpdateDTO.class);
+    public Contenido toEntity(ContenidoDTO contenidoDTO) {
+        // Convertir el DTO en la entidad Contenido
+        return modelMapper.map(contenidoDTO, Contenido.class);
     }
 }
+

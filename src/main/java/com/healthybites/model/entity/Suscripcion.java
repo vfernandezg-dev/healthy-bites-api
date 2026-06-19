@@ -1,5 +1,7 @@
 package com.healthybites.model.entity;
 
+import com.healthybites.model.enums.EstadoPago;
+import com.healthybites.model.enums.EstadoSuscripcion;
 import com.healthybites.model.enums.TipoSuscripcion;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -17,6 +19,14 @@ public class Suscripcion {
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_suscripcion", nullable = false)
     private TipoSuscripcion tipoSuscripcion;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado_suscripcion", nullable = false)
+    private EstadoSuscripcion estadoSuscripcion;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado_pago", nullable = false)
+    private EstadoPago estadoPago;
 
     @Column(name = "precio", nullable = false)
     private double precio;
