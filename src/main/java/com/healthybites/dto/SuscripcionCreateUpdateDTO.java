@@ -6,11 +6,9 @@ import lombok.Data;
 
 @Data
 public class SuscripcionCreateUpdateDTO {
-    private Integer id;
+    private Integer usuarioId;
 
     @NotNull(message= "Debes escoger un tipo de suscripción.")
     private TipoSuscripcion tipoSuscripcion;
 
-    @NotNull(message = "Debe ingresar el id del cliente.")
-    private Integer clienteId;
 }

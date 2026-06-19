@@ -1,16 +1,20 @@
 package com.healthybites.service.impl;
 
+import com.healthybites.dto.ContenidoCreateUpdateDTO;
+import com.healthybites.dto.ContenidoDetailsDTO;
+import com.healthybites.exception.BadRequestException;
+import com.healthybites.exception.ResourceNotFoundException;
+import com.healthybites.mapper.ContenidoMapper;
 import com.healthybites.model.entity.Contenido;
 import com.healthybites.model.entity.Nutricionista;
 import com.healthybites.repository.ContenidoRepository;
 import com.healthybites.repository.NutricionistaRepository;
 import com.healthybites.service.ContenidoService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -19,51 +23,67 @@ public class ContenidoServiceImpl implements ContenidoService {
 
     private final ContenidoRepository contenidoRepository;
     private final NutricionistaRepository nutricionistaRepository;
+    private final ContenidoMapper contenidoMapper;
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
-    public Contenido createContenido(Contenido contenido) {
-
-        Nutricionista nutricionista = nutricionistaRepository.findById(contenido.getNutricionista().getId())
-                .orElseThrow(() -> new RuntimeException("Nutricionista no encontrado por ID: " + contenido.getNutricionista().getId()));
-
-        return contenidoRepository.save(contenido);
+    public List<ContenidoDetailsDTO> getAll() {
+        List<Contenido> contenidos = contenidoRepository.findAll();
+        return contenidos.stream()
+                .map(contenidoMapper::toDTO)
+                .toList();
     }
 
     @Transactional(readOnly = true)
     @Override
-    public List<Contenido> getAllContenidoByUser(Integer userId) {
-        return contenidoRepository.findByNutricionistaId(userId);
+    public ContenidoDetailsDTO findById(Integer id) {
+        Contenido contenido = contenidoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Contenido con id " + id + " no encontrado"));
+        return contenidoMapper.toDTO(contenido);
     }
 
-    @Transactional(readOnly = true)
     @Override
-    public Contenido getContenidoById(Integer contenidoId) {
-        return contenidoRepository.findById(contenidoId).
-                orElseThrow(() -> new RuntimeException("Contenido no encontrado"));
+    public ContenidoDetailsDTO create(ContenidoCreateUpdateDTO contenidoCreateUpdateDTO) {
+        contenidoRepository.findByTitulo(contenidoCreateUpdateDTO.getTitulo())
+                .ifPresent(contenido -> {
+                    throw new BadRequestException("Contenido con titulo " + contenidoCreateUpdateDTO.getTitulo() + " ya existe");
+                });
+
+        Nutricionista nutricionista = nutricionistaRepository.findById(contenidoCreateUpdateDTO.getNutricionistaId())
+                .orElseThrow(() -> new ResourceNotFoundException("Nutricionista con id " + contenidoCreateUpdateDTO.getNutricionistaId() + " no encontrado"));
+
+        Contenido contenido = contenidoMapper.toEntity(contenidoCreateUpdateDTO);
+
+        contenido.setNutricionista(nutricionista);
+        contenido.setFechaCreacion(LocalDateTime.now());
+        contenido.setFechaActualizacion(LocalDateTime.now());
+
+        return contenidoMapper.toDTO(contenidoRepository.save(contenido));
     }
 
-    @Transactional
     @Override
-    public Contenido updateContenido(Integer contenidoId, Contenido contenido) {
-        Contenido contenidoFromDB = getContenidoById(contenidoId);
+    public ContenidoDetailsDTO update(Integer id, ContenidoCreateUpdateDTO updateContenidoDTO) {
+        contenidoRepository.findByTitulo(updateContenidoDTO.getTitulo())
+                .ifPresent(contenidoExistente -> {
+                    throw new BadRequestException("Contenido con titulo " + updateContenidoDTO.getTitulo() + " ya existe");
+                });
 
-        Nutricionista nutricionista = nutricionistaRepository.findById(contenido.getNutricionista().getId())
-                .orElseThrow(() -> new RuntimeException("Nutricionista no encontrado por ID: " + contenido.getNutricionista().getId()));
+        Nutricionista nutricionista = nutricionistaRepository.findById(updateContenidoDTO.getNutricionistaId())
+                .orElseThrow(() -> new ResourceNotFoundException("Nutricionista con id " + updateContenidoDTO.getNutricionistaId() + " no encontrado"));
 
-        contenidoFromDB.setTitulo(contenido.getTitulo());
-        contenidoFromDB.setDescripcion(contenido.getDescripcion());
-        contenidoFromDB.setTipoContenido(contenido.getTipoContenido());
-        contenidoFromDB.setCategoriaContenido(contenido.getCategoriaContenido());
-        contenidoFromDB.setEsGratis(contenido.isEsGratis());
-        contenidoFromDB.setNutricionista(contenido.getNutricionista());
-        return contenidoRepository.save(contenidoFromDB);
+        Contenido contenidoFromDb = contenidoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Contenido con id " + id + " no encontrado"));
+
+        contenidoMapper.updateFromDTO(updateContenidoDTO, contenidoFromDb);
+        contenidoFromDb.setNutricionista(nutricionista);
+
+        return contenidoMapper.toDTO(contenidoRepository.save(contenidoFromDb));
     }
 
-    @Transactional
     @Override
-    public void deleteContenido(Integer contenidoId) {
-        Contenido contenido = getContenidoById(contenidoId);
+    public void delete(Integer id) {
+        Contenido contenido = contenidoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Contenido con id " + id + " no encontrado"));
         contenidoRepository.delete(contenido);
     }
 }

@@ -1,13 +1,13 @@
 package com.healthybites.api;
 
-import com.healthybites.model.entity.Contenido;
+import com.healthybites.dto.ContenidoCreateUpdateDTO;
+import com.healthybites.dto.ContenidoDetailsDTO;
 import com.healthybites.service.ContenidoService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,38 +15,38 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/contenido")
+@PreAuthorize("hasAnyRole('NUTRICIONISTA','ADMIN')")
 public class ContenidoController {
 
     private final ContenidoService contenidoService;
 
+    @GetMapping
+    public ResponseEntity<List<ContenidoDetailsDTO>> list() {
+        List<ContenidoDetailsDTO> contenidos = contenidoService.getAll();
+        return new ResponseEntity<>(contenidos, HttpStatus.OK);
+    }
+
     @PostMapping
-    public ResponseEntity<Contenido> createContenido(@RequestBody Contenido contenido) {
-        Contenido savedContenido = contenidoService.createContenido(contenido);
-        return new ResponseEntity<>(savedContenido, HttpStatus.CREATED);
+    public ResponseEntity<ContenidoDetailsDTO> create(@Valid @RequestBody ContenidoCreateUpdateDTO contenidoFormDTO) {
+        ContenidoDetailsDTO contenidoDetailsDTO = contenidoService.create(contenidoFormDTO);
+        return new ResponseEntity<>(contenidoDetailsDTO, HttpStatus.CREATED);
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Contenido>> getAllContenidoByUser(@PathVariable("userId") Integer userId) {
-        List<Contenido> contenidos = contenidoService.getAllContenidoByUser(userId);
-        return ResponseEntity.ok(contenidos);
+    @GetMapping("/{id}")
+    public ResponseEntity<ContenidoDetailsDTO> get(@PathVariable Integer id) {
+        ContenidoDetailsDTO contenido = contenidoService.findById(id);
+        return new ResponseEntity<>(contenido, HttpStatus.OK);
     }
 
-    @GetMapping("/{collectionId}")
-    public ResponseEntity<Contenido> getContenidoById(@PathVariable("collectionId") Integer collectionId) {
-        Contenido contenido = contenidoService.getContenidoById(collectionId);
-        return ResponseEntity.ok(contenido);
+    @PutMapping("/{id}")
+    public ResponseEntity<ContenidoDetailsDTO> update(@PathVariable Integer id, @Valid @RequestBody ContenidoCreateUpdateDTO contenidoFormDTO) {
+        ContenidoDetailsDTO updatedContenido = contenidoService.update(id, contenidoFormDTO);
+        return new ResponseEntity<>(updatedContenido, HttpStatus.OK);
     }
 
-    @PutMapping("/{collectionId}")
-    public ResponseEntity<Contenido> updateContenido(@PathVariable("collectionId") Integer collectionId, @RequestBody Contenido contenido) {
-        Contenido updatedContenido = contenidoService.updateContenido(collectionId, contenido);
-        return ResponseEntity.ok(updatedContenido);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+        contenidoService.delete(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-
-    @DeleteMapping("/{collectionId}")
-    public ResponseEntity<Void> deleteContenido(@PathVariable("collectionId") Integer collectionId) {
-        contenidoService.deleteContenido(collectionId);
-        return ResponseEntity.noContent().build();
-    }
-
 }

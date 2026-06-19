@@ -1,7 +1,7 @@
 package com.healthybites.mapper;
 
-import com.healthybites.dto.ComidaDiariaCreateUpdateDTO;
-import com.healthybites.dto.ComidaDiariaDetailsDTO;
+import com.healthybites.dto.ComidaDiariaCreateDTO;
+import com.healthybites.dto.ComidaDiariaDTO;
 import com.healthybites.dto.ContenidoCreateUpdateDTO;
 import com.healthybites.model.entity.ComidaDiaria;
 import org.modelmapper.ModelMapper;
@@ -18,19 +18,19 @@ public class ComidaDiariaMapper {
         this.modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
     }
 
-    public ComidaDiariaDetailsDTO toDTO(ComidaDiaria comidaDiaria) {
-        ComidaDiariaDetailsDTO comidaDiariaDetailsDTO = modelMapper.map(comidaDiaria, ComidaDiariaDetailsDTO.class);
+    public ComidaDiariaDTO toDTO(ComidaDiaria comidaDiaria) {
+        ComidaDiariaDTO comidaDiariaDTO = modelMapper.map(comidaDiaria, ComidaDiariaDTO.class);
 
-        comidaDiariaDetailsDTO.setNombrePlanAlimenticio(comidaDiaria.getPlanAlimenticio().getPlanObjetivo().toString());
+        comidaDiariaDTO.setNombrePlanAlimenticio(comidaDiaria.getPlanAlimenticio().getPlanObjetivo());
 
-        return comidaDiariaDetailsDTO;
+        return comidaDiariaDTO;
     }
 
-    public ComidaDiaria toEntity(ComidaDiariaCreateUpdateDTO comidaDiariaCreateUpdateDTO) {
-        return modelMapper.map(comidaDiariaCreateUpdateDTO, ComidaDiaria.class);
+    public ComidaDiaria toEntity(ComidaDiariaCreateDTO comidaDiariaCreateDTO) {
+        return modelMapper.map(comidaDiariaCreateDTO, ComidaDiaria.class);
     }
 
-    public ContenidoCreateUpdateDTO toCreateUpdateDTO(ComidaDiaria comidaDiaria) {
-        return modelMapper.map(comidaDiaria, ContenidoCreateUpdateDTO.class);
+    public void updateFromDTO(ComidaDiariaCreateDTO comidaDiariaCreateDTO, ComidaDiaria comidaDiaria) {
+        modelMapper.map(comidaDiariaCreateDTO, comidaDiaria);
     }
 }

@@ -1,13 +1,13 @@
 package com.healthybites.api;
 
-import com.healthybites.model.entity.Suscripcion;
+import com.healthybites.dto.SuscripcionCreateUpdateDTO;
+import com.healthybites.dto.SuscripcionDetailsDTO;
 import com.healthybites.service.SuscripcionService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,50 +15,38 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/suscripcion")
+@PreAuthorize("hasAnyRole('CLIENTE','ADMIN')")  // Restrict access to authenticated users
 public class SuscripcionController {
 
     private final SuscripcionService suscripcionService;
 
+    @GetMapping
+    public ResponseEntity<List<SuscripcionDetailsDTO>> list() {
+        List<SuscripcionDetailsDTO> suscripciones = suscripcionService.getAll();
+        return new ResponseEntity<>(suscripciones, HttpStatus.OK);
+    }
+
     @PostMapping
-    public ResponseEntity<Suscripcion> createSuscripcion(@RequestBody Suscripcion suscripcions) {
-        Suscripcion newSuscripcion = suscripcionService.createSuscripcion(suscripcions);
-        return new ResponseEntity<Suscripcion>(newSuscripcion, HttpStatus.CREATED);
-    }
-
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Suscripcion>> getSuscripcionHistoryByUserId(@PathVariable("userId") Integer userId) {
-        List<Suscripcion> suscripcions = suscripcionService.getSuscripcionHistoryByUserId(userId);
-        return new ResponseEntity<List<Suscripcion>>(suscripcions, HttpStatus.OK);
-    }
-
-    /*@GetMapping("/page")
-    public ResponseEntity<Page<Suscripcion>> paginateSuscripcion(
-            @PageableDefault(size = 5, sort = "tipo_suscripcion") Pageable pageable) {
-        Page<Suscripcion> suscripcions = suscripcionService.paginate(pageable);
-        return new ResponseEntity<Page<Suscripcion>>(suscripcions, HttpStatus.OK);
+    public ResponseEntity<SuscripcionDetailsDTO> create(@Valid @RequestBody SuscripcionCreateUpdateDTO suscripcionFormDTO) {
+        SuscripcionDetailsDTO suscripcionDetailsDTO = suscripcionService.create(suscripcionFormDTO);
+        return new ResponseEntity<>(suscripcionDetailsDTO, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Suscripcion> getSuscripcionById(@PathVariable("id") Integer id) {
-        Suscripcion suscripcions = suscripcionService.findById(id);
-        return new ResponseEntity<Suscripcion>(suscripcions, HttpStatus.OK);
-    }
-
-    @PostMapping
-    public ResponseEntity<Suscripcion> createSuscripcion(@RequestBody Suscripcion suscripcions) {
-        Suscripcion newSuscripcion = suscripcionService.create(suscripcions);
-        return new ResponseEntity<Suscripcion>(newSuscripcion, HttpStatus.CREATED);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<Suscripcion> updateSuscripcion(@PathVariable("id") Integer id, @RequestBody Suscripcion suscripcion) {
-        Suscripcion updateSuscripcion = suscripcionService.update(id, suscripcion);
-        return new ResponseEntity<Suscripcion>(updateSuscripcion, HttpStatus.OK);
+    public ResponseEntity<SuscripcionDetailsDTO> get(@PathVariable Integer id) {
+        SuscripcionDetailsDTO suscripcion = suscripcionService.findById(id);
+        return new ResponseEntity<>(suscripcion, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Suscripcion> deleteSuscripcion(@PathVariable("id") Integer id) {
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
         suscripcionService.delete(id);
-        return new ResponseEntity<Suscripcion>(HttpStatus.NO_CONTENT);
-    }*/
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PutMapping("/confirm/{id}")
+    public ResponseEntity<SuscripcionDetailsDTO> confirmPurchase(@PathVariable Integer id) {
+        SuscripcionDetailsDTO confirmedPurchase = suscripcionService.confirmSuscripcion(id);
+        return ResponseEntity.ok(confirmedPurchase);
+    }
 }

@@ -3,14 +3,25 @@ package com.healthybites.model.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Entity
 @Table(name = "acceso_contenido")
-@IdClass(AccesoContenido.class)
+@IdClass(AccesoContenidoPK.class)
 public class AccesoContenido {
     @Id
-    private Integer cliente;
+    @ManyToOne
+    @JoinColumn(name = "cliente_id", referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "FK_accesocontenido_cliente"))
+    private Cliente cliente;
 
     @Id
-    private Integer contenido;
+    @ManyToOne
+    @JoinColumn(name = "contenido_id", referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "FK_accesocontenido_contenido"))
+    private Contenido contenido;
+
+    @Column(name = "fecha_creacion", nullable = false)
+    private LocalDateTime fechaCreacion;
 }

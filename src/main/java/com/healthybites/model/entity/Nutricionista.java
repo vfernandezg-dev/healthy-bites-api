@@ -1,9 +1,9 @@
 package com.healthybites.model.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -20,19 +20,25 @@ public class Nutricionista {
     @Column(name = "apellido", nullable = false)
     private String apellido;
 
-    /*@JsonIgnore
-    @OneToMany(mappedBy = "nutricionista", cascade = CascadeType.ALL)
-    private List<PlanAlimenticio> planesAlimenticios;*/
+    @Column(name = "bio", nullable = false)
+    private String bio;
 
-    @OneToMany(mappedBy = "nutricionista")
+    @Column(name = "fecha_creacion", nullable = false)
+    private LocalDateTime fechaCreacion;
+
+    @Column(name = "fecha_actualizacion", nullable = false)
+    private LocalDateTime fechaActualizacion;
+
+    @OneToMany(mappedBy = "nutricionista", cascade = CascadeType.ALL)
     private List<PlanAlimenticio> planesAlimenticios;
 
-    @JsonIgnore
     @OneToMany(mappedBy = "nutricionista", cascade = CascadeType.ALL)
     private List<Contenido> contenidos;
 
+    @OneToMany(mappedBy = "nutricionista", cascade = CascadeType.ALL)
+    private List<Recompensa> recompensas;
+
     @OneToOne
-    @JoinColumn(name = "id_usuario", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "FK_nutricionista_usuario"))
+    @JoinColumn(name = "id_usuario", referencedColumnName = "id")
     private Usuario usuario;
 }

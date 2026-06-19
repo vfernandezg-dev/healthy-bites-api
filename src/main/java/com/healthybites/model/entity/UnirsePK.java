@@ -3,16 +3,18 @@ package com.healthybites.model.entity;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 
+import java.io.Serializable;
+
 @Embeddable
 @EqualsAndHashCode
-public class UnirsePK {
+public class UnirsePK implements Serializable {
     @ManyToOne
-    @JoinColumn(name = "id_cliente", referencedColumnName = "id",
+    @JoinColumn(name = "cliente_id", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "FK_unirse_cliente"))
     private Cliente cliente;
 
     @ManyToOne
-    @JoinColumn(name = "id_grupo", referencedColumnName = "id",
+    @JoinColumn(name = "grupo_id", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "FK_unirse_grupo"))
     private Grupo grupo;
 }

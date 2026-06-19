@@ -1,12 +1,12 @@
 package com.healthybites.service;
 
-import com.healthybites.model.entity.Grupo;
-import com.healthybites.model.entity.Unirse;
-
-import java.util.List;
+import com.healthybites.dto.GrupoDTO;
 
 public interface UnirseService {
-    Unirse addClienteToGrupo(Integer clienteId, Integer grupoId);
-    void removeClienteFromGrupo(Integer clienteId, Integer grupoId);
-    List<Grupo> getGrupoFromCliente(Integer clienteId);
+
+    // Method to add a client to a group
+    GrupoDTO addClientToGroup(Integer clientId, Integer groupId);
+
+    // Method to remove a client from a group
+    void removeClientFromGroup(Integer clientId, Integer groupId);
 }

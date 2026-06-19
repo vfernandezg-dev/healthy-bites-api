@@ -1,37 +1,46 @@
 package com.healthybites.api;
 
-import com.healthybites.model.entity.AccesoPlan;
-import com.healthybites.model.entity.PlanAlimenticio;
+import com.healthybites.dto.PlanAlimenticioDTO;
 import com.healthybites.service.AccesoPlanService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController
 @RequiredArgsConstructor
+@RestController
 @RequestMapping("/acceso-plan")
+@PreAuthorize("hasAnyRole('CLIENTE','ADMIN')")
 public class AccesoPlanController {
 
     private final AccesoPlanService accesoPlanService;
 
-    @PostMapping("/{clienteId}/add-plan-alimenticio")
-    public ResponseEntity<AccesoPlan> addPlanToCliente(@PathVariable Integer clienteId, @RequestParam Integer planId) {
-        AccesoPlan accesoPlan = accesoPlanService.addPlanToCliente(clienteId, planId);
-        return new ResponseEntity<>(accesoPlan, HttpStatus.CREATED);
+    // Metodo para agregar un plan a un cliente
+    //http://localhost:8080/acceso-plan/1/add-plan?planId=1
+    @PostMapping("/{clientId}/add-plan")
+    public ResponseEntity<PlanAlimenticioDTO> addPlanToClient(@PathVariable Integer clientId,
+                                                              @RequestParam Integer planId) {
+        PlanAlimenticioDTO planAlimenticioDTO = accesoPlanService.addPlanToClient(clientId, planId);
+        return new ResponseEntity<>(planAlimenticioDTO, HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/{clienteId}/remove-plan/{planId}")
-    public ResponseEntity<Void> removePlanFromCliente(@PathVariable Integer clienteId, @PathVariable Integer planId) {
-        accesoPlanService.removePlanFromCliente(clienteId, planId);
+    // Metodo para eliminar un plan de un cliente
+    //http://localhost:8080/acceso-plan/1/remove-plan/1
+    @DeleteMapping("/{clientId}/remove-plan/{planId}")
+    public ResponseEntity<Void> removePlanFromClient(@PathVariable Integer clientId,
+                                                     @PathVariable Integer planId) {
+        accesoPlanService.removePlanFromClient(clientId, planId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @GetMapping("/{clienteId}/plan")
-    public ResponseEntity<List<PlanAlimenticio>> getPlanesInCliente(@PathVariable Integer clienteId) {
-        List<PlanAlimenticio> planes = accesoPlanService.getPlanesInCliente(clienteId);
+    // Metodo para obtener todos los planes de un cliente
+    //http://localhost:8080/acceso-plan/1/all-planes
+    @GetMapping("/{clientId}/all-planes")
+    public ResponseEntity<List<PlanAlimenticioDTO>> getAllPlansByClient(@PathVariable Integer clientId) {
+        List<PlanAlimenticioDTO> planes = accesoPlanService.getAllPlansByClient(clientId);
         return new ResponseEntity<>(planes, HttpStatus.OK);
     }
 }

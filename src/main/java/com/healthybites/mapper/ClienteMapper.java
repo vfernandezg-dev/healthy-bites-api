@@ -1,34 +1,29 @@
-
 package com.healthybites.mapper;
 
-import com.healthybites.dto.ClienteDTO;
-import com.healthybites.model.entity.Cliente;
+import com.healthybites.dto.ClienteCreateDTO;
+import com.healthybites.dto.ClienteDetailsDTO;
+import com.healthybites.model.entity.*;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ClienteMapper {
+
     private final ModelMapper modelMapper;
-    private final MetaMapper metaMapper;
 
-    public ClienteMapper(ModelMapper modelMapper, MetaMapper metaMapper) {
+    public ClienteMapper(ModelMapper modelMapper) {
         this.modelMapper = modelMapper;
-        this.metaMapper = metaMapper;
+        this.modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
     }
 
-    public ClienteDTO toDTO(Cliente cliente) {
-        ClienteDTO clienteDTO = modelMapper.map(cliente, ClienteDTO.class);
-        if (cliente.getMeta() != null) {
-            clienteDTO.setMeta(metaMapper.toMetaDTO(cliente.getMeta()));
-        }
-        return clienteDTO;
+    public ClienteDetailsDTO toDTO(Cliente cliente) {
+        ClienteDetailsDTO clienteDetailsDTO = modelMapper.map(cliente, ClienteDetailsDTO.class);
+        return clienteDetailsDTO;
     }
 
-    public Cliente toEntity(ClienteDTO clienteDTO) {
-        Cliente cliente = modelMapper.map(clienteDTO, Cliente.class);
-        if (clienteDTO.getMeta() != null) {
-            cliente.setMeta(metaMapper.toEntity(clienteDTO.getMeta()));
-        }
-        return cliente;
+    public Cliente toEntity(ClienteCreateDTO clienteCreateDTO) {
+        return modelMapper.map(clienteCreateDTO, Cliente.class);
     }
+
 }

@@ -1,6 +1,5 @@
 package com.healthybites.repository;
 
-import com.healthybites.model.entity.Grupo;
 import com.healthybites.model.entity.Unirse;
 import com.healthybites.model.entity.UnirsePK;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,20 +8,23 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
 public interface UnirseRepository extends JpaRepository<Unirse, UnirsePK> {
 
+    // Esta query es para añadir un cliente a un grupo
     @Modifying
     @Transactional
-    @Query(value = "INSERT INTO unirse (cliente, grupos) VALUES (:clienteId, :grupoId)", nativeQuery = true)
-    void addClienteToGrupo(@Param("clienteId") Integer clienteId,@Param("grupoId") Integer grupoId);
+    @Query(value = "INSERT INTO unirse (cliente_id, grupo_id, fecha_creacion)" +
+            "VALUES (:clienteId, :grupoId, :fechaCreacionId)", nativeQuery = true)
+    void addClienteToGrupo(@Param("clienteId") Integer clienteId, @Param("grupoId") Integer grupoId, @Param("fechaCreacionId") LocalDateTime fechaCreacion);
 
+    // Esta query es para eliminar un cliente de un grupo
     @Modifying
     @Transactional
-    @Query(value = "DELETE FROM unirse WHERE cliente = :clienteId AND grupo = :grupoId", nativeQuery = true)
-    void removeClienteFromGrupo(@Param("clienteId") Integer clienteId, @Param("grupoId") Integer grupoId);
+    @Query(value = "DELETE FROM unirse WHERE cliente_id = :clienteId AND grupo_id = :grupoId", nativeQuery = true)
+    void deleteByClienteAndGrupo(@Param("clienteId") Integer clienteId, @Param("grupoId") Integer grupoId);
 
-    @Query("SELECT u FROM Grupo u JOIN Unirse uc ON u.id = uc.grupo WHERE uc.cliente = :clienteId")
-    List<Grupo> findGrupoByClienteId(@Param("clienteId") Integer clienteId);
+    @Query(value = "SELECT COUNT(*) > 0 FROM unirse WHERE cliente_id = :clienteId AND grupo_id = :grupoId", nativeQuery = true)
+    boolean existsByClienteIdAndGrupoId(@Param("clienteId") Integer clienteId, @Param("grupoId") Integer grupoId);
 }

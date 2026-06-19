@@ -1,14 +1,15 @@
 package com.healthybites.service;
 
-import com.healthybites.dto.ComidaDiariaCreateUpdateDTO;
-import com.healthybites.dto.ComidaDiariaDetailsDTO;
+import com.healthybites.dto.ComidaDiariaCreateDTO;
+import com.healthybites.dto.ComidaDiariaDTO;
 
 import java.util.List;
 
 public interface ComidaDiariaService {
-    List<ComidaDiariaDetailsDTO> getAll();
-    ComidaDiariaDetailsDTO findById(Integer id);
-    ComidaDiariaDetailsDTO create(ComidaDiariaCreateUpdateDTO comidaDiariaCreateUpdateDTO);
-    ComidaDiariaDetailsDTO update(Integer id, ComidaDiariaCreateUpdateDTO updateComidaDiariaDTO);
-    void delete(Integer id);
+
+    List<ComidaDiariaDTO> getAll(Integer planId);
+    ComidaDiariaDTO findByIdAndPlanId(Integer comidaDiariaId, Integer planId);
+    ComidaDiariaDTO create(Integer planId, ComidaDiariaCreateDTO comidaDiariaCreateDTO);
+    ComidaDiariaDTO update(Integer planId, Integer comidaDiariaId, ComidaDiariaCreateDTO updatedComidaDiariaDTO);
+    void delete(Integer planId, Integer comidaDiariaId);
 }

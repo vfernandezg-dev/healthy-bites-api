@@ -1,12 +1,16 @@
 package com.healthybites.service;
 
-import com.healthybites.model.entity.AccesoPlan;
-import com.healthybites.model.entity.PlanAlimenticio;
+import com.healthybites.dto.PlanAlimenticioDTO;
 
 import java.util.List;
 
 public interface AccesoPlanService {
-    AccesoPlan addPlanToCliente(Integer clienteId, Integer planId);
-    void removePlanFromCliente(Integer clienteId, Integer planId);
-    List<PlanAlimenticio> getPlanesInCliente(Integer clienteId);
+    // Metodo para añadir un plan a un cliente
+    PlanAlimenticioDTO addPlanToClient(Integer clientId, Integer planId);
+
+    // Metodo para eliminar un plan de un cliente
+    void removePlanFromClient(Integer clientId, Integer planId);
+
+    // Metodo para obtener todos los planes de un cliente
+    List<PlanAlimenticioDTO> getAllPlansByClient(Integer clientId);
 }

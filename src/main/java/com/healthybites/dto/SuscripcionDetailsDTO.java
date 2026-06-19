@@ -9,5 +9,4 @@ public class SuscripcionDetailsDTO {
     private Integer id;
     private TipoSuscripcion tipoSuscripcion;
     private double precio;
-    private String clienteNombre;
 }

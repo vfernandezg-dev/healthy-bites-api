@@ -3,9 +3,11 @@ package com.healthybites.api;
 import com.healthybites.dto.PlanAlimenticioCreateDTO;
 import com.healthybites.dto.PlanAlimenticioDTO;
 import com.healthybites.service.PlanAlimenticioService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,37 +15,40 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/plan-alimenticio")
+@PreAuthorize("hasAnyRole('ADMIN','NUTRICIONISTA')")
 public class PlanAlimenticioController {
 
     private final PlanAlimenticioService planAlimenticioService;
 
-    @GetMapping
-    public ResponseEntity<List<PlanAlimenticioDTO>> getAll() {
-        List<PlanAlimenticioDTO> planAlimenticios = planAlimenticioService.getAll();
+    @GetMapping("/nutricionista/{id}")
+    public ResponseEntity<List<PlanAlimenticioDTO>> getAll(@PathVariable Integer id) {
+        List<PlanAlimenticioDTO> planAlimenticios = planAlimenticioService.getAll(id);
         return new ResponseEntity<>(planAlimenticios, HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<PlanAlimenticioDTO> create(@RequestBody PlanAlimenticioCreateDTO planAlimenticioCreateDTO) {
+    public ResponseEntity<PlanAlimenticioDTO> create(@Valid @RequestBody PlanAlimenticioCreateDTO planAlimenticioCreateDTO) {
         PlanAlimenticioDTO planAlimenticioDTO = planAlimenticioService.create(planAlimenticioCreateDTO);
         return new ResponseEntity<>(planAlimenticioDTO, HttpStatus.CREATED);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<PlanAlimenticioDTO> getById(@PathVariable Integer id) {
-        PlanAlimenticioDTO planAlimenticio = planAlimenticioService.findById(id);
+    @GetMapping("/{planId}/nutricionista/{nutricionistaId}")
+    public ResponseEntity<PlanAlimenticioDTO> getById(@PathVariable Integer nutricionistaId, @PathVariable Integer planId) {
+        PlanAlimenticioDTO planAlimenticio = planAlimenticioService.findByIdAndNutricionistaId(planId, nutricionistaId);
         return new ResponseEntity<>(planAlimenticio, HttpStatus.OK);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<PlanAlimenticioDTO> update(@PathVariable Integer id, @RequestBody PlanAlimenticioCreateDTO planAlimenticioCreateDTO) {
-        PlanAlimenticioDTO updatedPlanAlimenticio = planAlimenticioService.update(id, planAlimenticioCreateDTO);
+    @PutMapping("/{planId}/nutricionista/{nutricionistaId}")
+    public ResponseEntity<PlanAlimenticioDTO> update(@PathVariable Integer nutricionistaId,
+                                                     @PathVariable Integer planId,
+                                                     @Valid @RequestBody PlanAlimenticioCreateDTO updatedPlanAlimenticioDTO) {
+        PlanAlimenticioDTO updatedPlanAlimenticio = planAlimenticioService.update(planId, nutricionistaId, updatedPlanAlimenticioDTO);
         return new ResponseEntity<>(updatedPlanAlimenticio, HttpStatus.OK);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        planAlimenticioService.delete(id);
+    @DeleteMapping("/{planId}/nutricionista/{nutricionistaId}")
+    public ResponseEntity<Void> delete(@PathVariable Integer nutricionistaId, @PathVariable Integer planId) {
+        planAlimenticioService.delete(planId, nutricionistaId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
