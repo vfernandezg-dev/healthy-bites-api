@@ -3,7 +3,7 @@ package com.healthybites.model.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -14,13 +14,19 @@ public class Seguimiento {
     private Integer id;
 
     @Column(name = "fecha", nullable = false)
-    private Date fecha;
+    private LocalDateTime fecha;
 
     @Column(name = "peso_del_dia", nullable = false)
     private double pesoDelDia;
 
     @Column(name = "obsevaciones", nullable = false)
     private String observaciones;
+
+    @Column(name = "fecha_creacion", nullable = false)
+    private LocalDateTime fechaCreacion;
+
+    @Column(name = "fecha_actualizacion", nullable = false)
+    private LocalDateTime fechaActualizacion;
 
     @ManyToOne
     @JoinColumn(name = "id_meta", referencedColumnName = "id",

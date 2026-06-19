@@ -4,6 +4,8 @@ import com.healthybites.model.enums.CategoriaComida;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Entity
 @Table(name = "comida_diaria")
@@ -21,6 +23,12 @@ public class ComidaDiaria {
     @Enumerated(EnumType.STRING)
     @Column(name = "categoria", nullable = false)
     private CategoriaComida categoria;
+
+    @Column(name = "fecha_creacion", nullable = false)
+    private LocalDateTime fechaCreacion;
+
+    @Column(name = "fecha_actualizacion", nullable = false)
+    private LocalDateTime fechaActualizacion;
 
     @ManyToOne
     @JoinColumn(name = "id_planalimenticio", referencedColumnName = "id",

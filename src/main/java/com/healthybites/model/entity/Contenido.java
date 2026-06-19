@@ -6,6 +6,8 @@ import com.healthybites.model.enums.TipoContenido;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Entity
 @Table(name = "contenido")
@@ -30,6 +32,12 @@ public class Contenido {
 
     @Column(name = "es_gratis", nullable = false)
     private boolean esGratis;
+
+    @Column(name = "fecha_creacion", nullable = false)
+    private LocalDateTime fechaCreacion;
+
+    @Column(name = "fecha_actualizacion", nullable = false)
+    private LocalDateTime fechaActualizacion;
 
     @ManyToOne
     @JoinColumn(name = "id_nutricionista", referencedColumnName = "id",

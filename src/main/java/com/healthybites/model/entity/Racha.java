@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -18,7 +18,7 @@ public class Racha {
     private int diasConsecutivos;
 
     @Column(name = "ultima_fecha_registro", nullable = false)
-    private Date ultimaFechaRegistro;
+    private LocalDateTime ultimaFechaRegistro;
 
     @JsonIgnore
     @ManyToOne

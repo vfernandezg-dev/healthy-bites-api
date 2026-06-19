@@ -3,6 +3,8 @@ package com.healthybites.model.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Entity
 @Table(name = "comentario")
@@ -13,6 +15,12 @@ public class Comentario {
 
     @Column(name = "mensaje", nullable = false)
     private String mensaje;
+
+    @Column(name = "fecha_creacion", nullable = false)
+    private LocalDateTime fechaCreacion;
+
+    @Column(name = "fecha_actualizacion", nullable = false)
+    private LocalDateTime fechaActualizacion;
 
     @ManyToOne
     @JoinColumn(name = "id_cliente", referencedColumnName = "id",
