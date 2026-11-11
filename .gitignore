@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Archivos subidos por usuarios (pueden contener datos personales: NUNCA versionar) ###
+mediafiles/
