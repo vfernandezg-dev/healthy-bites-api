@@ -2,13 +2,22 @@ spring:
   mail:
     default-encoding: UTF-8
     host: smtp.gmail.com
-    username: healtybite3@gmail.com
-    password: msqg oevj cjhp gbjo
+    # Credenciales fuera del repositorio: define MAIL_USERNAME y MAIL_PASSWORD (ver .env.example).
+    username: ${MAIL_USERNAME:healtybite3@gmail.com}
+    password: ${MAIL_PASSWORD:}
     port: 587
     properties:
       mail:
+        # mail.from y mail.smtp.localhost evitan que JavaMail resuelva el hostname de la máquina
+        # (DNS inverso), que en algunos equipos tarda varios segundos por cada correo.
+        from: ${spring.mail.username}
         smtp:
           auth: true
+          localhost: localhost
+          # Sin estos límites JavaMail espera indefinidamente si el servidor SMTP no responde.
+          connectiontimeout: 10000
+          timeout: 10000
+          writetimeout: 10000
           starttls:
             enable: true
             required: true
