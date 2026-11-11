@@ -2,23 +2,26 @@ package com.healthybites.mapper;
 
 import com.healthybites.dto.RachaDTO;
 import com.healthybites.model.entity.Racha;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
 @Component
 public class RachaMapper {
 
-    private final ModelMapper modelMapper;
-
-    public RachaMapper(ModelMapper modelMapper) {
-        this.modelMapper = modelMapper;
-    }
-
+    // Las rachas se insertan con la query nativa RachaRepository.addRecompensaToCliente
+    // (sus join columns son insertable=false), por eso solo hay mapeo entidad -> DTO.
     public RachaDTO toDto(Racha racha) {
-        return modelMapper.map(racha, RachaDTO.class);
-    }
-
-    public Racha toEntity(RachaDTO rachaDTO) {
-        return modelMapper.map(rachaDTO, Racha.class);
+        RachaDTO dto = new RachaDTO();
+        if (racha.getCliente() != null) {
+            dto.setClienteId(racha.getCliente().getId());
+            dto.setClienteNombre(racha.getCliente().getNombre() + " " + racha.getCliente().getApellido());
+        }
+        if (racha.getRecompensa() != null) {
+            dto.setRecompensaId(racha.getRecompensa().getId());
+            dto.setRecompensaNombre(racha.getRecompensa().getNombre());
+        }
+        dto.setContadorDias(racha.getContadorDias());
+        dto.setEntregada(racha.isEntregada());
+        dto.setUltimaFechaRegistro(racha.getUltimaFechaRegistro());
+        return dto;
     }
 }

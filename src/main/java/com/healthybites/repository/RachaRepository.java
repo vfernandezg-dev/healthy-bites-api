@@ -45,4 +45,9 @@ public interface RachaRepository extends JpaRepository<Racha, RachaPK> {
     @Query("SELECT r FROM Racha r WHERE r.cliente.id = :clienteId")
     List<Racha> findByCliente(@Param("clienteId") Integer clienteId);
 
+
+    // Busca la racha de un cliente para una recompensa concreta (RachaPK no es construible desde fuera)
+    @Query("SELECT r FROM Racha r WHERE r.cliente.id = :clienteId AND r.recompensa.id = :recompensaId")
+    Optional<Racha> findOneByClienteIdAndRecompensaId(@Param("clienteId") Integer clienteId,
+                                                      @Param("recompensaId") Integer recompensaId);
 }

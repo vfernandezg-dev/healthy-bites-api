@@ -1,16 +1,21 @@
 package com.healthybites.service.impl;
 
+import com.healthybites.dto.ComidaDiariaCreateDTO;
+import com.healthybites.dto.ComidaDiariaDTO;
+import com.healthybites.exception.ResourceNotFoundException;
+import com.healthybites.mapper.ComidaDiariaMapper;
 import com.healthybites.model.entity.ComidaDiaria;
-import com.healthybites.model.entity.PlanAlimenticio;
 import com.healthybites.repository.ComidaDiariaRepository;
 import com.healthybites.repository.PlanAlimenticioRepository;
 import com.healthybites.service.AdminComidaDiariaService;
+import com.healthybites.service.ComidaDiariaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -19,52 +24,65 @@ public class AdminComidaDiariaServiceImpl implements AdminComidaDiariaService {
 
     private final ComidaDiariaRepository comidaDiariaRepository;
     private final PlanAlimenticioRepository planAlimenticioRepository;
+    private final ComidaDiariaMapper comidaDiariaMapper;
+    private final ComidaDiariaService comidaDiariaService;
 
     @Transactional(readOnly = true)
     @Override
-    public List<ComidaDiaria> getAll() {
-        return comidaDiariaRepository.findAll();
+    public List<ComidaDiariaDTO> getAll() {
+        return comidaDiariaRepository.findAll().stream()
+                .map(comidaDiariaMapper::toDTO)
+                .toList();
     }
 
     @Transactional(readOnly = true)
     @Override
-    public Page<ComidaDiaria> paginate(Pageable pageable) {
-        return comidaDiariaRepository.findAll(pageable);
+    public Page<ComidaDiariaDTO> paginate(Pageable pageable) {
+        return comidaDiariaRepository.findAll(pageable).map(comidaDiariaMapper::toDTO);
     }
 
     @Transactional(readOnly = true)
     @Override
-    public ComidaDiaria findById(Integer id) {
-        return comidaDiariaRepository.findById(id).
-                orElseThrow(() -> new RuntimeException("Comida diaria no encontrada"));
+    public ComidaDiariaDTO findById(Integer id) {
+        return comidaDiariaMapper.toDTO(getComidaOrThrow(id));
     }
 
     @Transactional
     @Override
-    public ComidaDiaria create(ComidaDiaria comidaDiaria) {
-        PlanAlimenticio planAlimenticio = planAlimenticioRepository.findById(comidaDiaria.getPlanAlimenticio().getId())
-                .orElseThrow(() -> new RuntimeException("Plan alimenticio no encontrado con Id: " + comidaDiaria.getPlanAlimenticio().getId()));
-        return comidaDiariaRepository.save(comidaDiaria);
+    public ComidaDiariaDTO create(Integer planAlimenticioId, ComidaDiariaCreateDTO comidaDiariaCreateDTO) {
+        if (!planAlimenticioRepository.existsById(planAlimenticioId)) {
+            throw new ResourceNotFoundException("Plan alimenticio no encontrado con Id: " + planAlimenticioId);
+        }
+        // Reutiliza la logica del flujo normal (asigna el plan y las fechas)
+        return comidaDiariaService.create(planAlimenticioId, comidaDiariaCreateDTO);
     }
 
     @Transactional
     @Override
-    public ComidaDiaria update(Integer id, ComidaDiaria updateComidaDiaria) {
-        ComidaDiaria comidaDiariaFromDB = findById(id);
-        PlanAlimenticio planAlimenticio = planAlimenticioRepository.findById(updateComidaDiaria.getPlanAlimenticio().getId())
-                .orElseThrow(() -> new RuntimeException("Plan alimenticio no encontrado con Id: " + updateComidaDiaria.getPlanAlimenticio().getId()));
+    public ComidaDiariaDTO update(Integer id, Integer planAlimenticioId, ComidaDiariaCreateDTO updateComidaDiaria) {
+        ComidaDiaria comidaDiariaFromDB = getComidaOrThrow(id);
 
         comidaDiariaFromDB.setNombreComida(updateComidaDiaria.getNombreComida());
         comidaDiariaFromDB.setCalorias(updateComidaDiaria.getCalorias());
         comidaDiariaFromDB.setCategoria(updateComidaDiaria.getCategoria());
-        comidaDiariaFromDB.setPlanAlimenticio(planAlimenticio);
-        return comidaDiariaRepository.save(comidaDiariaFromDB);
+        if (planAlimenticioId != null) {
+            comidaDiariaFromDB.setPlanAlimenticio(planAlimenticioRepository.findById(planAlimenticioId)
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Plan alimenticio no encontrado con Id: " + planAlimenticioId)));
+        }
+        comidaDiariaFromDB.setFechaActualizacion(LocalDateTime.now());
+
+        return comidaDiariaMapper.toDTO(comidaDiariaRepository.save(comidaDiariaFromDB));
     }
 
     @Transactional
     @Override
     public void delete(Integer id) {
-        ComidaDiaria comidaDiaria = findById(id);
-        comidaDiariaRepository.delete(comidaDiaria);
+        comidaDiariaRepository.delete(getComidaOrThrow(id));
+    }
+
+    private ComidaDiaria getComidaOrThrow(Integer id) {
+        return comidaDiariaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Comida diaria no encontrada: " + id));
     }
 }

@@ -1,18 +1,23 @@
 package com.healthybites.dto;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 public class RachaDTO {
 
-    private Integer id;
+    private Integer clienteId;
+    private String clienteNombre;
 
-    @NotNull(message = "El número de días consecutivos es obligatorio")
-    private Integer diasConsecutivos; // Días consecutivos
+    private Integer recompensaId;
+    private String recompensaNombre;
 
-    @NotNull(message = "La fecha del último registro es obligatoria")
-    private Date ultimaFechaRegistro; // Última fecha de registro
+    @PositiveOrZero(message = "El contador de días no puede ser negativo")
+    private Integer contadorDias; // Días consecutivos acumulados
+
+    private boolean entregada;
+
+    private LocalDateTime ultimaFechaRegistro; // Última fecha de registro
 }

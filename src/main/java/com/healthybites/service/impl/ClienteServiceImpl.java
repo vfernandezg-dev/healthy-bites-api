@@ -1,84 +1,88 @@
 package com.healthybites.service.impl;
 
-import com.healthybites.dto.ClienteDTO;
 import com.healthybites.dto.ClienteMetaDTO;
-import com.healthybites.dto.LoginRequest;
+import com.healthybites.exception.BadRequestException;
+import com.healthybites.exception.ResourceNotFoundException;
 import com.healthybites.model.entity.Cliente;
 import com.healthybites.model.entity.Meta;
+import com.healthybites.model.entity.Usuario;
 import com.healthybites.repository.ClienteRepository;
 import com.healthybites.repository.MetaRepository;
+import com.healthybites.repository.UsuarioRepository;
 import com.healthybites.service.ClienteService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
-
 
 @RequiredArgsConstructor
 @Service
-
 public class ClienteServiceImpl implements ClienteService {
+
     private final ClienteRepository clienteRepository;
     private final MetaRepository metaRepository;
+    private final UsuarioRepository usuarioRepository;
 
     @Transactional
     @Override
-    public Cliente registerCliente(Cliente cliente) {
-        if(clienteRepository.existsByCorreo(cliente.getCorreo())){
-            throw new RuntimeException("El correo ya está registrado");
-        }
-        cliente.setCreatedAt(LocalDateTime.now());
-        return clienteRepository.save(cliente);
-    }
-
-    @Override
-    public Cliente loginCliente(LoginRequest loginRequest) {
-        Optional<Cliente> clienteOpt = clienteRepository.findByCorreo(loginRequest.getCorreo());
-
-        // Verificar si el cliente existe y si la contraseña es correcta
-        if (clienteOpt.isPresent() && clienteOpt.get().getContrasena().equals(loginRequest.getContrasena())) {
-            return clienteOpt.get();  // Retorna el cliente si las credenciales son correctas
-        } else {
-            throw new RuntimeException("Credenciales inválidas");
-        }
-
-    }
-
-    @Override
-    public ClienteDTO actualizarClienteConMeta(Integer clienteId, ClienteMetaDTO clienteMetaDTO) {
-        // Obtener cliente por ID
+    public ClienteMetaDTO actualizarClienteConMeta(Integer clienteId, ClienteMetaDTO dto) {
         Cliente cliente = clienteRepository.findById(clienteId)
-                .orElseThrow(() -> new IllegalArgumentException("Cliente no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente con id " + clienteId + " no encontrado"));
 
-        // Actualizar datos del cliente
-        cliente.setNombre(clienteMetaDTO.getNombre());
-        cliente.setApellido(clienteMetaDTO.getApellido());
-        cliente.setCorreo(clienteMetaDTO.getCorreo());
-        cliente.setSexo(clienteMetaDTO.getSexo());
-        cliente.setEdad(clienteMetaDTO.getEdad());
-        cliente.setAltura(clienteMetaDTO.getAltura());
-        cliente.setPeso(clienteMetaDTO.getPeso());
+        // Nombre + apellido deben seguir siendo unicos (excluyendo al propio cliente)
+        clienteRepository.findByNombreAndApellido(dto.getNombre(), dto.getApellido())
+                .filter(otro -> !otro.getId().equals(clienteId))
+                .ifPresent(otro -> {
+                    throw new BadRequestException("Ya existe un cliente con el mismo nombre y apellido");
+                });
 
-        // Actualizar meta
-        Meta meta = metaRepository.findById(clienteMetaDTO.getMetaID())
-                .orElseThrow(() -> new IllegalArgumentException("Meta no encontrada"));
-        meta.setNombre(clienteMetaDTO.getMetaNombre());
-        meta.setDescripcion(clienteMetaDTO.getMetaDescripcion());
-        meta.setPesoObjetivo(clienteMetaDTO.getPesoObjetivo());
+        LocalDateTime ahora = LocalDateTime.now();
+        cliente.setNombre(dto.getNombre());
+        cliente.setApellido(dto.getApellido());
+        cliente.setSexo(dto.getSexo());
+        cliente.setEdad(dto.getEdad());
+        cliente.setAltura(dto.getAltura());
+        cliente.setPeso(dto.getPeso());
+        cliente.setFechaActualizacion(ahora);
 
-        // Guardar los cambios
-        cliente.setMeta(meta);
+        // El correo vive en Usuario (los clientes creados desde /admin/cliente no tienen usuario)
+        Usuario usuario = cliente.getUsuario();
+        if (dto.getCorreo() != null && usuario != null && !dto.getCorreo().equalsIgnoreCase(usuario.getCorreo())) {
+            if (usuarioRepository.existsByCorreo(dto.getCorreo())) {
+                throw new BadRequestException("El correo ya está registrado");
+            }
+            usuario.setCorreo(dto.getCorreo());
+        }
+
+        Meta meta = null;
+        if (dto.getMetaID() != null) {
+            meta = metaRepository.findByIdAndClienteId(dto.getMetaID(), clienteId)
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Meta con id " + dto.getMetaID() + " no encontrada para el cliente " + clienteId));
+            meta.setNombre(dto.getMetaNombre());
+            meta.setDescripcion(dto.getMetaDescripcion());
+            meta.setPesoObjetivo(dto.getPesoObjetivo());
+            meta.setFechaActualizacion(ahora);
+            metaRepository.save(meta);
+        }
+
         clienteRepository.save(cliente);
 
-        // Retornar DTO actualizado
-        return new ClienteDTO(cliente);
-    }
-
-    @Override
-    public ClienteDTO actualizarCliente(Integer clienteId, ClienteDTO clienteDTO) {
-        return null;
+        ClienteMetaDTO respuesta = new ClienteMetaDTO();
+        respuesta.setNombre(cliente.getNombre());
+        respuesta.setApellido(cliente.getApellido());
+        respuesta.setCorreo(usuario != null ? usuario.getCorreo() : null);
+        respuesta.setSexo(cliente.getSexo());
+        respuesta.setEdad(cliente.getEdad());
+        respuesta.setAltura(cliente.getAltura());
+        respuesta.setPeso(cliente.getPeso());
+        if (meta != null) {
+            respuesta.setMetaID(meta.getId());
+            respuesta.setMetaNombre(meta.getNombre());
+            respuesta.setMetaDescripcion(meta.getDescripcion());
+            respuesta.setPesoObjetivo(meta.getPesoObjetivo());
+        }
+        return respuesta;
     }
 }
-

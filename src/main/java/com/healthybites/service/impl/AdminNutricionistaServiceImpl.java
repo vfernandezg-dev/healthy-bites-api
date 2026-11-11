@@ -8,23 +8,19 @@ import com.healthybites.model.entity.Nutricionista;
 import com.healthybites.repository.NutricionistaRepository;
 import com.healthybites.service.AdminNutricionistaService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 @Service
 public class AdminNutricionistaServiceImpl implements AdminNutricionistaService {
 
-    @Autowired
     private final NutricionistaRepository nutricionistaRepository;
-    @Autowired
     private final NutricionistaMapper nutricionistaMapper;
 
     @Transactional(readOnly = true)
@@ -59,7 +55,11 @@ public class AdminNutricionistaServiceImpl implements AdminNutricionistaService 
                 });
 
         Nutricionista nutricionista = nutricionistaMapper.toEntity(nutricionistaDTO);
-        nutricionistaRepository.save(nutricionista);
+        nutricionista.setId(null);
+        LocalDateTime ahora = LocalDateTime.now();
+        nutricionista.setFechaCreacion(ahora);
+        nutricionista.setFechaActualizacion(ahora);
+        nutricionista = nutricionistaRepository.save(nutricionista);
         return nutricionistaMapper.toDto(nutricionista);
     }
 
@@ -77,6 +77,8 @@ public class AdminNutricionistaServiceImpl implements AdminNutricionistaService 
 
        nutricionistaFromDb.setNombre(updateNutricionistaDTO.getNombre());
        nutricionistaFromDb.setApellido(updateNutricionistaDTO.getApellido());
+       nutricionistaFromDb.setBio(updateNutricionistaDTO.getBio());
+       nutricionistaFromDb.setFechaActualizacion(LocalDateTime.now());
 
        nutricionistaFromDb = nutricionistaRepository.save(nutricionistaFromDb);
        return nutricionistaMapper.toDto(nutricionistaFromDb);

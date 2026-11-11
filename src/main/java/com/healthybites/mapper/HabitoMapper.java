@@ -25,7 +25,9 @@ public class HabitoMapper {
 
     public HabitoDTO toDTO(Habito habito) {
         HabitoDTO habitoDetailsDTO = modelMapper.map(habito, HabitoDTO.class);
-        habitoDetailsDTO.setNombreCliente(habito.getCliente().getNombre() + " " + habito.getCliente().getApellido());
+        if (habito.getCliente() != null) {
+            habitoDetailsDTO.setNombreCliente(habito.getCliente().getNombre() + " " + habito.getCliente().getApellido());
+        }
         return habitoDetailsDTO;
     }
 

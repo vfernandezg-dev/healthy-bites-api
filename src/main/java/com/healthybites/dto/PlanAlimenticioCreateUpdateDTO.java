@@ -7,8 +7,6 @@ import lombok.Data;
 @Data
 public class PlanAlimenticioCreateUpdateDTO {
 
-    private Integer id;
-
     @NotNull(message = "El objetivo del plan solo puede ser: DEFICIT, MANTENIMIENTO_PESO, AUMENTO_MASA_MUSCULAR")
     private PlanObjetivo planObjetivo;
 
@@ -19,7 +17,6 @@ public class PlanAlimenticioCreateUpdateDTO {
     @Positive(message = "La duración del plan debe ser un número positivo")
     private int duracionDias;
 
-    @AssertTrue(message = "El valor debe ser verdadero o falso")
     private boolean esGratis;
 
     @NotNull(message = "El ID del nutricionista es obligatorio")

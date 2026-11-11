@@ -6,7 +6,7 @@ import com.healthybites.dto.PasswordResetRequestDTO;
 import com.healthybites.dto.ResetPasswordDTO;
 import com.healthybites.dto.UserProfileDTO;
 import com.healthybites.dto.UserRegistrationDTO;
-import com.healthybites.service.PasswordResetTokenService;
+import com.healthybites.service.AuthService;
 import com.healthybites.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final UsuarioService usuarioService;
-    private final PasswordResetTokenService passwordResetTokenService;
+    private final AuthService authService;
 
     // Registro de un cliente
     @PostMapping("/register/cliente")
@@ -43,14 +43,14 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<Void> forgotPassword(@RequestBody PasswordResetRequestDTO requestDTO) throws Exception {
-        passwordResetTokenService.createAndSendPasswordResetToken(requestDTO.getCorreo());
+    public ResponseEntity<Void> forgotPassword(@Valid @RequestBody PasswordResetRequestDTO requestDTO) throws Exception {
+        authService.sendPasswordResetToken(requestDTO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<Void> resetPassword(@RequestBody ResetPasswordDTO resetPasswordDTO) {
-        passwordResetTokenService.resetPassword(resetPasswordDTO.getToken(), resetPasswordDTO.getNewPassword());
+    public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordDTO resetPasswordDTO) {
+        authService.resetPassword(resetPasswordDTO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }

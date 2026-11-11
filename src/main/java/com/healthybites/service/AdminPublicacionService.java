@@ -1,16 +1,17 @@
 package com.healthybites.service;
 
-import com.healthybites.model.entity.Publicacion;
+import com.healthybites.dto.PublicacionCreateDTO;
+import com.healthybites.dto.PublicacionDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 public interface AdminPublicacionService {
-    List<Publicacion> getAll();
-    Page<Publicacion> paginate(Pageable pageable);
-    Publicacion findById(Integer id);
-    Publicacion create(Publicacion publicacion);
-    Publicacion update(Integer id, Publicacion updatePublicacion);
+    List<PublicacionDTO> getAll();
+    Page<PublicacionDTO> paginate(Pageable pageable);
+    PublicacionDTO findById(Integer id);
+    PublicacionDTO create(PublicacionCreateDTO publicacionCreateDTO);
+    PublicacionDTO update(Integer id, PublicacionCreateDTO updatePublicacion);
     void delete(Integer id);
 }

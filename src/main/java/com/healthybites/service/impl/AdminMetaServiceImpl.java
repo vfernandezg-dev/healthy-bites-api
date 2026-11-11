@@ -1,6 +1,7 @@
 package com.healthybites.service.impl;
 
-import com.healthybites.dto.ClienteDTO;
+import com.healthybites.dto.ClienteDetailsDTO;
+import com.healthybites.dto.MetaCreateDTO;
 import com.healthybites.dto.MetaDTO;
 import com.healthybites.exception.BadRequestException;
 import com.healthybites.exception.ResourceNotFoundException;
@@ -18,14 +19,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
-
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 @Service
-public class AdminMetaServiceImpl implements AdminMetaService{
+public class AdminMetaServiceImpl implements AdminMetaService {
 
     private final MetaRepository metaRepository;
     private final MetaMapper metaMapper;
@@ -35,175 +34,158 @@ public class AdminMetaServiceImpl implements AdminMetaService{
     @Transactional(readOnly = true)
     @Override
     public List<MetaDTO> getAll() {
-            List<Meta> metas = metaRepository.findAll();
-            return metas.stream()
-                    .map(metaMapper::toMetaDTO)
-                    .toList();
+        return metaRepository.findAll().stream()
+                .map(metaMapper::toDTO)
+                .toList();
     }
 
     @Transactional(readOnly = true)
+    @Override
     public Page<MetaDTO> paginate(Pageable pageable) {
-        Page<Meta> metas = metaRepository.findAll(pageable);
-        return metas.map(metaMapper::toMetaDTO);
+        return metaRepository.findAll(pageable).map(metaMapper::toDTO);
     }
 
     @Transactional(readOnly = true)
+    @Override
     public MetaDTO findById(Integer id) {
-        Meta meta = metaRepository.findById(id)
-                .orElseThrow(()-> new ResourceNotFoundException("La meta con ID "+id+" no fue encontrado"));
-        return metaMapper.toMetaDTO(meta);
+        return metaMapper.toDTO(getMetaOrThrow(id));
     }
 
-
     @Transactional
-    public MetaDTO create(MetaDTO metaDTO) {
-        Meta meta = metaMapper.toEntity(metaDTO);
-        Cliente cliente = clienteRepository.findById(metaDTO.getCliente().getId())
-                .orElseThrow(() -> new BadRequestException("El cliente no fue encontrado"));
-        ClienteDTO clienteDTO = clienteMapper.toDTO(cliente);
-        cliente = clienteRepository.save(cliente);
-        meta = metaRepository.save(meta);
-        return metaMapper.toMetaDTO(meta);
+    @Override
+    public MetaDTO create(MetaCreateDTO metaCreateDTO) {
+        Cliente cliente = getClienteOrThrow(metaCreateDTO.getClienteId());
+
+        Meta meta = metaMapper.toEntity(metaCreateDTO);
+        meta.setId(null);
+        meta.setCliente(cliente);
+        LocalDateTime ahora = LocalDateTime.now();
+        meta.setFechaCreacion(ahora);
+        meta.setFechaActualizacion(ahora);
+        meta.setEstado(EstadoMeta.ACTIVE);
+        meta.getHistorialEstados().add(EstadoMeta.ACTIVE);
+
+        return metaMapper.toDTO(metaRepository.save(meta));
     }
 
-
     @Transactional
-    public MetaDTO update(Integer id, MetaDTO updateMetaDTO) {
-        Meta metaFromDB = metaRepository.findById(id)
-                        .orElseThrow(() -> new ResourceNotFoundException("La meta con ID "+id+" no fue encontrado"));
+    @Override
+    public MetaDTO update(Integer id, MetaCreateDTO updateMetaDTO) {
+        Meta metaFromDB = getMetaOrThrow(id);
 
-        metaRepository.findById(metaFromDB.getId())
-                .filter(existingMeta -> !existingMeta.getId().equals(id))
-                .ifPresent(existingMeta -> {
-                   throw new BadRequestException("La meta ya existe con el mismo ID");
-                });
-
-        //Actualizar los campos
         metaFromDB.setNombre(updateMetaDTO.getNombre());
         metaFromDB.setDescripcion(updateMetaDTO.getDescripcion());
         metaFromDB.setPesoObjetivo(updateMetaDTO.getPesoObjetivo());
+        if (updateMetaDTO.getClienteId() != null) {
+            metaFromDB.setCliente(getClienteOrThrow(updateMetaDTO.getClienteId()));
+        }
+        metaFromDB.setFechaActualizacion(LocalDateTime.now());
 
-        Cliente cliente = metaFromDB.getCliente();
-        cliente.getMetas().remove(metaFromDB);
-        cliente.getMetas().add(metaFromDB);
-
-        metaFromDB = metaRepository.save(metaFromDB);
-        return metaMapper.toMetaDTO(metaFromDB);
+        return metaMapper.toDTO(metaRepository.save(metaFromDB));
     }
 
-
     @Transactional
+    @Override
     public void delete(Integer id) {
-        Meta meta = metaRepository.findById(id)
-                        .orElseThrow(()-> new ResourceNotFoundException("La meta con ID "+id+" no fue encontrado"));
-        metaRepository.delete(meta);
+        metaRepository.delete(getMetaOrThrow(id));
     }
 
     @Transactional(readOnly = true)
-    public String calcularRecomendacion(MetaDTO metaDTO) {
-        double pesoObjetivo = metaDTO.getPesoObjetivo();
-        double pesoActual = metaDTO.getCliente().getPeso();
+    @Override
+    public String calcularRecomendacion(MetaCreateDTO metaCreateDTO) {
+        Cliente cliente = getClienteOrThrow(metaCreateDTO.getClienteId());
 
-        double diferenciaPeso = pesoActual - pesoObjetivo;
-        String recomendacion;
+        double diferenciaPeso = cliente.getPeso() - metaCreateDTO.getPesoObjetivo();
 
         if (diferenciaPeso > 5) {
-            recomendacion = "Se recomienda un plan de 6 meses para reducir gradualmente.";
+            return "Se recomienda un plan de 6 meses para reducir gradualmente.";
         } else if (diferenciaPeso > 2) {
-            recomendacion = "Se recomienda un plan de 3 meses.";
-        } else {
-            recomendacion = "Mantén tu peso actual con una dieta balanceada y ejercicio regular.";
+            return "Se recomienda un plan de 3 meses.";
         }
-
-        return recomendacion;
+        return "Mantén tu peso actual con una dieta balanceada y ejercicio regular.";
     }
 
-    @Override
     @Transactional(readOnly = true)
+    @Override
     public List<MetaDTO> findMetasByClienteId(Integer clienteId) {
-        List<Meta> metas = metaRepository.findByClienteId(clienteId);
-        return metas.stream()
-                .map(metaMapper::toMetaDTO)
+        return metaRepository.findByClienteId(clienteId).stream()
+                .map(metaMapper::toDTO)
                 .toList();
     }
-    @Override
+
     @Transactional
-    public MetaDTO actualizarObjetivosSalud(Integer id, MetaDTO metaDTO) {
-        Meta metaExistente = metaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("La meta con ID " + id + " no fue encontrada"));
-
-        // Actualizar los campos existentes
-        metaExistente.setNombre(metaDTO.getNombre());
-        metaExistente.setDescripcion(metaDTO.getDescripcion());
-        metaExistente.setPesoObjetivo(metaDTO.getPesoObjetivo());
-
-        metaRepository.save(metaExistente);
-        return metaMapper.toMetaDTO(metaExistente);
+    @Override
+    public MetaDTO actualizarObjetivosSalud(Integer id, MetaCreateDTO metaCreateDTO) {
+        return update(id, metaCreateDTO);
     }
 
-
-    @Override
     @Transactional
+    @Override
     public MetaDTO actualizacionEstadoMeta(Integer id, EstadoMeta nuevoEstado) {
-        Meta metaFromDB = metaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("La meta con ID " + id + " no fue encontrado"));
-
-        // Verifica si la meta anterior estaba activa
-        if (metaFromDB.getEstado() == EstadoMeta.ACTIVE) {
-            // Cambia el estado de la meta anterior a COMPLETED
-            metaFromDB.setEstado(EstadoMeta.COMPLETED);
-            metaFromDB.getHistorialEstados().add(EstadoMeta.COMPLETED); // Agrega al historial
-            metaRepository.save(metaFromDB); // Guarda el objetivo anterior como completado
+        if (nuevoEstado == null) {
+            throw new BadRequestException("El nuevo estado es obligatorio (ACTIVE o COMPLETED)");
         }
+        Meta metaFromDB = getMetaOrThrow(id);
 
-        // Cambia el estado de la meta existente al nuevo estado recibido
-        metaFromDB.setEstado(nuevoEstado);
-        metaFromDB.getHistorialEstados().add(nuevoEstado);
-        metaRepository.save(metaFromDB); // Guarda el cambio de estado
-        return metaMapper.toMetaDTO(metaFromDB);
+        if (metaFromDB.getEstado() != nuevoEstado) {
+            metaFromDB.setEstado(nuevoEstado);
+            metaFromDB.getHistorialEstados().add(nuevoEstado);
+            metaFromDB.setFechaActualizacion(LocalDateTime.now());
+            metaFromDB = metaRepository.save(metaFromDB);
+        }
+        return metaMapper.toDTO(metaFromDB);
     }
 
+    @Transactional(readOnly = true)
     @Override
-    @Transactional(readOnly = true)
     public List<EstadoMeta> getHistorialById(Integer id) {
-        Meta meta = metaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("La meta con ID " + id + " no fue encontrado"));
-        return meta.getHistorialEstados(); // Devuelve el historial de estados
+        // Copia dentro de la transaccion para no devolver una coleccion lazy
+        return List.copyOf(getMetaOrThrow(id).getHistorialEstados());
     }
 
+    // Completa la meta actual (si estaba activa) y crea una nueva meta activa con los mismos datos.
+    // No esta expuesto en el controller; se conserva del codigo original.
     @Transactional
-    public MetaDTO nuevoObjetivo(Integer id, EstadoMeta nuevoEstado) {
-        Meta metaFromDB = metaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("La meta con ID " + id + " no fue encontrado"));
+    public MetaDTO nuevoObjetivo(Integer id) {
+        Meta metaFromDB = getMetaOrThrow(id);
+        LocalDateTime ahora = LocalDateTime.now();
 
-        // Verifica si la meta anterior estaba activa
         if (metaFromDB.getEstado() == EstadoMeta.ACTIVE) {
-            // Cambia el estado de la meta anterior a COMPLETED
             metaFromDB.setEstado(EstadoMeta.COMPLETED);
-            metaRepository.save(metaFromDB); // Guarda el objetivo anterior como completado
+            metaFromDB.getHistorialEstados().add(EstadoMeta.COMPLETED);
+            metaFromDB.setFechaActualizacion(ahora);
+            metaRepository.save(metaFromDB);
         }
 
-        // Crea una nueva meta
         Meta newMeta = new Meta();
-        newMeta.setNombre(metaFromDB.getNombre()); // Puede ser el mismo nombre o uno nuevo
+        newMeta.setNombre(metaFromDB.getNombre());
         newMeta.setDescripcion(metaFromDB.getDescripcion());
-        newMeta.setPesoObjetivo(metaFromDB.getPesoObjetivo()); // Asume que se mantiene el mismo
-        newMeta.setCliente(metaFromDB.getCliente()); // Asigna el cliente existente
-        newMeta.setEstado(EstadoMeta.ACTIVE); // Establece el nuevo objetivo como activo
+        newMeta.setPesoObjetivo(metaFromDB.getPesoObjetivo());
+        newMeta.setCliente(metaFromDB.getCliente());
+        newMeta.setEstado(EstadoMeta.ACTIVE);
+        newMeta.getHistorialEstados().add(EstadoMeta.ACTIVE);
+        newMeta.setFechaCreacion(ahora);
+        newMeta.setFechaActualizacion(ahora);
 
-        // Guarda la nueva meta
-        metaRepository.save(newMeta);
-
-        // Aquí puedes actualizar el perfil del cliente o el gráfico de progreso
-        // Por ejemplo, actualiza el peso del cliente o algún otro dato necesario.
-
-        return metaMapper.toMetaDTO(newMeta);
+        return metaMapper.toDTO(metaRepository.save(newMeta));
     }
+
     @Transactional(readOnly = true)
-    public ClienteDTO getPerfilClienteByMetaId(Integer metaId) {
-        Meta meta = metaRepository.findById(metaId)
-                .orElseThrow(() -> new ResourceNotFoundException("La meta con ID " + metaId + " no fue encontrado"));
-        Cliente cliente = meta.getCliente();
-        return clienteMapper.ToDTO(cliente);
+    @Override
+    public ClienteDetailsDTO getPerfilClienteByMetaId(Integer metaId) {
+        return clienteMapper.toDTO(getMetaOrThrow(metaId).getCliente());
+    }
+
+    private Meta getMetaOrThrow(Integer id) {
+        return metaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("La meta con ID " + id + " no fue encontrada"));
+    }
+
+    private Cliente getClienteOrThrow(Integer clienteId) {
+        if (clienteId == null) {
+            throw new BadRequestException("El ID del cliente es obligatorio");
+        }
+        return clienteRepository.findById(clienteId)
+                .orElseThrow(() -> new ResourceNotFoundException("El cliente con ID " + clienteId + " no fue encontrado"));
     }
 }

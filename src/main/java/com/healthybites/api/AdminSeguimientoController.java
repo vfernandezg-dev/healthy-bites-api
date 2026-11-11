@@ -1,13 +1,16 @@
 package com.healthybites.api;
 
-import com.healthybites.model.entity.Seguimiento;
+import com.healthybites.dto.SeguimientoCreateDTO;
+import com.healthybites.dto.SeguimientoDTO;
 import com.healthybites.service.AdminSeguimientoService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,44 +18,43 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/admin/seguimiento")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminSeguimientoController {
 
     private final AdminSeguimientoService adminSeguimientoService;
 
     @GetMapping
-    public ResponseEntity<List<Seguimiento>> getAllSeguimiento() {
-        List<Seguimiento> seguimientos = adminSeguimientoService.getAll();
-        return new ResponseEntity<List<Seguimiento>>(seguimientos, HttpStatus.OK);
+    public ResponseEntity<List<SeguimientoDTO>> getAllSeguimiento() {
+        return new ResponseEntity<>(adminSeguimientoService.getAll(), HttpStatus.OK);
     }
 
     @GetMapping("/page")
-    public ResponseEntity<Page<Seguimiento>> paginateSeguimientos(
+    public ResponseEntity<Page<SeguimientoDTO>> paginateSeguimientos(
             @PageableDefault(size = 5, sort = "fecha") Pageable pageable) {
-        Page<Seguimiento> seguimientos = adminSeguimientoService.paginate(pageable);
-        return new ResponseEntity<Page<Seguimiento>>(seguimientos, HttpStatus.OK);
+        return new ResponseEntity<>(adminSeguimientoService.paginate(pageable), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Seguimiento> getSeguimientoById(@PathVariable("id") Integer id) {
-        Seguimiento seguimiento = adminSeguimientoService.findById(id);
-        return new ResponseEntity<Seguimiento>(seguimiento, HttpStatus.OK);
+    public ResponseEntity<SeguimientoDTO> getSeguimientoById(@PathVariable("id") Integer id) {
+        return new ResponseEntity<>(adminSeguimientoService.findById(id), HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<Seguimiento> createSeguimiento(@RequestBody Seguimiento seguimiento) {
-        Seguimiento newSeguimiento = adminSeguimientoService.create(seguimiento);
-        return new ResponseEntity<Seguimiento>(newSeguimiento, HttpStatus.CREATED);
+    public ResponseEntity<SeguimientoDTO> createSeguimiento(@RequestParam Integer metaId,
+                                                            @Valid @RequestBody SeguimientoCreateDTO seguimiento) {
+        return new ResponseEntity<>(adminSeguimientoService.create(metaId, seguimiento), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Seguimiento> updateSeguimiento(@PathVariable("id") Integer id, @RequestBody Seguimiento seguimiento) {
-        Seguimiento updateSeguimiento = adminSeguimientoService.update(id, seguimiento);
-        return new ResponseEntity<Seguimiento>(updateSeguimiento, HttpStatus.OK);
+    public ResponseEntity<SeguimientoDTO> updateSeguimiento(@PathVariable("id") Integer id,
+                                                            @RequestParam(required = false) Integer metaId,
+                                                            @Valid @RequestBody SeguimientoCreateDTO seguimiento) {
+        return new ResponseEntity<>(adminSeguimientoService.update(id, metaId, seguimiento), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Seguimiento> deleteSeguimiento(@PathVariable("id") Integer id) {
+    public ResponseEntity<Void> deleteSeguimiento(@PathVariable("id") Integer id) {
         adminSeguimientoService.delete(id);
-        return new ResponseEntity<Seguimiento>(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

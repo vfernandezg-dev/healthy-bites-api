@@ -1,6 +1,7 @@
 package com.healthybites.service;
 
-import com.healthybites.dto.ClienteDTO;
+import com.healthybites.dto.ClienteDetailsDTO;
+import com.healthybites.dto.MetaCreateDTO;
 import com.healthybites.dto.MetaDTO;
 import com.healthybites.model.enums.EstadoMeta;
 import org.springframework.data.domain.Page;
@@ -11,13 +12,13 @@ public interface AdminMetaService {
     List<MetaDTO> getAll();
     Page<MetaDTO> paginate(Pageable pageable);
     MetaDTO findById(Integer id);
-    MetaDTO create(MetaDTO metaDTO);
-    MetaDTO update(Integer id, MetaDTO updateMetaDTO);
+    MetaDTO create(MetaCreateDTO metaCreateDTO);
+    MetaDTO update(Integer id, MetaCreateDTO updateMetaDTO);
     void delete(Integer id);
-    String calcularRecomendacion(MetaDTO metaDTO);
+    String calcularRecomendacion(MetaCreateDTO metaCreateDTO);
     List<MetaDTO> findMetasByClienteId(Integer clienteId);
-    MetaDTO actualizarObjetivosSalud(Integer id, MetaDTO metaDTO);
-    public MetaDTO actualizacionEstadoMeta(Integer id, EstadoMeta nuevoEstado);
+    MetaDTO actualizarObjetivosSalud(Integer id, MetaCreateDTO metaCreateDTO);
+    MetaDTO actualizacionEstadoMeta(Integer id, EstadoMeta nuevoEstado);
     List<EstadoMeta> getHistorialById(Integer id);
-    ClienteDTO getPerfilClienteByMetaId(Integer metaId);
+    ClienteDetailsDTO getPerfilClienteByMetaId(Integer metaId);
 }

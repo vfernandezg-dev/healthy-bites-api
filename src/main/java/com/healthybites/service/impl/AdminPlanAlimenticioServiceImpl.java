@@ -2,7 +2,6 @@ package com.healthybites.service.impl;
 
 import com.healthybites.dto.PlanAlimenticioCreateUpdateDTO;
 import com.healthybites.dto.PlanAlimenticioDetailsDTO;
-import com.healthybites.exception.BadRequestException;
 import com.healthybites.exception.ResourceNotFoundException;
 import com.healthybites.mapper.PlanAlimenticioMapper;
 import com.healthybites.model.entity.Nutricionista;
@@ -16,6 +15,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -29,8 +30,7 @@ public class AdminPlanAlimenticioServiceImpl implements AdminPlanAlimenticioServ
     @Transactional(readOnly = true)
     @Override
     public List<PlanAlimenticioDetailsDTO> getAll() {
-        List<PlanAlimenticio> planAlimenticios = planAlimenticioRepository.findAll();
-        return planAlimenticios.stream()
+        return planAlimenticioRepository.findAll().stream()
                 .map(planAlimenticioMapper::toDetailsDTO)
                 .toList();
     }
@@ -45,22 +45,21 @@ public class AdminPlanAlimenticioServiceImpl implements AdminPlanAlimenticioServ
     @Transactional(readOnly = true)
     @Override
     public PlanAlimenticioDetailsDTO findById(Integer id) {
-        PlanAlimenticio planAlimenticio = planAlimenticioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Plan alimenticio no encontrado: "+id));
-        return planAlimenticioMapper.toDetailsDTO(planAlimenticio);
+        return planAlimenticioMapper.toDetailsDTO(getPlanOrThrow(id));
     }
 
     @Transactional
     @Override
     public PlanAlimenticioDetailsDTO create(PlanAlimenticioCreateUpdateDTO planAlimenticioCreateUpdateDTO) {
-
-        //Asigna el nutricionista antes de guardar
-        Nutricionista nutricionista = nutricionistaRepository.findById(planAlimenticioCreateUpdateDTO.getNutricionistaId())
-                .orElseThrow(() -> new ResourceNotFoundException("Nutricionista no encontrado con Id: " + planAlimenticioCreateUpdateDTO.getNutricionistaId()));
+        Nutricionista nutricionista = getNutricionistaOrThrow(planAlimenticioCreateUpdateDTO.getNutricionistaId());
 
         PlanAlimenticio planAlimenticio = planAlimenticioMapper.toEntity(planAlimenticioCreateUpdateDTO);
-
+        planAlimenticio.setId(null);
         planAlimenticio.setNutricionista(nutricionista);
+        planAlimenticio.setComidasDiarias(new ArrayList<>());
+        LocalDateTime ahora = LocalDateTime.now();
+        planAlimenticio.setFechaCreacion(ahora);
+        planAlimenticio.setFechaActualizacion(ahora);
 
         return planAlimenticioMapper.toDetailsDTO(planAlimenticioRepository.save(planAlimenticio));
     }
@@ -68,30 +67,32 @@ public class AdminPlanAlimenticioServiceImpl implements AdminPlanAlimenticioServ
     @Transactional
     @Override
     public PlanAlimenticioDetailsDTO update(Integer id, PlanAlimenticioCreateUpdateDTO updatePlanAlimenticioDTO) {
-        // Busca el plan alimenticio existente
-        PlanAlimenticio plan =  planAlimenticioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Plan alimenticio no encontrado: "+id));
+        PlanAlimenticio plan = getPlanOrThrow(id);
+        Nutricionista nutricionista = getNutricionistaOrThrow(updatePlanAlimenticioDTO.getNutricionistaId());
 
-        // Busca el nutricionista asociado
-        Nutricionista nutricionista = nutricionistaRepository.findById(updatePlanAlimenticioDTO.getNutricionistaId())
-                .orElseThrow(() -> new ResourceNotFoundException("Nutricionista no encontrado con Id: " + updatePlanAlimenticioDTO.getNutricionistaId()));
-
-        // Actualiza solo los campos necesarios
         plan.setPlanObjetivo(updatePlanAlimenticioDTO.getPlanObjetivo());
         plan.setDescripcion(updatePlanAlimenticioDTO.getDescripcion());
         plan.setDuracionDias(updatePlanAlimenticioDTO.getDuracionDias());
         plan.setEsGratis(updatePlanAlimenticioDTO.isEsGratis());
-        plan.setNutricionista(nutricionista);  // Asigna el nutricionista actualizado
+        plan.setNutricionista(nutricionista);
+        plan.setFechaActualizacion(LocalDateTime.now());
 
-        // Guarda y devuelve el plan actualizado
         return planAlimenticioMapper.toDetailsDTO(planAlimenticioRepository.save(plan));
     }
 
     @Transactional
     @Override
     public void delete(Integer id) {
-        PlanAlimenticio planAlimenticio = planAlimenticioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Plan alimenticio no encontrado: "+id));
-        planAlimenticioRepository.delete(planAlimenticio);
+        planAlimenticioRepository.delete(getPlanOrThrow(id));
+    }
+
+    private PlanAlimenticio getPlanOrThrow(Integer id) {
+        return planAlimenticioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Plan alimenticio no encontrado: " + id));
+    }
+
+    private Nutricionista getNutricionistaOrThrow(Integer nutricionistaId) {
+        return nutricionistaRepository.findById(nutricionistaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Nutricionista no encontrado con Id: " + nutricionistaId));
     }
 }
