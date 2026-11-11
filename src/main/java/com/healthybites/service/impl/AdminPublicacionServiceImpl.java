@@ -1,18 +1,23 @@
 package com.healthybites.service.impl;
 
-import com.healthybites.model.entity.Cliente;
-import com.healthybites.model.entity.Grupo;
+import com.healthybites.dto.PublicacionCreateDTO;
+import com.healthybites.dto.PublicacionDTO;
+import com.healthybites.exception.BadRequestException;
+import com.healthybites.exception.ResourceNotFoundException;
+import com.healthybites.mapper.PublicacionMapper;
 import com.healthybites.model.entity.Publicacion;
 import com.healthybites.repository.ClienteRepository;
 import com.healthybites.repository.GrupoRepository;
 import com.healthybites.repository.PublicacionRepository;
 import com.healthybites.service.AdminPublicacionService;
+import com.healthybites.service.PublicacionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -22,62 +27,70 @@ public class AdminPublicacionServiceImpl implements AdminPublicacionService {
     private final PublicacionRepository publicacionRepository;
     private final ClienteRepository clienteRepository;
     private final GrupoRepository grupoRepository;
+    private final PublicacionMapper publicacionMapper;
+    private final PublicacionService publicacionService;
 
     @Transactional(readOnly = true)
     @Override
-    public List<Publicacion> getAll() {
-        return publicacionRepository.findAll();
+    public List<PublicacionDTO> getAll() {
+        return publicacionRepository.findAll().stream()
+                .map(publicacionMapper::toDTO)
+                .toList();
     }
 
     @Transactional(readOnly = true)
     @Override
-    public Page<Publicacion> paginate(Pageable pageable) {
-        return publicacionRepository.findAll(pageable);
+    public Page<PublicacionDTO> paginate(Pageable pageable) {
+        return publicacionRepository.findAll(pageable).map(publicacionMapper::toDTO);
     }
 
     @Transactional(readOnly = true)
     @Override
-    public Publicacion findById(Integer id) {
-        return publicacionRepository.findById(id).
-                orElseThrow(() -> new RuntimeException("Publicacion no encontrada"));
+    public PublicacionDTO findById(Integer id) {
+        return publicacionMapper.toDTO(getPublicacionOrThrow(id));
     }
 
     @Transactional
     @Override
-    public Publicacion create(Publicacion publicacion) {
-
-        Cliente cliente = clienteRepository.findById(publicacion.getCliente().getId()).
-                orElseThrow(() -> new RuntimeException("Cliente no encontrado por ID: " + publicacion.getCliente().getId()));
-        Grupo grupo = grupoRepository.findById(publicacion.getGrupo().getId()).
-                orElseThrow(() -> new RuntimeException("Grupo no encontrado"));
-
-        publicacion.setCliente(cliente);
-        publicacion.setGrupo(grupo);
-        return publicacionRepository.save(publicacion);
+    public PublicacionDTO create(PublicacionCreateDTO publicacionCreateDTO) {
+        if (publicacionCreateDTO.getClienteId() == null || publicacionCreateDTO.getGrupoId() == null) {
+            throw new BadRequestException("clienteId y grupoId son obligatorios");
+        }
+        // Reutiliza la logica del flujo normal (valida cliente/grupo y asigna fechas)
+        return publicacionService.create(publicacionCreateDTO);
     }
 
     @Transactional
     @Override
-    public Publicacion update(Integer id, Publicacion updatePublicacion) {
-        Publicacion publicacionFromDB = findById(id);
-
-        Cliente cliente = clienteRepository.findById(updatePublicacion.getCliente().getId()).
-                orElseThrow(() -> new RuntimeException("Cliente no encontrado por ID: " + updatePublicacion.getCliente().getId()));
-        Grupo grupo = grupoRepository.findById(updatePublicacion.getGrupo().getId()).
-                orElseThrow(() -> new RuntimeException("Grupo no encontrado"));
+    public PublicacionDTO update(Integer id, PublicacionCreateDTO updatePublicacion) {
+        Publicacion publicacionFromDB = getPublicacionOrThrow(id);
 
         publicacionFromDB.setTitulo(updatePublicacion.getTitulo());
         publicacionFromDB.setDescripcion(updatePublicacion.getDescripcion());
-        publicacionFromDB.setFecha(updatePublicacion.getFecha());
-        publicacionFromDB.setCliente(cliente);
-        publicacionFromDB.setGrupo(grupo);
-        return publicacionRepository.save(publicacionFromDB);
+        publicacionFromDB.setPublicacionPath(updatePublicacion.getPublicacionPath());
+        if (updatePublicacion.getClienteId() != null) {
+            publicacionFromDB.setCliente(clienteRepository.findById(updatePublicacion.getClienteId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Cliente no encontrado por ID: " + updatePublicacion.getClienteId())));
+        }
+        if (updatePublicacion.getGrupoId() != null) {
+            publicacionFromDB.setGrupo(grupoRepository.findById(updatePublicacion.getGrupoId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Grupo no encontrado por ID: " + updatePublicacion.getGrupoId())));
+        }
+        publicacionFromDB.setFechaActualizacion(LocalDateTime.now());
+
+        return publicacionMapper.toDTO(publicacionRepository.save(publicacionFromDB));
     }
 
     @Transactional
     @Override
     public void delete(Integer id) {
-        Publicacion publicacion = findById(id);
-        publicacionRepository.delete(publicacion);
+        publicacionRepository.delete(getPublicacionOrThrow(id));
+    }
+
+    private Publicacion getPublicacionOrThrow(Integer id) {
+        return publicacionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Publicacion no encontrada por ID: " + id));
     }
 }

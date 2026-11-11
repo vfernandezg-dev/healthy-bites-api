@@ -1,45 +1,27 @@
 package com.healthybites.service.impl;
 
-import com.healthybites.dto.ResetPasswordDTO;
 import com.healthybites.dto.PasswordResetRequestDTO;
-import com.healthybites.exception.BadRequestException;
-import com.healthybites.exception.ResourceNotFoundException;
-import com.healthybites.model.entity.Cliente;
-import com.healthybites.repository.ClienteRepository;
+import com.healthybites.dto.ResetPasswordDTO;
 import com.healthybites.service.AuthService;
+import com.healthybites.service.PasswordResetTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-
+// Fachada sobre PasswordResetTokenService: reutiliza el token persistido, su expiracion,
+// el envio de correo y el cifrado BCrypt de la nueva contrasena.
 @RequiredArgsConstructor
 @Service
 public class AuthServiceImpl implements AuthService {
-    private final ClienteRepository clienteRepository;
+
+    private final PasswordResetTokenService passwordResetTokenService;
 
     @Override
-    @Transactional
-    public String generatePasswordResetToken(PasswordResetRequestDTO requestDTO) {
-        Cliente cliente = clienteRepository.findByCorreo(requestDTO.getCorreo())
-                .orElseThrow(() -> new ResourceNotFoundException("No existe un cliente con ese correo"));
-
-        String token = UUID.randomUUID().toString();
-        cliente.setResetPasswordToken(token);
-        clienteRepository.save(cliente);
-
-        return token;  // Devuelve el token en lugar de solo confirmar la operación.
+    public void sendPasswordResetToken(PasswordResetRequestDTO requestDTO) throws Exception {
+        passwordResetTokenService.createAndSendPasswordResetToken(requestDTO.getCorreo());
     }
 
     @Override
-    @Transactional
     public void resetPassword(ResetPasswordDTO resetPasswordDTO) {
-        Cliente cliente = clienteRepository.findByResetPasswordToken(resetPasswordDTO.getToken())
-                .orElseThrow(() -> new BadRequestException("Token inválido"));
-
-        cliente.setContrasena(resetPasswordDTO.getNewPassword());
-        cliente.setResetPasswordToken(null);  // Limpiar el token después de restablecer la contraseña
-        clienteRepository.save(cliente);
+        passwordResetTokenService.resetPassword(resetPasswordDTO.getToken(), resetPasswordDTO.getNewPassword());
     }
 }

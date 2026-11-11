@@ -3,6 +3,8 @@ package com.healthybites.mapper;
 import com.healthybites.dto.ComidaDiariaDTO;
 import com.healthybites.dto.ContenidoCreateUpdateDTO;
 import com.healthybites.dto.PlanAlimenticioCreateDTO;
+import com.healthybites.dto.PlanAlimenticioCreateUpdateDTO;
+import com.healthybites.dto.PlanAlimenticioDetailsDTO;
 import com.healthybites.dto.PlanAlimenticioDTO;
 import com.healthybites.model.entity.ComidaDiaria;
 import com.healthybites.model.entity.PlanAlimenticio;
@@ -33,6 +35,19 @@ public class PlanAlimenticioMapper {
 
     public PlanAlimenticio toEntity(PlanAlimenticioCreateDTO planAlimenticioCreateDTO) {
         return modelMapper.map(planAlimenticioCreateDTO, PlanAlimenticio.class);
+    }
+
+    public PlanAlimenticioDetailsDTO toDetailsDTO(PlanAlimenticio planAlimenticio) {
+        PlanAlimenticioDetailsDTO detailsDTO = modelMapper.map(planAlimenticio, PlanAlimenticioDetailsDTO.class);
+        if (planAlimenticio.getNutricionista() != null) {
+            detailsDTO.setNutricionistaNombre(planAlimenticio.getNutricionista().getNombre() + " "
+                    + planAlimenticio.getNutricionista().getApellido());
+        }
+        return detailsDTO;
+    }
+
+    public PlanAlimenticio toEntity(PlanAlimenticioCreateUpdateDTO planAlimenticioCreateUpdateDTO) {
+        return modelMapper.map(planAlimenticioCreateUpdateDTO, PlanAlimenticio.class);
     }
 
     public void updateFromDTO(PlanAlimenticioCreateDTO planAlimenticioCreateDTO, PlanAlimenticio planAlimenticio) {

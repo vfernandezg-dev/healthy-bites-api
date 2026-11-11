@@ -20,7 +20,9 @@ public class GrupoMapper {
     public GrupoDTO toDTO(Grupo grupo) {
         GrupoDTO grupoDTO = modelMapper.map(grupo, GrupoDTO.class);
 
-        grupoDTO.setClienteNombre(grupo.getCliente().getNombre() + " " + grupo.getCliente().getApellido());
+        if (grupo.getCliente() != null) {
+            grupoDTO.setClienteNombre(grupo.getCliente().getNombre() + " " + grupo.getCliente().getApellido());
+        }
 
         return grupoDTO;
     }

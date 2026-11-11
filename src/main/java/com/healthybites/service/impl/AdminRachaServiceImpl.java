@@ -4,35 +4,33 @@ import com.healthybites.dto.RachaDTO;
 import com.healthybites.exception.BadRequestException;
 import com.healthybites.exception.ResourceNotFoundException;
 import com.healthybites.mapper.RachaMapper;
-import com.healthybites.model.entity.Cliente;
 import com.healthybites.model.entity.Racha;
 import com.healthybites.repository.ClienteRepository;
 import com.healthybites.repository.RachaRepository;
+import com.healthybites.repository.RecompensaRepository;
 import com.healthybites.service.AdminRachaService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RequiredArgsConstructor
 @Service
 public class AdminRachaServiceImpl implements AdminRachaService {
-    @Autowired
+
     private final RachaRepository rachaRepository;
-    @Autowired
     private final ClienteRepository clienteRepository;
-    @Autowired
-    private final RachaMapper rachaMapper; // Mapper para Racha
+    private final RecompensaRepository recompensaRepository;
+    private final RachaMapper rachaMapper;
 
     @Transactional(readOnly = true)
     @Override
     public List<RachaDTO> getAll() {
-        List<Racha> rachas = rachaRepository.findAll();
-        return rachas.stream()
+        return rachaRepository.findAll().stream()
                 .map(rachaMapper::toDto)
                 .toList();
     }
@@ -40,73 +38,81 @@ public class AdminRachaServiceImpl implements AdminRachaService {
     @Transactional(readOnly = true)
     @Override
     public Page<RachaDTO> paginate(Pageable pageable) {
-        Page<Racha> rachas = rachaRepository.findAll(pageable);
-        return rachas.map(rachaMapper::toDto);
+        return rachaRepository.findAll(pageable).map(rachaMapper::toDto);
     }
 
     @Transactional(readOnly = true)
     @Override
-    public RachaDTO findById(Integer id) {
-        Racha racha = rachaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Racha no encontrada: " + id));
-        return rachaMapper.toDto(racha);
+    public RachaDTO findById(Integer clienteId, Integer recompensaId) {
+        return rachaMapper.toDto(getRachaOrThrow(clienteId, recompensaId));
     }
 
     @Transactional
     @Override
     public RachaDTO create(RachaDTO rachaDTO) {
-        Racha racha = rachaMapper.toEntity(rachaDTO);
+        Integer clienteId = rachaDTO.getClienteId();
+        Integer recompensaId = rachaDTO.getRecompensaId();
+        if (clienteId == null || recompensaId == null) {
+            throw new BadRequestException("clienteId y recompensaId son obligatorios");
+        }
+        if (!clienteRepository.existsById(clienteId)) {
+            throw new ResourceNotFoundException("Cliente no encontrado: " + clienteId);
+        }
+        if (!recompensaRepository.existsById(recompensaId)) {
+            throw new ResourceNotFoundException("Recompensa no encontrada: " + recompensaId);
+        }
+        if (rachaRepository.existsByClienteIdAndRecompensaId(clienteId, recompensaId)) {
+            throw new BadRequestException("El cliente ya tiene una racha para esa recompensa");
+        }
 
-        rachaRepository.save(racha);
-        return rachaMapper.toDto(racha);
+        // Las join columns de Racha son insertable=false: se inserta con la query nativa
+        rachaRepository.addRecompensaToCliente(
+                clienteId,
+                recompensaId,
+                rachaDTO.getContadorDias() != null ? rachaDTO.getContadorDias() : 0,
+                rachaDTO.isEntregada(),
+                rachaDTO.getUltimaFechaRegistro() != null ? rachaDTO.getUltimaFechaRegistro() : LocalDateTime.now());
+
+        return rachaMapper.toDto(getRachaOrThrow(clienteId, recompensaId));
     }
 
     @Transactional
     @Override
-    public RachaDTO update(Integer id, RachaDTO updateRachaDTO) {
-        Racha rachaFromDb = rachaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Racha no encontrada: " + id));
+    public RachaDTO update(Integer clienteId, Integer recompensaId, RachaDTO updateRachaDTO) {
+        Racha rachaFromDb = getRachaOrThrow(clienteId, recompensaId);
 
-        Cliente cliente = clienteRepository.findById(updateRachaDTO.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado: " + updateRachaDTO.getId()));
-
-        rachaFromDb.setDiasConsecutivos(updateRachaDTO.getDiasConsecutivos());
-        rachaFromDb.setUltimaFechaRegistro(updateRachaDTO.getUltimaFechaRegistro());
-        rachaFromDb.setCliente(cliente);
+        if (updateRachaDTO.getContadorDias() != null) {
+            rachaFromDb.setContadorDias(updateRachaDTO.getContadorDias());
+        }
+        rachaFromDb.setEntregada(updateRachaDTO.isEntregada());
+        if (updateRachaDTO.getUltimaFechaRegistro() != null) {
+            rachaFromDb.setUltimaFechaRegistro(updateRachaDTO.getUltimaFechaRegistro());
+        }
         return rachaMapper.toDto(rachaRepository.save(rachaFromDb));
     }
 
     @Transactional
     @Override
-    public void delete(Integer id) {
-        Racha racha = rachaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Racha no encontrada: " + id));
-        rachaRepository.delete(racha);
+    public void delete(Integer clienteId, Integer recompensaId) {
+        getRachaOrThrow(clienteId, recompensaId);
+        rachaRepository.deleteByClienteAndRecompensa(clienteId, recompensaId);
     }
 
-    @Override
+    // Asignar una recompensa a un cliente = crear su racha con valores iniciales
     @Transactional
-    public RachaDTO asignarRachaACliente(Integer rachaId, Integer clienteId) {
-        // Busca la racha y el cliente por su ID
-        Racha racha = rachaRepository.findById(rachaId)
-                .orElseThrow(() -> new ResourceNotFoundException("Racha no encontrada: " + rachaId));
-
-        Cliente cliente = clienteRepository.findById(clienteId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado: " + clienteId));
-
-        // Asigna la racha al cliente (puedes hacer ajustes según tu lógica)
-        racha.setCliente(cliente);
-
-        // Guarda la racha actualizada
-        rachaRepository.save(racha);
-
-        // Retorna el DTO de la racha
-        return rachaMapper.toDto(racha);
+    @Override
+    public RachaDTO asignarRachaACliente(Integer recompensaId, Integer clienteId) {
+        RachaDTO nueva = new RachaDTO();
+        nueva.setClienteId(clienteId);
+        nueva.setRecompensaId(recompensaId);
+        nueva.setContadorDias(0);
+        nueva.setEntregada(false);
+        return create(nueva);
     }
 
-
-
+    private Racha getRachaOrThrow(Integer clienteId, Integer recompensaId) {
+        return rachaRepository.findOneByClienteIdAndRecompensaId(clienteId, recompensaId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Racha no encontrada para cliente " + clienteId + " y recompensa " + recompensaId));
+    }
 }
-
-
-

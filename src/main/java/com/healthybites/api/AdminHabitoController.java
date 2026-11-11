@@ -1,16 +1,16 @@
 package com.healthybites.api;
 
+import com.healthybites.dto.HabitoCreateDTO;
 import com.healthybites.dto.HabitoDTO;
-import com.healthybites.model.entity.Habito;
 import com.healthybites.service.AdminHabitoService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,56 +18,47 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/admin/habito")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminHabitoController {
 
-    @Autowired
     private final AdminHabitoService adminHabitoService;
 
     @PostMapping
-    public ResponseEntity<HabitoDTO> createHabito(@Validated @RequestBody HabitoDTO habitoDTO) {
-        HabitoDTO nuevoHabito = adminHabitoService.create(habitoDTO);
-        return ResponseEntity.ok(nuevoHabito);
+    public ResponseEntity<HabitoDTO> createHabito(@Valid @RequestBody HabitoCreateDTO habitoCreateDTO) {
+        return new ResponseEntity<>(adminHabitoService.create(habitoCreateDTO), HttpStatus.CREATED);
     }
 
     @GetMapping
     public ResponseEntity<List<HabitoDTO>> listarHabitos() {
-        List<HabitoDTO> habitos = adminHabitoService.getAll();
-        return ResponseEntity.ok(habitos);
+        return ResponseEntity.ok(adminHabitoService.getAll());
     }
 
     @GetMapping("/page")
     public ResponseEntity<Page<HabitoDTO>> paginateHabitos(
             @PageableDefault(size = 5, sort = "nombre") Pageable pageable) {
-        Page<HabitoDTO> habitos = adminHabitoService.paginate(pageable);
-        return new ResponseEntity<>(habitos, HttpStatus.OK);
+        return new ResponseEntity<>(adminHabitoService.paginate(pageable), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<HabitoDTO> getHabito(@PathVariable Integer id) {
-        HabitoDTO habito = adminHabitoService.findById(id);
-        return ResponseEntity.ok(habito);
+        return ResponseEntity.ok(adminHabitoService.findById(id));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<HabitoDTO> updateHabito(
-            @PathVariable Integer id,
-            @Validated @RequestBody HabitoDTO habitoDTO) {
-        HabitoDTO habitoActualizado = adminHabitoService.update(id, habitoDTO);
-        return ResponseEntity.ok(habitoActualizado);
+    public ResponseEntity<HabitoDTO> updateHabito(@PathVariable Integer id,
+                                                  @Valid @RequestBody HabitoCreateDTO habitoCreateDTO) {
+        return ResponseEntity.ok(adminHabitoService.update(id, habitoCreateDTO));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Habito> eliminarHabito(@PathVariable Integer id) {
+    public ResponseEntity<Void> eliminarHabito(@PathVariable Integer id) {
         adminHabitoService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PostMapping("/{habitoId}/asignar/{clienteId}")
-    public ResponseEntity<HabitoDTO> asignarHabitoACliente(
-            @PathVariable Integer habitoId,
-            @PathVariable Integer clienteId) {
-        adminHabitoService.asignarHabitoACliente(habitoId, clienteId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    public ResponseEntity<HabitoDTO> asignarHabitoACliente(@PathVariable Integer habitoId,
+                                                           @PathVariable Integer clienteId) {
+        return ResponseEntity.ok(adminHabitoService.asignarHabitoACliente(habitoId, clienteId));
     }
 }
-

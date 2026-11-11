@@ -1,16 +1,16 @@
 package com.healthybites.api;
 
-import com.healthybites.dto.RecompensaDTO;
-import com.healthybites.model.entity.Recompensa;
+import com.healthybites.dto.RecompensaCreateUpdateDTO;
+import com.healthybites.dto.RecompensaDetailsDTO;
 import com.healthybites.service.AdminRecompensaService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,57 +18,47 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/admin/recompensa")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminRecompensaController {
 
-    @Autowired
     private final AdminRecompensaService adminRecompensaService;
 
     @PostMapping
-    public ResponseEntity<RecompensaDTO> createRecompensa(@Validated @RequestBody RecompensaDTO recompensaDTO) {
-        RecompensaDTO nuevaRecompensa = adminRecompensaService.create(recompensaDTO);
-        return ResponseEntity.ok(nuevaRecompensa);
+    public ResponseEntity<RecompensaDetailsDTO> createRecompensa(@Valid @RequestBody RecompensaCreateUpdateDTO recompensaDTO) {
+        return new ResponseEntity<>(adminRecompensaService.create(recompensaDTO), HttpStatus.CREATED);
     }
 
     @GetMapping
-    public ResponseEntity<List<RecompensaDTO>> listarRecompensas() {
-        List<RecompensaDTO> recompensas = adminRecompensaService.getAll();
-        return ResponseEntity.ok(recompensas);
+    public ResponseEntity<List<RecompensaDetailsDTO>> listarRecompensas() {
+        return ResponseEntity.ok(adminRecompensaService.getAll());
     }
 
     @GetMapping("/page")
-    public ResponseEntity<Page<RecompensaDTO>> paginateRachas(
+    public ResponseEntity<Page<RecompensaDetailsDTO>> paginateRecompensas(
             @PageableDefault(size = 5, sort = "nombre") Pageable pageable) {
-        Page<RecompensaDTO> recompensas = adminRecompensaService.paginate(pageable);
-        return new ResponseEntity<>(recompensas, HttpStatus.OK);
+        return new ResponseEntity<>(adminRecompensaService.paginate(pageable), HttpStatus.OK);
     }
 
-
     @GetMapping("/{id}")
-    public ResponseEntity<RecompensaDTO> getRecompensa(@PathVariable Integer id) {
-        RecompensaDTO recompensa = adminRecompensaService.findById(id);
-        return ResponseEntity.ok(recompensa);
+    public ResponseEntity<RecompensaDetailsDTO> getRecompensa(@PathVariable Integer id) {
+        return ResponseEntity.ok(adminRecompensaService.findById(id));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<RecompensaDTO> updateRecompensa(
-            @PathVariable Integer id,
-            @Validated @RequestBody RecompensaDTO recompensaDTO) {
-        RecompensaDTO recompensaActualizada = adminRecompensaService.update(id, recompensaDTO);
-        return ResponseEntity.ok(recompensaActualizada);
+    public ResponseEntity<RecompensaDetailsDTO> updateRecompensa(@PathVariable Integer id,
+                                                                 @Valid @RequestBody RecompensaCreateUpdateDTO recompensaDTO) {
+        return ResponseEntity.ok(adminRecompensaService.update(id, recompensaDTO));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Recompensa> eliminarRecompensa(@PathVariable Integer id) {
+    public ResponseEntity<Void> eliminarRecompensa(@PathVariable Integer id) {
         adminRecompensaService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PostMapping("/{recompensaId}/asignar/{clienteId}")
-    public ResponseEntity<RecompensaDTO> asignarRecompensaACliente(
-            @PathVariable Integer recompensaId,
-            @PathVariable Integer clienteId) {
-        RecompensaDTO recompensaAsignada = adminRecompensaService.asignarRecompensaACliente(recompensaId, clienteId);
-        return ResponseEntity.ok(recompensaAsignada);
+    public ResponseEntity<RecompensaDetailsDTO> asignarRecompensaACliente(@PathVariable Integer recompensaId,
+                                                                          @PathVariable Integer clienteId) {
+        return ResponseEntity.ok(adminRecompensaService.asignarRecompensaACliente(recompensaId, clienteId));
     }
-
 }

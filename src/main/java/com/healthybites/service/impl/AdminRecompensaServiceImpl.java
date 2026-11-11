@@ -1,112 +1,123 @@
 package com.healthybites.service.impl;
 
-import com.healthybites.dto.RecompensaDTO;
+import com.healthybites.dto.RecompensaCreateUpdateDTO;
+import com.healthybites.dto.RecompensaDetailsDTO;
 import com.healthybites.exception.BadRequestException;
 import com.healthybites.exception.ResourceNotFoundException;
 import com.healthybites.mapper.RecompensaMapper;
-import com.healthybites.model.entity.Cliente;
-import com.healthybites.model.entity.Racha;
 import com.healthybites.model.entity.Recompensa;
 import com.healthybites.repository.ClienteRepository;
+import com.healthybites.repository.ContenidoRepository;
+import com.healthybites.repository.NutricionistaRepository;
+import com.healthybites.repository.PlanAlimenticioRepository;
 import com.healthybites.repository.RachaRepository;
 import com.healthybites.repository.RecompensaRepository;
 import com.healthybites.service.AdminRecompensaService;
+import com.healthybites.service.RachaService;
+import com.healthybites.service.RecompensaService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 @Service
 public class AdminRecompensaServiceImpl implements AdminRecompensaService {
 
-
-    @Autowired
     private final RecompensaRepository recompensaRepository;
-
-    @Autowired
+    private final ClienteRepository clienteRepository;
+    private final NutricionistaRepository nutricionistaRepository;
+    private final ContenidoRepository contenidoRepository;
+    private final PlanAlimenticioRepository planAlimenticioRepository;
+    private final RachaRepository rachaRepository;
     private final RecompensaMapper recompensaMapper;
-
-    @Autowired
-    private final ClienteRepository clienteRepository; // Añadir el repositorio de clientes
+    private final RecompensaService recompensaService;
+    private final RachaService rachaService;
 
     @Transactional(readOnly = true)
     @Override
-    public List<RecompensaDTO> getAll() {
-        List<Recompensa> recompensas = recompensaRepository.findAll();
-        return recompensas.stream()
-                .map(recompensaMapper::toDto)
+    public List<RecompensaDetailsDTO> getAll() {
+        return recompensaRepository.findAll().stream()
+                .map(recompensaMapper::toDTO)
                 .toList();
     }
 
     @Transactional(readOnly = true)
     @Override
-    public Page<RecompensaDTO> paginate(Pageable pageable) {
-        Page<Recompensa> recompensas = recompensaRepository.findAll(pageable);
-        return recompensas.map(recompensaMapper::toDto);
+    public Page<RecompensaDetailsDTO> paginate(Pageable pageable) {
+        return recompensaRepository.findAll(pageable).map(recompensaMapper::toDTO);
     }
 
     @Transactional(readOnly = true)
     @Override
-    public RecompensaDTO findById(Integer id) {
-        Recompensa recompensa = recompensaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("La recompensa no fue encontrada"));
-        return recompensaMapper.toDto(recompensa);
+    public RecompensaDetailsDTO findById(Integer id) {
+        return recompensaMapper.toDTO(getRecompensaOrThrow(id));
     }
 
     @Transactional
     @Override
-    public RecompensaDTO create(RecompensaDTO recompensaDTO) {
-        Recompensa recompensa = recompensaMapper.toEntity(recompensaDTO);
-        recompensaRepository.save(recompensa);
-        return recompensaMapper.toDto(recompensa);
+    public RecompensaDetailsDTO create(RecompensaCreateUpdateDTO recompensaDTO) {
+        if (recompensaDTO.getNutricionistaId() == null) {
+            throw new BadRequestException("El ID del nutricionista es obligatorio");
+        }
+        // Reutiliza la logica del flujo normal (nutricionista, contenido/plan opcional y fechas)
+        return recompensaService.create(recompensaDTO);
     }
 
     @Transactional
     @Override
-    public RecompensaDTO update(Integer id, RecompensaDTO updateRecompensaDTO) {
-        Recompensa recompensaFromDb = recompensaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("La recompensa no existe"));
+    public RecompensaDetailsDTO update(Integer id, RecompensaCreateUpdateDTO updateRecompensaDTO) {
+        Recompensa recompensaFromDb = getRecompensaOrThrow(id);
 
+        if (updateRecompensaDTO.getNutricionistaId() != null) {
+            recompensaFromDb.setNutricionista(nutricionistaRepository.findById(updateRecompensaDTO.getNutricionistaId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Nutricionista no encontrado: " + updateRecompensaDTO.getNutricionistaId())));
+        }
         recompensaFromDb.setNombre(updateRecompensaDTO.getNombre());
         recompensaFromDb.setDescripcion(updateRecompensaDTO.getDescripcion());
         recompensaFromDb.setDiasRequeridos(updateRecompensaDTO.getDiasRequeridos());
+        if (updateRecompensaDTO.getContenidoId() != null) {
+            recompensaFromDb.setContenido(contenidoRepository.findById(updateRecompensaDTO.getContenidoId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Contenido no encontrado: " + updateRecompensaDTO.getContenidoId())));
+        }
+        if (updateRecompensaDTO.getPlanAlimenticioId() != null) {
+            recompensaFromDb.setPlanAlimenticio(planAlimenticioRepository.findById(updateRecompensaDTO.getPlanAlimenticioId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Plan alimenticio no encontrado: " + updateRecompensaDTO.getPlanAlimenticioId())));
+        }
+        recompensaFromDb.setFechaActualizacion(LocalDateTime.now());
 
-        recompensaFromDb = recompensaRepository.save(recompensaFromDb);
-        return recompensaMapper.toDto(recompensaFromDb);
+        return recompensaMapper.toDTO(recompensaRepository.save(recompensaFromDb));
     }
 
     @Transactional
     @Override
     public void delete(Integer id) {
-        Recompensa recompensa = recompensaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("La recompensa no existe"));
-        recompensaRepository.delete(recompensa);
+        recompensaRepository.delete(getRecompensaOrThrow(id));
     }
 
-
-
+    // Asignar recompensa a cliente = crear la racha cliente <-> recompensa
     @Transactional
     @Override
-    public RecompensaDTO asignarRecompensaACliente(Integer recompensaId, Integer clienteId) {
-        Recompensa recompensa = recompensaRepository.findById(recompensaId)
-                .orElseThrow(() -> new ResourceNotFoundException("Recompensa no encontrada: " + recompensaId));
-
-        Cliente cliente = clienteRepository.findById(clienteId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado: " + clienteId));
-
-        // Asumiendo que tienes una relación entre Recompensa y Cliente
-        recompensa.setCliente(cliente); // Esto asigna el cliente a la recompensa.
-        recompensaRepository.save(recompensa); // Guarda la recompensa actualizada.
-
-        return recompensaMapper.toDto(recompensa); // Retorna la recompensa actualizada como DTO.
+    public RecompensaDetailsDTO asignarRecompensaACliente(Integer recompensaId, Integer clienteId) {
+        getRecompensaOrThrow(recompensaId);
+        if (!clienteRepository.existsById(clienteId)) {
+            throw new ResourceNotFoundException("Cliente no encontrado: " + clienteId);
+        }
+        if (rachaRepository.existsByClienteIdAndRecompensaId(clienteId, recompensaId)) {
+            throw new BadRequestException("El cliente ya tiene asignada esa recompensa");
+        }
+        return rachaService.addRecompensaToClient(clienteId, recompensaId);
     }
 
-
+    private Recompensa getRecompensaOrThrow(Integer id) {
+        return recompensaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Recompensa no encontrada: " + id));
+    }
 }

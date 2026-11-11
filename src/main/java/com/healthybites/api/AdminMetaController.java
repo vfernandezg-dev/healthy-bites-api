@@ -1,8 +1,8 @@
 package com.healthybites.api;
 
-import com.healthybites.dto.ClienteDTO;
+import com.healthybites.dto.ClienteDetailsDTO;
+import com.healthybites.dto.MetaCreateDTO;
 import com.healthybites.dto.MetaDTO;
-import com.healthybites.model.entity.Meta;
 import com.healthybites.model.enums.EstadoMeta;
 import com.healthybites.service.AdminMetaService;
 import jakarta.validation.Valid;
@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,39 +20,36 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/admin/meta")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminMetaController {
 
     private final AdminMetaService adminMetaService;
 
     @GetMapping
     public ResponseEntity<List<MetaDTO>> getAllMeta() {
-        List<MetaDTO> metas = adminMetaService.getAll();
-        return new ResponseEntity<>(metas, HttpStatus.OK);
+        return new ResponseEntity<>(adminMetaService.getAll(), HttpStatus.OK);
     }
 
     @GetMapping("/page")
     public ResponseEntity<Page<MetaDTO>> paginateMetas(
             @PageableDefault(size = 5, sort = "nombre") Pageable pageable) {
-        Page<MetaDTO> metas = adminMetaService.paginate(pageable);
-        return new ResponseEntity<>(metas, HttpStatus.OK);
+        return new ResponseEntity<>(adminMetaService.paginate(pageable), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<MetaDTO> getMetaById(@PathVariable("id") Integer id) {
-        MetaDTO meta = adminMetaService.findById(id);
-        return new ResponseEntity<>(meta, HttpStatus.OK);
+        return new ResponseEntity<>(adminMetaService.findById(id), HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<MetaDTO> createMeta(@Valid @RequestBody MetaDTO metaDTO) {
-        MetaDTO newMeta = adminMetaService.create(metaDTO);
-        return new ResponseEntity<>(newMeta, HttpStatus.CREATED);
+    public ResponseEntity<MetaDTO> createMeta(@Valid @RequestBody MetaCreateDTO metaCreateDTO) {
+        return new ResponseEntity<>(adminMetaService.create(metaCreateDTO), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<MetaDTO> updateMeta(@PathVariable("id") Integer id, @Valid @RequestBody MetaDTO metaDTO) {
-        MetaDTO updateMeta = adminMetaService.update(id, metaDTO);
-        return new ResponseEntity<MetaDTO>(updateMeta, HttpStatus.OK);
+    public ResponseEntity<MetaDTO> updateMeta(@PathVariable("id") Integer id,
+                                              @Valid @RequestBody MetaCreateDTO metaCreateDTO) {
+        return new ResponseEntity<>(adminMetaService.update(id, metaCreateDTO), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
@@ -61,42 +59,35 @@ public class AdminMetaController {
     }
 
     @PostMapping("/recomendacion")
-    public ResponseEntity<String> calcularRecomendacion(@Valid @RequestBody MetaDTO metaDTO) {
-        String recomendacion = adminMetaService.calcularRecomendacion(metaDTO);
-        return new ResponseEntity<>(recomendacion, HttpStatus.OK);
+    public ResponseEntity<String> calcularRecomendacion(@Valid @RequestBody MetaCreateDTO metaCreateDTO) {
+        return new ResponseEntity<>(adminMetaService.calcularRecomendacion(metaCreateDTO), HttpStatus.OK);
     }
 
     @GetMapping("/cliente/{clienteId}")
     public ResponseEntity<List<MetaDTO>> getMetasByClienteId(@PathVariable("clienteId") Integer clienteId) {
-        List<MetaDTO> metas = adminMetaService.findMetasByClienteId(clienteId);
-        return new ResponseEntity<>(metas, HttpStatus.OK);
+        return new ResponseEntity<>(adminMetaService.findMetasByClienteId(clienteId), HttpStatus.OK);
     }
 
-    // en AdminMetaController
     @PutMapping("/{id}/objetivos")
-    public ResponseEntity<MetaDTO> actualizarObjetivosSalud(@PathVariable("id") Integer id, @Valid @RequestBody MetaDTO metaDTO) {
-        MetaDTO metaActualizada = adminMetaService.actualizarObjetivosSalud(id, metaDTO);
-        return new ResponseEntity<>(metaActualizada, HttpStatus.OK);
+    public ResponseEntity<MetaDTO> actualizarObjetivosSalud(@PathVariable("id") Integer id,
+                                                            @Valid @RequestBody MetaCreateDTO metaCreateDTO) {
+        return new ResponseEntity<>(adminMetaService.actualizarObjetivosSalud(id, metaCreateDTO), HttpStatus.OK);
     }
 
+    // Body: "ACTIVE" o "COMPLETED"
     @PutMapping("/{id}/estado")
-    public ResponseEntity<MetaDTO> actualizarEstadoMeta(
-            @PathVariable("id") Integer id,
-            @RequestBody EstadoMeta nuevoEstado) {
-        MetaDTO updatedMeta = adminMetaService.actualizacionEstadoMeta(id, nuevoEstado);
-        return new ResponseEntity<>(updatedMeta, HttpStatus.OK);
+    public ResponseEntity<MetaDTO> actualizarEstadoMeta(@PathVariable("id") Integer id,
+                                                        @RequestBody EstadoMeta nuevoEstado) {
+        return new ResponseEntity<>(adminMetaService.actualizacionEstadoMeta(id, nuevoEstado), HttpStatus.OK);
     }
 
     @GetMapping("/{id}/historial")
     public ResponseEntity<List<EstadoMeta>> getHistorialById(@PathVariable("id") Integer id) {
-        List<EstadoMeta> historial = adminMetaService.getHistorialById(id);
-        return new ResponseEntity<>(historial, HttpStatus.OK);
+        return new ResponseEntity<>(adminMetaService.getHistorialById(id), HttpStatus.OK);
     }
 
     @GetMapping("/{id}/perfil")
-    public ResponseEntity<ClienteDTO> getPerfilCliente(@PathVariable("id") Integer id) {
-        // Implementa este método para obtener el perfil actualizado del cliente.
-        ClienteDTO cliente = adminMetaService.getPerfilClienteByMetaId(id);
-        return new ResponseEntity<>(cliente, HttpStatus.OK);
+    public ResponseEntity<ClienteDetailsDTO> getPerfilCliente(@PathVariable("id") Integer id) {
+        return new ResponseEntity<>(adminMetaService.getPerfilClienteByMetaId(id), HttpStatus.OK);
     }
 }

@@ -1,13 +1,16 @@
 package com.healthybites.api;
 
-import com.healthybites.model.entity.ComidaDiaria;
+import com.healthybites.dto.ComidaDiariaCreateDTO;
+import com.healthybites.dto.ComidaDiariaDTO;
 import com.healthybites.service.AdminComidaDiariaService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,44 +18,43 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/admin/comida-diaria")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminComidaDiariaController {
 
     private final AdminComidaDiariaService adminComidaDiariaService;
 
     @GetMapping
-    public ResponseEntity<List<ComidaDiaria>> getAllComidaDiaria() {
-        List<ComidaDiaria> comidasDiarias = adminComidaDiariaService.getAll();
-        return new ResponseEntity<List<ComidaDiaria>>(comidasDiarias, HttpStatus.OK);
+    public ResponseEntity<List<ComidaDiariaDTO>> getAllComidaDiaria() {
+        return new ResponseEntity<>(adminComidaDiariaService.getAll(), HttpStatus.OK);
     }
 
     @GetMapping("/page")
-    public ResponseEntity<Page<ComidaDiaria>> paginateComidasDiarias(
-            @PageableDefault(size = 5, sort = "nombre_comida") Pageable pageable) {
-        Page<ComidaDiaria> comidasDiarias = adminComidaDiariaService.paginate(pageable);
-        return new ResponseEntity<Page<ComidaDiaria>>(comidasDiarias, HttpStatus.OK);
+    public ResponseEntity<Page<ComidaDiariaDTO>> paginateComidasDiarias(
+            @PageableDefault(size = 5, sort = "nombreComida") Pageable pageable) {
+        return new ResponseEntity<>(adminComidaDiariaService.paginate(pageable), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ComidaDiaria> getComidaDiariaById(@PathVariable("id") Integer id) {
-        ComidaDiaria comidaDiaria = adminComidaDiariaService.findById(id);
-        return new ResponseEntity<ComidaDiaria>(comidaDiaria, HttpStatus.OK);
+    public ResponseEntity<ComidaDiariaDTO> getComidaDiariaById(@PathVariable("id") Integer id) {
+        return new ResponseEntity<>(adminComidaDiariaService.findById(id), HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<ComidaDiaria> createComidaDiaria(@RequestBody ComidaDiaria comidaDiaria) {
-        ComidaDiaria newComidaDiaria = adminComidaDiariaService.create(comidaDiaria);
-        return new ResponseEntity<ComidaDiaria>(newComidaDiaria, HttpStatus.CREATED);
+    public ResponseEntity<ComidaDiariaDTO> createComidaDiaria(@RequestParam Integer planAlimenticioId,
+                                                              @Valid @RequestBody ComidaDiariaCreateDTO comidaDiaria) {
+        return new ResponseEntity<>(adminComidaDiariaService.create(planAlimenticioId, comidaDiaria), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ComidaDiaria> updateComidaDiaria(@PathVariable("id") Integer id, @RequestBody ComidaDiaria comidaDiaria) {
-        ComidaDiaria updateComidaDiaria = adminComidaDiariaService.update(id, comidaDiaria);
-        return new ResponseEntity<ComidaDiaria>(updateComidaDiaria, HttpStatus.OK);
+    public ResponseEntity<ComidaDiariaDTO> updateComidaDiaria(@PathVariable("id") Integer id,
+                                                              @RequestParam(required = false) Integer planAlimenticioId,
+                                                              @Valid @RequestBody ComidaDiariaCreateDTO comidaDiaria) {
+        return new ResponseEntity<>(adminComidaDiariaService.update(id, planAlimenticioId, comidaDiaria), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ComidaDiaria> deleteComidaDiaria(@PathVariable("id") Integer id) {
+    public ResponseEntity<Void> deleteComidaDiaria(@PathVariable("id") Integer id) {
         adminComidaDiariaService.delete(id);
-        return new ResponseEntity<ComidaDiaria>(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
