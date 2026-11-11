@@ -1,0 +1,26 @@
+# Base de datos local para Healthy Bites.
+#   Levantar:  docker compose up -d
+#   Parar:     docker compose down        (conserva los datos)
+#   Resetear:  docker compose down -v     (borra el volumen; el seed se vuelve a cargar al arrancar el backend)
+# Se publica en 5433 porque 5432 suele estar ocupado por un PostgreSQL instalado en Windows.
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: healthybites-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: healthybites-db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: adminadmin
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - healthybites-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d healthybites-db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  healthybites-pgdata:
