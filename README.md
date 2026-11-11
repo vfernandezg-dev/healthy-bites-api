@@ -82,6 +82,38 @@ Mira cómo va avanzando nuestro trabajo visitando el siguiente enlace: [Tablero 
   - Gestión de renovaciones de suscripción, incluyendo opciones automáticas y manuales.
   - Historial de pagos detallado y notificaciones sobre pagos y renovaciones.
 
+## Configuración
+
+Los secretos no se versionan. Copia [`.env.example`](.env.example) como `.env`; `run-backend.ps1` lo
+carga al arrancar. En producción, define las mismas variables en el proveedor de hosting.
+
+| Variable            | Por defecto              | Uso                                                        |
+| ------------------- | ------------------------ | ---------------------------------------------------------- |
+| `MAIL_USERNAME`     | `healtybite3@gmail.com`  | Cuenta SMTP (Gmail) que envía los correos                  |
+| `MAIL_PASSWORD`     | _(vacío)_                | Contraseña de aplicación de esa cuenta                     |
+| `CONTACT_RECIPIENT` | `MAIL_USERNAME`          | Buzón que recibe los mensajes del formulario de contacto   |
+| `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` | Postgres local en `5433` | Conexión a la base de datos               |
+
+## Formulario de contacto (landing page)
+
+`POST /api/v1/contact` es público y lo usa la
+[landing page](https://github.com/vfernandezg-dev/healthy-bites-landing).
+
+```json
+{ "nombre": "Ana", "apellido": "Torres", "correo": "ana@correo.com", "mensaje": "Hola…", "website": "" }
+```
+
+| Respuesta | Cuándo                                                                  |
+| --------- | ----------------------------------------------------------------------- |
+| `204`     | Mensaje enviado a `CONTACT_RECIPIENT` (con _reply-to_ al visitante)     |
+| `422`     | Datos inválidos (mismas reglas que valida la landing)                   |
+| `429`     | Límite superado: 5 mensajes cada 10 min por IP y 50 por hora en total   |
+| `503`     | El servidor de correo no está disponible                               |
+
+El campo `website` es un _honeypot_: si llega con valor, el mensaje se descarta y se responde `204`.
+Nunca se envía un correo automático al visitante, así el endpoint no puede usarse para mandar spam a
+terceros.
+
 ## Diagramas de la Aplicación
 
 Para entender mejor la estructura y diseño de la aplicación "Healty Bites", revisa los siguientes diagramas:
