@@ -14,4 +14,5 @@ public class Mail {
     private String to;     // Destinatario del correo
     private String subject; // Asunto del correo
     private Map<String, Object> model; // Modelo de datos para la plantilla
+    private String replyTo; // Opcional: dirección a la que se responde (p. ej. el remitente de un formulario)
 }

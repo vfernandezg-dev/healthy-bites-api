@@ -1,10 +1,11 @@
 package com.healthybites.exception;
 
-import org.springframework.cglib.core.Local;
+import jakarta.mail.MessagingException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.MailException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -48,6 +49,23 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 "No tienes permisos para acceder a este recurso",
                 request.getDescription(false));
         return new ResponseEntity<>(err, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(TooManyRequestsException.class)
+    public ResponseEntity<CustomErrorResponse> handleTooManyRequestsException(TooManyRequestsException ex, WebRequest request) {
+        CustomErrorResponse err = new CustomErrorResponse(LocalDateTime.now(),
+                ex.getMessage(),
+                request.getDescription(false));
+        return new ResponseEntity<>(err, HttpStatus.TOO_MANY_REQUESTS);
+    }
+
+    // Fallos del servidor de correo: 503 con un mensaje genérico (no se exponen detalles del SMTP)
+    @ExceptionHandler({MailException.class, MessagingException.class})
+    public ResponseEntity<CustomErrorResponse> handleMailException(Exception ex, WebRequest request) {
+        CustomErrorResponse err = new CustomErrorResponse(LocalDateTime.now(),
+                "No pudimos enviar el correo en este momento. Inténtalo más tarde.",
+                request.getDescription(false));
+        return new ResponseEntity<>(err, HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @ExceptionHandler(Exception.class)
