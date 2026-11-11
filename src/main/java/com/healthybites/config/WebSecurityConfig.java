@@ -6,6 +6,7 @@ import com.healthybites.security.JwtAuthenticationEntryPoint;
 import com.healthybites.security.TokenProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -47,6 +48,8 @@ public class WebSecurityConfig {
                         .requestMatchers(antMatcher("/auth/reset-password")).permitAll()
                         .requestMatchers(antMatcher("/media/**")).permitAll()
                         .requestMatchers(antMatcher("/mail/**")).permitAll()
+                        // Formulario de contacto público de la landing page
+                        .requestMatchers(antMatcher(HttpMethod.POST, "/contact")).permitAll()
                         .requestMatchers("/api/v1/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/webjars/**").permitAll()
                         // Cualquier otra solicitud requiere autenticación
                         .anyRequest().authenticated()

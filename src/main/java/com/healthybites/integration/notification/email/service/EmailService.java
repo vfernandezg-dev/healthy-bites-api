@@ -45,6 +45,9 @@ public class EmailService {
         helper.setText(html, true);
         helper.setSubject(mail.getSubject());
         helper.setFrom(mail.getFrom());
+        if (mail.getReplyTo() != null) {
+            helper.setReplyTo(mail.getReplyTo());
+        }
 
         // Si necesitas adjuntar un archivo
         //helper.addAttachment("MyTestFile.txt", new ByteArrayResource("test".getBytes()));
