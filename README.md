@@ -1,100 +1,128 @@
-    ## Introducción
+<div align="center">
 
-En la actualidad, el bienestar físico y mental ha cobrado una importancia crucial debido al creciente reconocimiento de su impacto en la calidad de vida y la prevención de enfermedades. Sin embargo, muchas personas enfrentan dificultades para mantener hábitos saludables de manera consistente debido a la falta de tiempo, motivación o herramientas que se adapten a sus necesidades específicas.
+<h1>Healthy Bites · API REST</h1>
 
-Este proyecto **Healty Bites** tiene como objetivo desarrollar un sistema integral de gestión de salud y bienestar que ayude a los usuarios a establecer, monitorear y mantener hábitos saludables personalizados. La plataforma permitirá la gestión de planes alimenticios, registro de actividad física, control de hábitos y seguimiento del progreso a lo largo del tiempo. A su vez, facilitará la interacción dentro de una comunidad en la que los usuarios puedan compartir sus logros y motivarse mutuamente.
+<p><strong>Backend de la plataforma de nutrición, hábitos y comunidad Healthy Bites.</strong></p>
 
-El sistema está dirigido a un amplio público, incluyendo personas interesadas en mejorar su estilo de vida, pacientes que requieren un monitoreo continuo de su salud, y comunidades que promueven el bienestar colectivo. Al integrar herramientas de personalización, apoyo social y seguimiento constante, se busca no solo facilitar la adopción de hábitos saludables, sino también mantener a los usuarios motivados y comprometidos con sus objetivos a largo plazo.
+![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.3-6DB33F?logo=springboot&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
+![JWT](https://img.shields.io/badge/Auth-JWT-000000?logo=jsonwebtokens&logoColor=white)
+![PayPal](https://img.shields.io/badge/Pagos-PayPal-003087?logo=paypal&logoColor=white)
 
-### Colaboradores del Proyecto
+[Módulos](#módulos) · [Ejecución local](#ejecución-local) · [Configuración](#configuración) ·
+[Arquitectura](#arquitectura) · [Equipo](#equipo)
 
-| **Nombre**                            | **Rol**                              | **Perfil**                                                         |
-| ------------------------------------- | ------------------------------------ | ------------------------------------------------------------------ | --- |
-| Valentin Emanuel Fernandez Gutierrez  | Líder del Proyecto                   | [LinkedIn](https://www.linkedin.com/in/vfernandezg-dev/)           |
-| Camila Luciana Moreno Quevedo         | Analista de Requisitos/Desarrollador | [LinkedIn](https://www.linkedin.com/in/camila-moreno-01871a324/)   |
-| Alessia Vidamilagros Aguilar Alayo    | Desarrollador del Proyecto           | [LinkedIn](https://www.linkedin.com/in/alessia-aguilar-20a503200/) | '   |
-| Renzo Marcelo Lavado Flores           | Desarrollador del Proyecto           | [LinkedIn](https://www.linkedin.com/in/renzo-lavado-41aba2296/)    |
-| Jhonnatan Gerardo Chavez del Castillo | Desarrollador del Proyecto           | [LinkedIn](https://www.linkedin.com/)                              |
+</div>
 
-### Revisa el Progreso del Proyecto BookHub
+## Sobre el proyecto
 
-| **Columna**     | **Descripción**                                                                                                                                                                                                                                                                       |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Backlog**     | Agrupa todas las historias de usuario, tareas y características que deben ser desarrolladas. Es un listado de todo el trabajo pendiente.                                                                                                                                              |
-| **En Progreso** | Incluye las tareas que se están desarrollando actualmente. Muestra el trabajo en curso para garantizar un flujo continuo de actividades.                                                                                                                                              |
-| **Revisión**    | Una vez que se completa una tarea, se traslada a esta sección para una revisión de código y una revisión por pares. Esta etapa implica la creación de pull requests para asegurar que el código cumpla con los estándares de calidad antes de ser integrado en el proyecto principal. |
-| **En Pruebas**  | Contiene las tareas que han superado la revisión de código y requieren pruebas exhaustivas (unitarias, de integración y de aceptación) para asegurar su calidad.                                                                                                                      |
-| **Hecho**       | Las tareas que han sido completamente desarrolladas, revisadas y probadas se trasladan aquí, indicando que están listas y finalizadas.                                                                                                                                                |
+Mantener hábitos saludables de forma constante es difícil sin herramientas que se adapten a cada
+persona. **Healthy Bites** reúne en una sola plataforma planes alimenticios creados por
+nutricionistas, contenido educativo, seguimiento de hábitos y metas, rachas con recompensas y una
+comunidad para compartir avances.
 
-Mira cómo va avanzando nuestro trabajo visitando el siguiente enlace: [Tablero de Trello](https://trello.com/b/X7usPWHI/healty-bites).
+Este repositorio contiene la **API REST** que da servicio a toda la plataforma. Es un proyecto
+académico que forma parte de un sistema de tres repositorios:
 
-### Funcionalidades de la Aplicación Seguimiento de Habitos Saludables
+| Repositorio                                                                       | Descripción                                          |
+| --------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| [healthy-bites-api](https://github.com/vfernandezg-dev/healthy-bites-api)         | API REST en Spring Boot + PostgreSQL (este repo)     |
+| [healthy-web-app](https://github.com/vfernandezg-dev/healthy-web-app)             | Aplicación web en Angular                            |
+| [healthy-bites-landing](https://github.com/vfernandezg-dev/healthy-bites-landing) | Landing page en Astro (usa el endpoint de contacto)  |
 
-#### **Módulo de Gestión de Usuarios**
+## Módulos
 
-- **Creación de Usuarios e Inicio de Sesión:**
-  - Permitir a los usuarios registrarse en la plataforma introduciendo correo electrónico, contraseña y datos básicos.
-  - Facilitar el inicio de sesión para acceder a la cuenta personal, diferenciando entre clientes y administradores.
-  - Restablecimiento de contraseñas mediante un enlace seguro enviado por correo.
-  - Opciones para actualizar el perfil del usuario, incluyendo datos de salud y preferencias.
-  - Desactivación de cuentas para asegurar la privacidad de los datos del cliente.
+La API tiene tres roles: **CLIENTE**, **NUTRICIONISTA** y **ADMIN**. Todas las rutas cuelgan de
+`/api/v1`.
 
-#### **Módulo de Planes Alimenticios y Hábitos**
+| Módulo                      | Qué permite                                                                                       | Rutas principales                                        |
+| --------------------------- | ------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Autenticación y perfil      | Registro de clientes y nutricionistas, login con JWT, recuperación de contraseña por correo       | `/auth`, `/mail`, `/user/profile`                        |
+| Planes alimenticios         | Planes por objetivo (déficit, mantenimiento, masa muscular) con comidas diarias                   | `/plan-alimenticio`, `/acceso-plan`                      |
+| Contenido                   | Videos, artículos y guías de nutricionistas, gratuitos o para suscriptores; subida de archivos    | `/contenido`, `/acceso-contenido`, `/media`              |
+| Hábitos y progreso          | Registro de hidratación, alimentación, ejercicio y sueño; metas de peso y su seguimiento           | `/habito`, `/meta`, `/meta/{metaId}/seguimientos`        |
+| Rachas y recompensas        | Cada día con hábitos registrados suma a la racha; al completarla se desbloquea la recompensa      | `/racha`, `/recompensa`                                  |
+| Comunidad                   | Grupos de interés, publicaciones y comentarios                                                    | `/grupo`, `/unirse`, `/publicacion`, `/comentario`       |
+| Suscripciones y pagos       | Planes Básico, Premium y VIP; pago con PayPal y correo de confirmación                            | `/suscripcion`, `/checkout`                              |
+| Administración              | Gestión completa de clientes, nutricionistas, planes, contenido, grupos, metas y recompensas      | `/admin/**`                                              |
+| Contacto                    | Formulario público de la landing page                                                             | `/contact`                                               |
 
-- **Gestión de Planes Alimenticios:**
-  - Selección de planes alimenticios predeterminados con detalles como duración y objetivos.
-  - Filtros por necesidades específicas (bajar de peso, ganar masa muscular, etc.).
-  - Creación, modificación y eliminación de planes alimenticios por administradores.
+La documentación interactiva (OpenAPI) está disponible en
+`http://localhost:8090/api/v1/swagger-ui/index.html` al ejecutar la API en local.
 
-- **Registro de Hábitos Diarios:**
-  - Registro y seguimiento de hábitos diarios como alimentación, ejercicio e hidratación.
+## Stack
 
-#### **Módulo de Seguimiento de Objetivos y Progreso**
+| Área          | Tecnología                                                                   |
+| ------------- | ---------------------------------------------------------------------------- |
+| Lenguaje      | Java 21                                                                      |
+| Framework     | Spring Boot 3.3 (Web, Data JPA, Security, Validation, Mail, Thymeleaf)       |
+| Base de datos | PostgreSQL 16 (Docker en desarrollo)                                         |
+| Seguridad     | Spring Security con JWT (jjwt) y contraseñas con BCrypt                      |
+| Integraciones | PayPal REST API (sandbox), SMTP (Gmail) con plantillas Thymeleaf             |
+| Utilidades    | ModelMapper, Lombok, springdoc-openapi (Swagger UI)                          |
+| Pruebas       | JUnit 5, Mockito, MockMvc                                                    |
+| Build         | Maven Wrapper; imagen Docker (`Dockerfile`)                                  |
 
-- **Gestión de Objetivos de Salud:**
-  - Establecimiento y actualización de objetivos de salud personalizados.
-  - Registro y visualización de progreso en gráficos, con comparaciones respecto a los objetivos iniciales.
-  - Recordatorios automáticos para objetivos no cumplidos.
+## Ejecución local
 
-#### **Módulo de Gestión de Contenidos y Recursos**
+### Requisitos
 
-- **Acceso a Recursos Educativos:**
-  - Acceso a una biblioteca de recursos educativos como artículos, videos y guías.
-  - Recomendaciones de contenido personalizado basadas en los intereses y necesidades del usuario.
-  - Administración y clasificación de contenido por temas relevantes.
+- **JDK 21.** Spring Boot 3.3 con Lombok no compila con JDK 25.
+- **Docker**, para la base de datos.
 
-#### **Módulo de Interacción en la Comunidad**
+### Pasos
 
-- **Interacción Comunitaria:**
-  - Publicación de experiencias y logros personales relacionados con hábitos saludables.
-  - Comentarios y reacciones a publicaciones de otros usuarios.
-  - Creación de grupos de interés para discusión de temas específicos.
+```bash
+# 1. Base de datos PostgreSQL (se publica en el puerto 5433)
+docker compose up -d
 
-- **Moderación y Seguridad:**
-  - Opciones para reportar contenido inapropiado, asegurando un ambiente respetuoso.
-  - Seguimiento de otros usuarios para mantenerse actualizado sobre sus publicaciones.
+# 2. Variables de entorno (credenciales SMTP, etc.)
+cp .env.example .env
 
-#### **Módulo de Pagos y Suscripciones**
+# 3. Arrancar la API en http://localhost:8090/api/v1
+.\run-backend.ps1          # Windows (PowerShell): fija JDK 21 y carga .env
+./mvnw spring-boot:run      # macOS/Linux, con JAVA_HOME apuntando a JDK 21
+```
 
-- **Gestión de Suscripciones:**
-  - Selección de planes de suscripción (básico o premium) con detalles claros de beneficios.
-  - Pagos seguros mediante diferentes métodos (tarjeta de crédito, PayPal, etc.).
-  - Gestión de renovaciones de suscripción, incluyendo opciones automáticas y manuales.
-  - Historial de pagos detallado y notificaciones sobre pagos y renovaciones.
+Al arrancar se cargan datos de demostración ([`data-test.sql`](src/main/resources/data-test.sql)).
+Todas las cuentas usan la contraseña `healthy123`:
+
+| Rol           | Cuenta                                                             |
+| ------------- | ------------------------------------------------------------------ |
+| Administrador | `admin@healthybites.com`                                           |
+| Nutricionista | `carlos.garcia@healthybites.com`, `elena.gomez@healthybites.com`   |
+| Cliente       | `juan.perez@healthybites.com` (plan Básico)                        |
+| Cliente       | `maria.lopez@healthybites.com` (plan Premium)                      |
+| Cliente       | `pedro.gomez@healthybites.com` (plan VIP)                          |
+
+Para arrancar sin datos de demostración, usa `DB_SEED_MODE=never`.
+
+### Pruebas
+
+```bash
+./mvnw test
+```
+
+`HealthyBitesApplicationTests` levanta el contexto completo, así que necesita la base de datos en
+marcha. El resto son pruebas unitarias y de controlador (Mockito y MockMvc).
 
 ## Configuración
 
 Los secretos no se versionan. Copia [`.env.example`](.env.example) como `.env`; `run-backend.ps1` lo
 carga al arrancar. En producción, define las mismas variables en el proveedor de hosting.
 
-| Variable            | Por defecto              | Uso                                                        |
-| ------------------- | ------------------------ | ---------------------------------------------------------- |
-| `MAIL_USERNAME`     | `healtybite3@gmail.com`  | Cuenta SMTP (Gmail) que envía los correos                  |
-| `MAIL_PASSWORD`     | _(vacío)_                | Contraseña de aplicación de esa cuenta                     |
-| `CONTACT_RECIPIENT` | `MAIL_USERNAME`          | Buzón que recibe los mensajes del formulario de contacto   |
-| `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` | Postgres local en `5433` | Conexión a la base de datos               |
+| Variable                               | Por defecto              | Uso                                                      |
+| -------------------------------------- | ------------------------ | -------------------------------------------------------- |
+| `MAIL_USERNAME`                        | `healtybite3@gmail.com`  | Cuenta SMTP (Gmail) que envía los correos                |
+| `MAIL_PASSWORD`                        | _(vacío)_                | Contraseña de aplicación de esa cuenta                   |
+| `CONTACT_RECIPIENT`                    | `MAIL_USERNAME`          | Buzón que recibe los mensajes del formulario de contacto |
+| `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` | Postgres local en `5433` | Conexión a la base de datos                              |
+| `DB_SEED_MODE`                         | `always`                 | `never` para no cargar datos de demostración             |
+| `SERVER_PORT`                          | `8090`                   | Puerto HTTP                                              |
+| `SHOW_SQL`                             | `false`                  | Muestra las consultas SQL en el log                      |
 
-## Formulario de contacto (landing page)
+## Formulario de contacto
 
 `POST /api/v1/contact` es público y lo usa la
 [landing page](https://github.com/vfernandezg-dev/healthy-bites-landing).
@@ -103,37 +131,58 @@ carga al arrancar. En producción, define las mismas variables en el proveedor d
 { "nombre": "Ana", "apellido": "Torres", "correo": "ana@correo.com", "mensaje": "Hola…", "website": "" }
 ```
 
-| Respuesta | Cuándo                                                                  |
-| --------- | ----------------------------------------------------------------------- |
-| `204`     | Mensaje enviado a `CONTACT_RECIPIENT` (con _reply-to_ al visitante)     |
-| `422`     | Datos inválidos (mismas reglas que valida la landing)                   |
-| `429`     | Límite superado: 5 mensajes cada 10 min por IP y 50 por hora en total   |
-| `503`     | El servidor de correo no está disponible                               |
+| Respuesta | Cuándo                                                                |
+| --------- | --------------------------------------------------------------------- |
+| `204`     | Mensaje enviado a `CONTACT_RECIPIENT`, con _reply-to_ al visitante    |
+| `422`     | Datos inválidos (mismas reglas que valida la landing)                 |
+| `429`     | Límite superado: 5 mensajes cada 10 min por IP y 50 por hora en total |
+| `503`     | El servidor de correo no está disponible                              |
 
 El campo `website` es un _honeypot_: si llega con valor, el mensaje se descarta y se responde `204`.
 Nunca se envía un correo automático al visitante, así el endpoint no puede usarse para mandar spam a
 terceros.
 
-## Diagramas de la Aplicación
+## Arquitectura
 
-Para entender mejor la estructura y diseño de la aplicación "Healty Bites", revisa los siguientes diagramas:
+La API sigue una arquitectura en capas:
 
-### Diagrama de Clases
+| Paquete       | Responsabilidad                                                                  |
+| ------------- | -------------------------------------------------------------------------------- |
+| `api`         | Controladores REST: reciben las peticiones HTTP y devuelven las respuestas       |
+| `dto`         | Objetos de entrada y salida, con validación (Bean Validation)                    |
+| `service`     | Interfaces con la lógica de negocio                                              |
+| `service.impl` | Implementación de la lógica de negocio                                           |
+| `repository`  | Acceso a datos con Spring Data JPA                                               |
+| `model`       | Entidades JPA y enumeraciones                                                    |
+| `mapper`      | Conversión entre entidades y DTO                                                 |
+| `security`    | JWT, filtros de autenticación y límite de envíos del formulario de contacto      |
+| `integration` | Servicios externos: PayPal y envío de correos                                    |
+| `exception`   | Excepciones de dominio y manejador global de errores                             |
+| `config`      | Seguridad, CORS, OpenAPI y ModelMapper                                           |
 
-![Diagrama de Clases](diagrama_de_clases.png)
+### Diagrama de clases
 
-### Diagrama de Base de Datos
+![Diagrama de clases](diagrama_de_clases.png)
 
-![Diagrama de Base de Datos](diagrama_base_de_datos.png)
+### Diagrama de base de datos
 
-Este diagrama ilustra el esquema de la base de datos utilizada por la aplicación, mostrando las tablas, columnas, y relaciones entre las entidades.
+![Diagrama de base de datos](diagrama_base_de_datos.png)
 
-### Descripción de Capas del Proyecto
+## Gestión del proyecto
 
-| capa         | descripción                                                                                        |
-| ------------ | -------------------------------------------------------------------------------------------------- |
-| api          | Contiene los controladores REST que manejan las solicitudes HTTP y las respuestas                  |
-| entity       | Define las entidades del modelo de datos que se mapean a las tablas de la base de datos            |
-| repository   | Proporciona la interfaz para las operaciones CRUD y la interacción con la base de datos.           |
-| service      | Declara la lógica de negocio y las operaciones que se realizarán sobre las entidades.              |
-| service impl | Implementa la lógica de negocio definida en los servicios, utilizando los repositorios necesarios. |
+El avance se organizó en un [tablero de Trello](https://trello.com/b/X7usPWHI/healty-bites) con las
+columnas Backlog, En progreso, Revisión, En pruebas y Hecho.
+
+## Equipo
+
+Healthy Bites es un proyecto académico. **Valentin Fernandez** lideró el proyecto y desarrolló y
+configuró la plataforma completa: esta API REST, la aplicación web (Angular), la landing (Astro), el
+despliegue y la integración continua.
+
+| Integrante         | Rol                        | Perfil                                                                    |
+| ------------------ | -------------------------- | ------------------------------------------------------------------------- |
+| Valentin Fernandez | Líder técnico · Full Stack | [LinkedIn](https://www.linkedin.com/in/vfernandezg-dev/)                  |
+| Camila Moreno      | Diseño UI/UX               | [LinkedIn](https://www.linkedin.com/in/camila-moreno-quevedo-01871a324/)  |
+| Alessia Aguilar    | Base de datos              | [LinkedIn](https://www.linkedin.com/in/alessia-aguilar-857670286/)        |
+| Jhonnatan Chavez   | Arquitectura de software   | [LinkedIn](https://www.linkedin.com/in/jhonnatan-del-castillo-a73a24316/) |
+| Renzo Lavado       | Comercial                  | [LinkedIn](https://www.linkedin.com/in/renzo-lavado-41aba2296/)           |
