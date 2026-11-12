@@ -88,7 +88,7 @@ spring:
       mail:
         # mail.from y mail.smtp.localhost evitan que JavaMail resuelva el hostname de la máquina
         # (DNS inverso), que en algunos equipos tarda varios segundos por cada correo.
-        from: ${spring.mail.username}
+        from: ${healthybites.mail.from}
         smtp:
           auth: true
           localhost: localhost
@@ -136,6 +136,10 @@ springdoc:
   writer-with-order-by-keys: true
 
 healthybites:
+  mail:
+    # Remitente de los correos, por ejemplo "Healthy Bites <projects@vfernandezg.dev>". Por defecto, la cuenta SMTP;
+    # con un proveedor como Resend el usuario SMTP no es una dirección («resend») y hay que indicarlo.
+    from: ${MAIL_FROM:${spring.mail.username}}
   app:
     frontend-url: ${APP_FRONTEND_URL:}
     api-public-url: ${API_PUBLIC_URL:}

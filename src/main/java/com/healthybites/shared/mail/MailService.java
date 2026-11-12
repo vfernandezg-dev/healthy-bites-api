@@ -32,7 +32,7 @@ public class MailService {
     public MailService(
             JavaMailSender mailSender,
             SpringTemplateEngine templateEngine,
-            @Value("${spring.mail.username}") String from) {
+            @Value("${healthybites.mail.from}") String from) {
         this.mailSender = mailSender;
         this.templateEngine = templateEngine;
         this.from = from;
