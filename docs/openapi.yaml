@@ -2231,7 +2231,9 @@ components:
       type: object
       properties:
         bio:
-          type: string
+          type:
+          - string
+          - "null"
           maxLength: 2000
           minLength: 0
         password:
@@ -2251,10 +2253,14 @@ components:
         amount:
           $ref: "#/components/schemas/Money"
         capturedAt:
-          type: string
+          type:
+          - string
+          - "null"
           format: date-time
         createdAt:
-          type: string
+          type:
+          - string
+          - "null"
           format: date-time
         id:
           type: string
@@ -2274,20 +2280,35 @@ components:
         userId:
           type: string
           format: uuid
+      required:
+      - amount
+      - id
+      - providerOrderId
+      - status
+      - subscriptionId
+      - userId
     AdminSubscriptionResponse:
       type: object
       properties:
         canceledAt:
-          type: string
+          type:
+          - string
+          - "null"
           format: date-time
         createdAt:
-          type: string
+          type:
+          - string
+          - "null"
           format: date-time
         currentPeriodEnd:
-          type: string
+          type:
+          - string
+          - "null"
           format: date-time
         currentPeriodStart:
-          type: string
+          type:
+          - string
+          - "null"
           format: date-time
         id:
           type: string
@@ -2308,11 +2329,18 @@ components:
         userId:
           type: string
           format: uuid
+      required:
+      - id
+      - status
+      - tier
+      - userId
     AdminUserResponse:
       type: object
       properties:
         createdAt:
-          type: string
+          type:
+          - string
+          - "null"
           format: date-time
         email:
           type: string
@@ -2322,7 +2350,9 @@ components:
           type: string
           format: uuid
         lastLoginAt:
-          type: string
+          type:
+          - string
+          - "null"
           format: date-time
         lastName:
           type: string
@@ -2337,6 +2367,13 @@ components:
           enum:
           - ACTIVE
           - DEACTIVATED
+      required:
+      - email
+      - firstName
+      - id
+      - lastName
+      - role
+      - status
     AuthorResponse:
       type: object
       properties:
@@ -2345,6 +2382,9 @@ components:
           format: uuid
         name:
           type: string
+      required:
+      - id
+      - name
     BillingSummaryResponse:
       type: object
       properties:
@@ -2364,6 +2404,11 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Money"
+      required:
+      - activeByTier
+      - monthlyRecurringRevenue
+      - paymentsLast30Days
+      - revenueLast30Days
     CaptureRequest:
       type: object
       properties:
@@ -2403,45 +2448,67 @@ components:
       properties:
         approvalUrl:
           type: string
+      required:
+      - approvalUrl
     ClientData:
       type: object
       properties:
         birthDate:
-          type: string
+          type:
+          - string
+          - "null"
           format: date
         heightCm:
-          type: number
+          type:
+          - number
+          - "null"
           maximum: 260
           minimum: 50
         sex:
-          type: string
+          type:
+          - string
+          - "null"
           enum:
           - FEMALE
           - MALE
           - OTHER
+          - null
         weightKg:
-          type: number
+          type:
+          - number
+          - "null"
           maximum: 400
           minimum: 20
     ClientProfileResponse:
       type: object
       properties:
         age:
-          type: integer
+          type:
+          - integer
+          - "null"
           format: int32
         birthDate:
-          type: string
+          type:
+          - string
+          - "null"
           format: date
         heightCm:
-          type: number
+          type:
+          - number
+          - "null"
         sex:
-          type: string
+          type:
+          - string
+          - "null"
           enum:
           - FEMALE
           - MALE
           - OTHER
+          - null
         weightKg:
-          type: number
+          type:
+          - number
+          - "null"
     CommentRequest:
       type: object
       properties:
@@ -2455,15 +2522,22 @@ components:
       type: object
       properties:
         author:
-          $ref: "#/components/schemas/PersonResponse"
+          oneOf:
+          - $ref: "#/components/schemas/PersonResponse"
+          - type: "null"
         body:
           type: string
         createdAt:
-          type: string
+          type:
+          - string
+          - "null"
           format: date-time
         id:
           type: string
           format: uuid
+      required:
+      - body
+      - id
     ContactMessage:
       type: object
       properties:
@@ -2485,7 +2559,9 @@ components:
           maxLength: 60
           minLength: 2
         website:
-          type: string
+          type:
+          - string
+          - "null"
       required:
       - apellido
       - correo
@@ -2495,14 +2571,20 @@ components:
       type: object
       properties:
         body:
-          type: string
+          type:
+          - string
+          - "null"
         item:
           $ref: "#/components/schemas/ContentSummaryResponse"
+      required:
+      - item
     ContentRequest:
       type: object
       properties:
         body:
-          type: string
+          type:
+          - string
+          - "null"
           maxLength: 20000
           minLength: 0
         category:
@@ -2512,10 +2594,14 @@ components:
           - EXERCISE
           - MENTAL_HEALTH
         coverMediaId:
-          type: string
+          type:
+          - string
+          - "null"
           format: uuid
         fileMediaId:
-          type: string
+          type:
+          - string
+          - "null"
           format: uuid
         requiredTier:
           type: string
@@ -2547,7 +2633,9 @@ components:
       type: object
       properties:
         author:
-          $ref: "#/components/schemas/AuthorResponse"
+          oneOf:
+          - $ref: "#/components/schemas/AuthorResponse"
+          - type: "null"
         category:
           type: string
           enum:
@@ -2555,7 +2643,9 @@ components:
           - EXERCISE
           - MENTAL_HEALTH
         coverPath:
-          type: string
+          type:
+          - string
+          - "null"
         hasFile:
           type: boolean
         id:
@@ -2564,7 +2654,9 @@ components:
         locked:
           type: boolean
         publishedAt:
-          type: string
+          type:
+          - string
+          - "null"
           format: date-time
         requiredTier:
           type: string
@@ -2590,23 +2682,41 @@ components:
           - ARTICLE
           - VIDEO
           - GUIDE
+      required:
+      - category
+      - hasFile
+      - id
+      - locked
+      - requiredTier
+      - slug
+      - status
+      - summary
+      - title
+      - type
     CurrentSubscriptionResponse:
       type: object
       properties:
         currentPeriodEnd:
-          type: string
+          type:
+          - string
+          - "null"
           format: date-time
         renews:
           type: boolean
         status:
-          type: string
+          type:
+          - string
+          - "null"
           enum:
           - PENDING_PAYMENT
           - ACTIVE
           - CANCELED
           - EXPIRED
+          - null
         subscriptionId:
-          type: string
+          type:
+          - string
+          - "null"
           format: uuid
         tier:
           type: string
@@ -2614,6 +2724,9 @@ components:
           - BASIC
           - PREMIUM
           - VIP
+      required:
+      - renews
+      - tier
     EnrollRequest:
       type: object
       properties:
@@ -2638,6 +2751,11 @@ components:
           enum:
           - SELF
           - REWARD
+      required:
+      - enrolledAt
+      - id
+      - plan
+      - source
     FileLinkResponse:
       type: object
       properties:
@@ -2646,6 +2764,9 @@ components:
           format: int64
         path:
           type: string
+      required:
+      - expiresInSeconds
+      - path
     ForgotPasswordRequest:
       type: object
       properties:
@@ -2660,7 +2781,9 @@ components:
       type: object
       properties:
         description:
-          type: string
+          type:
+          - string
+          - "null"
           maxLength: 500
           minLength: 0
         targetWeightKg:
@@ -2678,13 +2801,19 @@ components:
       type: object
       properties:
         completedAt:
-          type: string
+          type:
+          - string
+          - "null"
           format: date-time
         createdAt:
-          type: string
+          type:
+          - string
+          - "null"
           format: date-time
         description:
-          type: string
+          type:
+          - string
+          - "null"
         id:
           type: string
           format: uuid
@@ -2701,11 +2830,19 @@ components:
           type: number
         title:
           type: string
+      required:
+      - id
+      - startedOn
+      - status
+      - targetWeightKg
+      - title
     GroupRequest:
       type: object
       properties:
         description:
-          type: string
+          type:
+          - string
+          - "null"
           maxLength: 500
           minLength: 0
         name:
@@ -2724,10 +2861,14 @@ components:
       type: object
       properties:
         createdAt:
-          type: string
+          type:
+          - string
+          - "null"
           format: date-time
         description:
-          type: string
+          type:
+          - string
+          - "null"
         id:
           type: string
           format: uuid
@@ -2735,7 +2876,9 @@ components:
           type: integer
           format: int64
         membership:
-          $ref: "#/components/schemas/MembershipResponse"
+          oneOf:
+          - $ref: "#/components/schemas/MembershipResponse"
+          - type: "null"
         name:
           type: string
         visibility:
@@ -2743,6 +2886,11 @@ components:
           enum:
           - PUBLIC
           - PRIVATE
+      required:
+      - id
+      - members
+      - name
+      - visibility
     HabitLogRequest:
       type: object
       properties:
@@ -2757,10 +2905,14 @@ components:
           maximum: 10
           minimum: 0
         loggedOn:
-          type: string
+          type:
+          - string
+          - "null"
           format: date
         notes:
-          type: string
+          type:
+          - string
+          - "null"
           maxLength: 500
           minLength: 0
         nutrition:
@@ -2773,6 +2925,11 @@ components:
           format: int32
           maximum: 10
           minimum: 0
+      required:
+      - exercise
+      - hydration
+      - nutrition
+      - sleep
     HabitLogResponse:
       type: object
       properties:
@@ -2792,13 +2949,23 @@ components:
           type: string
           format: date
         notes:
-          type: string
+          type:
+          - string
+          - "null"
         nutrition:
           type: integer
           format: int32
         sleep:
           type: integer
           format: int32
+      required:
+      - average
+      - exercise
+      - hydration
+      - id
+      - loggedOn
+      - nutrition
+      - sleep
     InvitationPreviewRequest:
       type: object
       properties:
@@ -2817,14 +2984,22 @@ components:
           type: string
         lastName:
           type: string
+      required:
+      - email
+      - firstName
+      - lastName
     InvitationResponse:
       type: object
       properties:
         acceptedAt:
-          type: string
+          type:
+          - string
+          - "null"
           format: date-time
         createdAt:
-          type: string
+          type:
+          - string
+          - "null"
           format: date-time
         email:
           type: string
@@ -2845,6 +3020,13 @@ components:
           - ACCEPTED
           - EXPIRED
           - REVOKED
+      required:
+      - email
+      - expiresAt
+      - firstName
+      - id
+      - lastName
+      - status
     InviteNutritionistRequest:
       type: object
       properties:
@@ -2884,7 +3066,9 @@ components:
       type: object
       properties:
         client:
-          $ref: "#/components/schemas/ClientProfileResponse"
+          oneOf:
+          - $ref: "#/components/schemas/ClientProfileResponse"
+          - type: "null"
         email:
           type: string
         firstName:
@@ -2895,13 +3079,21 @@ components:
         lastName:
           type: string
         nutritionist:
-          $ref: "#/components/schemas/NutritionistProfileResponse"
+          oneOf:
+          - $ref: "#/components/schemas/NutritionistProfileResponse"
+          - type: "null"
         role:
           type: string
           enum:
           - ADMIN
           - CLIENT
           - NUTRITIONIST
+      required:
+      - email
+      - firstName
+      - id
+      - lastName
+      - role
     MealPlanDetailResponse:
       type: object
       properties:
@@ -2917,6 +3109,10 @@ components:
           - DRAFT
           - PUBLISHED
           - ARCHIVED
+      required:
+      - meals
+      - plan
+      - status
     MealPlanRequest:
       type: object
       properties:
@@ -2947,6 +3143,7 @@ components:
           minLength: 0
       required:
       - description
+      - durationDays
       - goal
       - requiredTier
       - title
@@ -2954,7 +3151,9 @@ components:
       type: object
       properties:
         author:
-          $ref: "#/components/schemas/AuthorResponse"
+          oneOf:
+          - $ref: "#/components/schemas/AuthorResponse"
+          - type: "null"
         averageDailyCalories:
           type: integer
           format: int32
@@ -2975,7 +3174,9 @@ components:
         locked:
           type: boolean
         publishedAt:
-          type: string
+          type:
+          - string
+          - "null"
           format: date-time
         requiredTier:
           type: string
@@ -2985,6 +3186,15 @@ components:
           - VIP
         title:
           type: string
+      required:
+      - averageDailyCalories
+      - description
+      - durationDays
+      - goal
+      - id
+      - locked
+      - requiredTier
+      - title
     MealRequest:
       type: object
       properties:
@@ -3005,7 +3215,9 @@ components:
           format: int32
           minimum: 1
         description:
-          type: string
+          type:
+          - string
+          - "null"
           maxLength: 1000
           minLength: 0
         name:
@@ -3018,8 +3230,11 @@ components:
           maximum: 20
           minimum: 0
       required:
+      - calories
       - category
+      - dayNumber
       - name
+      - position
     MealResponse:
       type: object
       properties:
@@ -3037,7 +3252,9 @@ components:
           type: integer
           format: int32
         description:
-          type: string
+          type:
+          - string
+          - "null"
         id:
           type: string
           format: uuid
@@ -3046,24 +3263,38 @@ components:
         position:
           type: integer
           format: int32
+      required:
+      - calories
+      - category
+      - dayNumber
+      - id
+      - name
+      - position
     MemberResponse:
       type: object
       properties:
         person:
-          $ref: "#/components/schemas/PersonResponse"
+          oneOf:
+          - $ref: "#/components/schemas/PersonResponse"
+          - type: "null"
         role:
           type: string
           enum:
           - OWNER
           - MEMBER
         since:
-          type: string
+          type:
+          - string
+          - "null"
           format: date-time
         status:
           type: string
           enum:
           - PENDING
           - ACTIVE
+      required:
+      - role
+      - status
     MembershipResponse:
       type: object
       properties:
@@ -3077,15 +3308,21 @@ components:
           enum:
           - PENDING
           - ACTIVE
+      required:
+      - role
+      - status
     Money:
       type: object
       properties:
         amount:
-          type: number
+          type: string
+          format: decimal
+          example: "5.99"
         currency:
           type: string
-        zero:
-          type: boolean
+      required:
+      - amount
+      - currency
     NutritionistClientResponse:
       type: object
       properties:
@@ -3094,7 +3331,9 @@ components:
         firstName:
           type: string
         heightCm:
-          type: number
+          type:
+          - number
+          - "null"
         id:
           type: string
           format: uuid
@@ -3108,12 +3347,23 @@ components:
           type: string
           format: date-time
         weightKg:
-          type: number
+          type:
+          - number
+          - "null"
+      required:
+      - email
+      - firstName
+      - id
+      - lastName
+      - plans
+      - since
     NutritionistProfileResponse:
       type: object
       properties:
         bio:
-          type: string
+          type:
+          - string
+          - "null"
     PageMetadata:
       type: object
       properties:
@@ -3275,10 +3525,14 @@ components:
         amount:
           $ref: "#/components/schemas/Money"
         capturedAt:
-          type: string
+          type:
+          - string
+          - "null"
           format: date-time
         createdAt:
-          type: string
+          type:
+          - string
+          - "null"
           format: date-time
         id:
           type: string
@@ -3293,6 +3547,11 @@ components:
         subscriptionId:
           type: string
           format: uuid
+      required:
+      - amount
+      - id
+      - status
+      - subscriptionId
     PersonResponse:
       type: object
       properties:
@@ -3301,6 +3560,9 @@ components:
           format: uuid
         name:
           type: string
+      required:
+      - id
+      - name
     PlanResponse:
       type: object
       properties:
@@ -3322,6 +3584,13 @@ components:
           - BASIC
           - PREMIUM
           - VIP
+      required:
+      - description
+      - id
+      - name
+      - periodDays
+      - price
+      - tier
     PostRequest:
       type: object
       properties:
@@ -3330,7 +3599,9 @@ components:
           maxLength: 4000
           minLength: 0
         imageMediaId:
-          type: string
+          type:
+          - string
+          - "null"
           format: uuid
         title:
           type: string
@@ -3343,11 +3614,15 @@ components:
       type: object
       properties:
         author:
-          $ref: "#/components/schemas/PersonResponse"
+          oneOf:
+          - $ref: "#/components/schemas/PersonResponse"
+          - type: "null"
         body:
           type: string
         createdAt:
-          type: string
+          type:
+          - string
+          - "null"
           format: date-time
         groupId:
           type: string
@@ -3356,21 +3631,36 @@ components:
           type: string
           format: uuid
         imagePath:
-          type: string
+          type:
+          - string
+          - "null"
         title:
           type: string
         updatedAt:
-          type: string
+          type:
+          - string
+          - "null"
           format: date-time
+      required:
+      - body
+      - groupId
+      - id
+      - title
     RecommendationResponse:
       type: object
       properties:
         currentBmi:
-          type: number
+          type:
+          - number
+          - "null"
         currentWeightKg:
-          type: number
+          type:
+          - number
+          - "null"
         estimatedWeeks:
-          type: integer
+          type:
+          - integer
+          - "null"
           format: int32
         healthyMaxKg:
           type: number
@@ -3387,7 +3677,17 @@ components:
         targetWeightKg:
           type: number
         weeklyChangeKg:
-          type: number
+          type:
+          - number
+          - "null"
+      required:
+      - healthyMaxKg
+      - healthyMinKg
+      - heightCm
+      - message
+      - targetBmi
+      - targetInHealthyRange
+      - targetWeightKg
     RegisterRequest:
       type: object
       properties:
@@ -3409,7 +3709,9 @@ components:
           maxLength: 64
           minLength: 10
         profile:
-          $ref: "#/components/schemas/ClientData"
+          oneOf:
+          - $ref: "#/components/schemas/ClientData"
+          - type: "null"
       required:
       - email
       - firstName
@@ -3438,9 +3740,13 @@ components:
         reason:
           type: string
         reporter:
-          $ref: "#/components/schemas/PersonResponse"
+          oneOf:
+          - $ref: "#/components/schemas/PersonResponse"
+          - type: "null"
         resolvedAt:
-          type: string
+          type:
+          - string
+          - "null"
           format: date-time
         status:
           type: string
@@ -3449,7 +3755,9 @@ components:
           - RESOLVED
           - DISMISSED
         targetAuthor:
-          $ref: "#/components/schemas/PersonResponse"
+          oneOf:
+          - $ref: "#/components/schemas/PersonResponse"
+          - type: "null"
         targetHidden:
           type: boolean
         targetId:
@@ -3460,6 +3768,15 @@ components:
           enum:
           - POST
           - COMMENT
+      required:
+      - createdAt
+      - excerpt
+      - id
+      - reason
+      - status
+      - targetHidden
+      - targetId
+      - targetType
     ResetPasswordRequest:
       type: object
       properties:
@@ -3493,14 +3810,18 @@ components:
       type: object
       properties:
         contentItemId:
-          type: string
+          type:
+          - string
+          - "null"
           format: uuid
         description:
           type: string
           maxLength: 500
           minLength: 0
         mealPlanId:
-          type: string
+          type:
+          - string
+          - "null"
           format: uuid
         requiredStreakDays:
           type: integer
@@ -3513,6 +3834,7 @@ components:
           minLength: 0
       required:
       - description
+      - requiredStreakDays
       - title
     RewardResponse:
       type: object
@@ -3528,11 +3850,20 @@ components:
           type: integer
           format: int32
         streak:
-          $ref: "#/components/schemas/StreakResponse"
+          oneOf:
+          - $ref: "#/components/schemas/StreakResponse"
+          - type: "null"
         target:
           $ref: "#/components/schemas/TargetResponse"
         title:
           type: string
+      required:
+      - active
+      - description
+      - id
+      - requiredStreakDays
+      - target
+      - title
     SessionResponse:
       type: object
       properties:
@@ -3545,6 +3876,11 @@ components:
           type: string
         user:
           $ref: "#/components/schemas/SessionUser"
+      required:
+      - accessToken
+      - expiresIn
+      - tokenType
+      - user
     SessionUser:
       type: object
       properties:
@@ -3563,6 +3899,12 @@ components:
           - ADMIN
           - CLIENT
           - NUTRITIONIST
+      required:
+      - email
+      - firstName
+      - id
+      - lastName
+      - role
     StartStreakRequest:
       type: object
       properties:
@@ -3578,24 +3920,32 @@ components:
           type: string
           format: date-time
         from:
-          type: string
+          type:
+          - string
+          - "null"
           enum:
           - ACTIVE
           - COMPLETED
           - ABANDONED
+          - null
         to:
           type: string
           enum:
           - ACTIVE
           - COMPLETED
           - ABANDONED
+      required:
+      - changedAt
+      - to
     StreakResponse:
       type: object
       properties:
         completed:
           type: boolean
         completedAt:
-          type: string
+          type:
+          - string
+          - "null"
           format: date-time
         currentDays:
           type: integer
@@ -3604,8 +3954,14 @@ components:
           type: string
           format: uuid
         lastCountedOn:
-          type: string
+          type:
+          - string
+          - "null"
           format: date
+      required:
+      - completed
+      - currentDays
+      - id
     TargetResponse:
       type: object
       properties:
@@ -3619,15 +3975,23 @@ components:
           enum:
           - CONTENT
           - MEAL_PLAN
+      required:
+      - id
+      - title
+      - type
     UpdateProfileRequest:
       type: object
       properties:
         bio:
-          type: string
+          type:
+          - string
+          - "null"
           maxLength: 2000
           minLength: 0
         client:
-          $ref: "#/components/schemas/ClientData"
+          oneOf:
+          - $ref: "#/components/schemas/ClientData"
+          - type: "null"
         firstName:
           type: string
           maxLength: 60
@@ -3648,10 +4012,16 @@ components:
           type: string
           format: uuid
         path:
-          type: string
+          type:
+          - string
+          - "null"
         sizeBytes:
           type: integer
           format: int64
+      required:
+      - contentType
+      - id
+      - sizeBytes
     UserSummaryResponse:
       type: object
       properties:
@@ -3672,6 +4042,12 @@ components:
         total:
           type: integer
           format: int64
+      required:
+      - active
+      - byRole
+      - deactivated
+      - newLast30Days
+      - total
     WeightEntryRequest:
       type: object
       properties:
@@ -3679,7 +4055,9 @@ components:
           type: string
           format: date
         notes:
-          type: string
+          type:
+          - string
+          - "null"
           maxLength: 500
           minLength: 0
         weightKg:
@@ -3699,9 +4077,15 @@ components:
           type: string
           format: date
         notes:
-          type: string
+          type:
+          - string
+          - "null"
         weightKg:
           type: number
+      required:
+      - id
+      - measuredOn
+      - weightKg
   securitySchemes:
     bearer:
       bearerFormat: JWT

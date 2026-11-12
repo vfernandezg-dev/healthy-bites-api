@@ -1,6 +1,8 @@
 package com.healthybites.shared.domain;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import java.math.BigDecimal;
@@ -13,7 +15,9 @@ import java.util.Locale;
  */
 @Embeddable
 public record Money(
-        @JsonFormat(shape = JsonFormat.Shape.STRING) @Column(name = "amount", precision = 10, scale = 2)
+        @JsonFormat(shape = JsonFormat.Shape.STRING)
+        @Schema(types = "string", format = "decimal", example = "5.99")
+        @Column(name = "amount", precision = 10, scale = 2)
         BigDecimal amount,
 
         @Column(name = "currency", length = 3) String currency) {
@@ -32,6 +36,7 @@ public record Money(
         return amount.toPlainString();
     }
 
+    @JsonIgnore
     public boolean isZero() {
         return amount.signum() == 0;
     }

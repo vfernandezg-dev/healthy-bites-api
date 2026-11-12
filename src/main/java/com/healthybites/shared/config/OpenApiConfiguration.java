@@ -44,4 +44,10 @@ public class OpenApiConfiguration {
                                         .description("Access token de POST /auth/login o /auth/refresh")))
                 .addSecurityItem(new SecurityRequirement().addList(BEARER));
     }
+
+    /** Campos obligatorios y nulables según JSpecify (ver {@link NullnessModelConverter}). */
+    @Bean
+    NullnessModelConverter nullnessModelConverter() {
+        return new NullnessModelConverter();
+    }
 }
