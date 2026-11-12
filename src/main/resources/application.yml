@@ -68,8 +68,27 @@ server:
   port: ${PORT:8090}
   servlet:
     context-path: /api/v1
-  # Detrás de un proxy usa X-Forwarded-For para conocer la IP real del cliente.
-  forward-headers-strategy: framework
+  # Tomcat solo acepta X-Forwarded-For de los proxies de confianza (por defecto, redes privadas), así que un cliente
+  # no puede falsear su IP para esquivar los límites. Para un proxy con IP pública, define
+  # SERVER_TOMCAT_REMOTEIP_INTERNAL_PROXIES (expresión regular).
+  forward-headers-strategy: native
+
+# Actuator: solo la salud (incluye /actuator/health/liveness y /readiness), sin detalles.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+  health:
+    # Sin comprobación del SMTP: conectaría con el servidor de correo en cada sonda, y una caída del correo no debe
+    # sacar la API del balanceador.
+    mail:
+      enabled: false
 
 # Swagger UI y /v3/api-docs solo en el perfil dev.
 springdoc:
@@ -85,7 +104,20 @@ healthybites:
   security:
     jwt:
       secret: ${JWT_SECRET:}
-      validity: ${JWT_VALIDITY:P30D}
+      access-token-ttl: ${JWT_ACCESS_TOKEN_TTL:PT15M}
+      issuer: healthy-bites-api
+      audience: healthy-bites-web
+    refresh:
+      idle-ttl: P7D
+      absolute-ttl: P30D
+      reuse-grace: PT20S
+      cookie-name: __Secure-hb_rt
+      cookie-secure: true
+      cookie-path: /api/v1/auth
+  # Orígenes permitidos (separados por comas). Sin valor, no se permite ninguna petición cruzada.
+  cors:
+    app-origins: ${CORS_APP_ORIGINS:}
+    landing-origins: ${CORS_LANDING_ORIGINS:}
   paypal:
     client-id: ${PAYPAL_CLIENT_ID:}
     client-secret: ${PAYPAL_CLIENT_SECRET:}

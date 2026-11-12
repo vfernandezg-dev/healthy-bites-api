@@ -15,3 +15,6 @@ healthybites:
     api-public-url: http://localhost:8090/api/v1
   storage:
     location: target/test-uploads
+  cors:
+    app-origins: http://localhost:4210
+    landing-origins: http://localhost:4321

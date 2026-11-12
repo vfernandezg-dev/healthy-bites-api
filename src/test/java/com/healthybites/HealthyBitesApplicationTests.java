@@ -25,7 +25,7 @@ class HealthyBitesApplicationTests extends IntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginBody("maria.lopez@healthybites.com", DEMO_PASSWORD)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").isNotEmpty())
+                .andExpect(jsonPath("$.accessToken").isNotEmpty())
                 .andExpect(jsonPath("$.role").value("CLIENTE"))
                 .andExpect(jsonPath("$.clienteId").value(2));
     }

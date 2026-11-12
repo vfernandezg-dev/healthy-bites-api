@@ -1,7 +1,5 @@
 package com.healthybites.service.impl;
 
-import com.healthybites.dto.AuthResponseDTO;
-import com.healthybites.dto.LoginDTO;
 import com.healthybites.dto.UserProfileDTO;
 import com.healthybites.dto.UserRegistrationDTO;
 import com.healthybites.exception.BadRequestException;
@@ -16,13 +14,8 @@ import com.healthybites.repository.ClienteRepository;
 import com.healthybites.repository.NutricionistaRepository;
 import com.healthybites.repository.RoleRepository;
 import com.healthybites.repository.UsuarioRepository;
-import com.healthybites.security.TokenProvider;
-import com.healthybites.security.UserPrincipal;
 import com.healthybites.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -41,8 +34,6 @@ public class UsuarioServiceImpl implements UsuarioService {
     private final PasswordEncoder passwordEncoder;
     private final UsuarioMapper usuarioMapper;
 
-    private final AuthenticationManager authenticationManager;
-    private final TokenProvider tokenProvider;
 
     @Override
     public UserProfileDTO registrarCliente(UserRegistrationDTO registrationDTO) {
@@ -90,24 +81,6 @@ public class UsuarioServiceImpl implements UsuarioService {
         Usuario savedUser = usuarioRepository.save(user);
 
         return usuarioMapper.toUserProfileDTO(savedUser);
-    }
-
-    @Override
-    public AuthResponseDTO login(LoginDTO loginDTO) {
-        // Autenticar al usuario utilizando AuthenticationManager
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginDTO.getCorreo(), loginDTO.getContrasena())
-        );
-
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        Usuario user = userPrincipal.getUsuario();
-
-
-        String token = tokenProvider.createAccessToken(authentication);
-
-        AuthResponseDTO authResponseDTO = usuarioMapper.toAuthResponseDTO(user, token);
-
-        return authResponseDTO;
     }
 
     @Override

@@ -59,7 +59,7 @@ publica en el perfil de desarrollo.
 | Lenguaje      | Java 25                                                                      |
 | Framework     | Spring Boot 4.1 (Web MVC, Data JPA, Security, Validation, Mail, Thymeleaf)   |
 | Base de datos | PostgreSQL 18 (Docker Compose en desarrollo)                                 |
-| Seguridad     | Spring Security con JWT y contraseñas con BCrypt; errores RFC 9457           |
+| Seguridad     | Spring Security (resource server): access token JWT + refresh token rotatorio en cookie; BCrypt; errores RFC 9457 |
 | Integraciones | PayPal REST API (sandbox), SMTP con plantillas Thymeleaf (Mailpit en local)  |
 | Utilidades    | ModelMapper, Lombok, springdoc-openapi (Swagger UI)                          |
 | Pruebas       | JUnit 6, Mockito, MockMvc, Testcontainers (PostgreSQL)                       |
@@ -138,8 +138,25 @@ La aplicación **no arranca** si falta un secreto obligatorio o si `JWT_SECRET` 
 | `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET` | Para pagos     | Credenciales de PayPal (sandbox)                                 |
 | `CONTACT_RECIPIENT`                     | No                | Buzón del formulario de contacto (por defecto, `MAIL_USERNAME`)  |
 | `STORAGE_LOCATION`                      | No                | Carpeta de los ficheros subidos (por defecto `uploads`)          |
+| `CORS_APP_ORIGINS`, `CORS_LANDING_ORIGINS` | En producción  | Orígenes del web-app (toda la API, con credenciales) y de la landing (solo `/contact`) |
+| `SERVER_TOMCAT_REMOTEIP_INTERNAL_PROXIES` | Según el hosting | IPs del proxy en las que confiar para `X-Forwarded-For`        |
 | `PORT`                                  | No                | Puerto HTTP (por defecto `8090`)                                 |
-| `JWT_VALIDITY`, `SHOW_SQL`              | No                | Validez de los tokens (ISO-8601) y log del SQL                   |
+| `JWT_ACCESS_TOKEN_TTL`, `SHOW_SQL`      | No                | Validez del access token (ISO-8601, `PT15M`) y log del SQL       |
+
+## Sesión y seguridad
+
+- **Login** (`POST /auth/login`) devuelve un **access token JWT** de 15 minutos en el cuerpo (el web-app lo guarda
+  solo en memoria) y deja un **refresh token** en una cookie `HttpOnly; Secure; SameSite=Strict` limitada a
+  `/api/v1/auth`.
+- **`POST /auth/refresh`** cambia la cookie por un access token nuevo y rota el refresh token. Si llega un refresh
+  token ya usado, se revoca toda la sesión (detección de robo), salvo en los 20 s siguientes a la rotación (dos
+  pestañas refrescando a la vez). Las sesiones caducan a los 7 días sin uso y, como máximo, a los 30.
+- **`POST /auth/logout`** revoca la sesión y borra la cookie. Refresh y logout exigen la cabecera
+  `X-Requested-With` y un `Origin` permitido (defensa CSRF además de SameSite).
+- Los refresh tokens se guardan solo como hash SHA-256. El login tiene límite de intentos fallidos (por cuenta e IP,
+  con `Retry-After`).
+- CORS por listas blancas, cabeceras de seguridad (CSP, `nosniff`, `Referrer-Policy`, `X-Frame-Options`) y Actuator
+  limitado a `/actuator/health` (liveness y readiness).
 
 ## Formulario de contacto
 

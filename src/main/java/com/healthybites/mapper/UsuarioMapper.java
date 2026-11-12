@@ -46,9 +46,11 @@ public class UsuarioMapper {
         return modelMapper.map(loginDTO, Usuario.class);
     }
 
-    public AuthResponseDTO toAuthResponseDTO(Usuario user, String token) {
+    public AuthResponseDTO toAuthResponseDTO(Usuario user, String accessToken, long expiresInSeconds) {
         AuthResponseDTO authResponseDTO = new AuthResponseDTO();
-        authResponseDTO.setToken(token); // Asignar el token JWT
+        authResponseDTO.setAccessToken(accessToken);
+        authResponseDTO.setTokenType("Bearer");
+        authResponseDTO.setExpiresIn(expiresInSeconds);
 
         // Obtener el nombre y apellido del usuario
         String nombre = (user.getNutricionista() != null) ? user.getNutricionista().getNombre()

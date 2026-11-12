@@ -22,7 +22,7 @@ public class UserRegistrationDTO {
     private String correo;
 
     @NotNull(message = "La contraseña es obligatoria")
-    @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
+    @Size(min = 10, max = 64, message = "La contraseña debe tener entre 10 y 64 caracteres")
     private String contrasena;
 
     private String sexo;
