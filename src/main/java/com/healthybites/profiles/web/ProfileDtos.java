@@ -1,6 +1,9 @@
 package com.healthybites.profiles.web;
 
 import com.healthybites.profiles.Sex;
+import com.healthybites.profiles.app.ProfileService;
+import com.healthybites.profiles.domain.ClientProfile;
+import com.healthybites.profiles.domain.NutritionistProfile;
 import com.healthybites.shared.security.Role;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
@@ -28,7 +31,17 @@ final class ProfileDtos {
 
             @DecimalMin(value = "50", message = "La altura mínima es 50 cm") @DecimalMax(value = "260", message = "La altura máxima es 260 cm") @Digits(integer = 3, fraction = 1, message = "Como mucho un decimal") @Nullable BigDecimal heightCm,
 
-            @DecimalMin(value = "20", message = "El peso mínimo es 20 kg") @DecimalMax(value = "400", message = "El peso máximo es 400 kg") @Digits(integer = 3, fraction = 1, message = "Como mucho un decimal") @Nullable BigDecimal weightKg) {}
+            @DecimalMin(value = "20", message = "El peso mínimo es 20 kg") @DecimalMax(value = "400", message = "El peso máximo es 400 kg") @Digits(integer = 3, fraction = 1, message = "Como mucho un decimal") @Nullable BigDecimal weightKg) {
+
+        ProfileService.ClientData toData() {
+            return new ProfileService.ClientData(sex, birthDate, heightCm, weightKg);
+        }
+
+        /** Sin datos físicos en la petición: todos vacíos. */
+        static ProfileService.ClientData toDataOrEmpty(@Nullable ClientData data) {
+            return data == null ? new ProfileService.ClientData(null, null, null, null) : data.toData();
+        }
+    }
 
     record RegisterRequest(
             @NotBlank(message = "El correo es obligatorio") @Email(message = "Debe ser un correo válido") @Size(max = 254) String email,
@@ -68,9 +81,27 @@ final class ProfileDtos {
             @Nullable LocalDate birthDate,
             @Nullable Integer age,
             @Nullable BigDecimal heightCm,
-            @Nullable BigDecimal weightKg) {}
+            @Nullable BigDecimal weightKg) {
 
-    record NutritionistProfileResponse(@Nullable String bio) {}
+        /** La edad se calcula con la fecha de hoy (del reloj de la aplicación), no se guarda. */
+        static @Nullable ClientProfileResponse of(@Nullable ClientProfile profile, LocalDate today) {
+            return profile == null
+                    ? null
+                    : new ClientProfileResponse(
+                            profile.getSex(),
+                            profile.getBirthDate(),
+                            profile.ageOn(today),
+                            profile.getHeightCm(),
+                            profile.getWeightKg());
+        }
+    }
+
+    record NutritionistProfileResponse(@Nullable String bio) {
+
+        static @Nullable NutritionistProfileResponse of(@Nullable NutritionistProfile profile) {
+            return profile == null ? null : new NutritionistProfileResponse(profile.getBio());
+        }
+    }
 
     record MeResponse(
             UUID id,
@@ -79,5 +110,17 @@ final class ProfileDtos {
             String lastName,
             Role role,
             @Nullable ClientProfileResponse client,
-            @Nullable NutritionistProfileResponse nutritionist) {}
+            @Nullable NutritionistProfileResponse nutritionist) {
+
+        static MeResponse of(ProfileService.Me me) {
+            return new MeResponse(
+                    me.account().id(),
+                    me.account().email(),
+                    me.account().firstName(),
+                    me.account().lastName(),
+                    me.account().role(),
+                    ClientProfileResponse.of(me.client(), me.today()),
+                    NutritionistProfileResponse.of(me.nutritionist()));
+        }
+    }
 }

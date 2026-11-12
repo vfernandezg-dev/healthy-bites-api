@@ -18,8 +18,6 @@
         <java.version>25</java.version>
         <spring-modulith.version>2.1.2</spring-modulith.version>
         <springdoc.version>3.2.0</springdoc.version>
-        <mapstruct.version>1.6.3</mapstruct.version>
-        <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
         <archunit.version>1.5.1</archunit.version>
         <spotless.version>3.11.0</spotless.version>
         <palantir-java-format.version>2.103.0</palantir-java-format.version>
@@ -127,11 +125,6 @@
             <version>${springdoc.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.mapstruct</groupId>
-            <artifactId>mapstruct</artifactId>
-            <version>${mapstruct.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.jspecify</groupId>
             <artifactId>jspecify</artifactId>
         </dependency>
@@ -214,7 +207,7 @@
     <build>
         <plugins>
             <!-- Desde JDK 23 los procesadores de anotaciones del classpath ya no se ejecutan solos: hay que
-                 declararlos aquí. El orden importa: Lombok antes que MapStruct (con su binding). -->
+                 declararlos aquí. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -226,16 +219,6 @@
                             <artifactId>lombok</artifactId>
                         </path>
                         <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok-mapstruct-binding</artifactId>
-                            <version>${lombok-mapstruct-binding.version}</version>
-                        </path>
-                        <path>
-                            <groupId>org.mapstruct</groupId>
-                            <artifactId>mapstruct-processor</artifactId>
-                            <version>${mapstruct.version}</version>
-                        </path>
-                        <path>
                             <groupId>org.springframework.boot</groupId>
                             <artifactId>spring-boot-configuration-processor</artifactId>
                         </path>
@@ -243,10 +226,6 @@
                     <compilerArgs>
                         <arg>-Xlint:deprecation</arg>
                         <arg>-parameters</arg>
-                        <!-- Mappers como beans de Spring y fallo de compilación si un campo queda sin mapear -->
-                        <arg>-Amapstruct.defaultComponentModel=spring</arg>
-                        <arg>-Amapstruct.defaultInjectionStrategy=constructor</arg>
-                        <arg>-Amapstruct.unmappedTargetPolicy=ERROR</arg>
                     </compilerArgs>
                 </configuration>
             </plugin>

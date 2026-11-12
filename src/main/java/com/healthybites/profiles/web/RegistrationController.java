@@ -26,11 +26,9 @@ import org.springframework.web.bind.annotation.RestController;
 class RegistrationController {
 
     private final ProfileService profiles;
-    private final ProfileMapper mapper;
 
-    RegistrationController(ProfileService profiles, ProfileMapper mapper) {
+    RegistrationController(ProfileService profiles) {
         this.profiles = profiles;
-        this.mapper = mapper;
     }
 
     @Operation(
@@ -39,12 +37,12 @@ class RegistrationController {
                     "Crea la cuenta y su perfil. Para entrar, el web-app inicia sesión con las mismas credenciales.")
     @PostMapping("/register")
     ResponseEntity<MeResponse> register(@Valid @RequestBody RegisterRequest body, HttpServletRequest request) {
-        MeResponse me = mapper.toResponse(profiles.registerClient(
+        MeResponse me = MeResponse.of(profiles.registerClient(
                 body.email(),
                 body.password(),
                 body.firstName(),
                 body.lastName(),
-                mapper.toDataOrEmpty(body.profile()),
+                ProfileDtos.ClientData.toDataOrEmpty(body.profile()),
                 request.getRemoteAddr()));
         return ResponseEntity.created(Locations.of("/me")).body(me);
     }
@@ -59,7 +57,7 @@ class RegistrationController {
     @Operation(summary = "Acepta la invitación: crea la cuenta de nutricionista con su contraseña")
     @PostMapping("/invitations/accept")
     ResponseEntity<MeResponse> acceptInvitation(@Valid @RequestBody AcceptInvitationRequest body) {
-        MeResponse me = mapper.toResponse(profiles.acceptInvitation(body.token(), body.password(), body.bio()));
+        MeResponse me = MeResponse.of(profiles.acceptInvitation(body.token(), body.password(), body.bio()));
         return ResponseEntity.created(Locations.of("/me")).body(me);
     }
 }
