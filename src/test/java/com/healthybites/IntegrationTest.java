@@ -4,6 +4,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.healthybites.billing.infra.PayPalClient;
 import com.healthybites.support.Seed;
 import com.jayway.jsonpath.JsonPath;
 import jakarta.mail.Session;
@@ -11,6 +12,7 @@ import jakarta.mail.internet.MimeMessage;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +57,10 @@ public abstract class IntegrationTest {
     @MockitoBean
     protected JavaMailSender mailSender;
 
+    // PayPal nunca se llama de verdad: cada test simula sus respuestas.
+    @MockitoBean
+    protected PayPalClient payPal;
+
     @BeforeEach
     void setUpMail() {
         when(mailSender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
@@ -82,6 +88,23 @@ public abstract class IntegrationTest {
                 .getContentAsString();
         return JsonPath.read(response, "$.accessToken");
     }
+
+    /** Cliente nuevo registrado por la API y con sesión (para no tocar los datos del seed). */
+    protected NewUser newClient(String alias) throws Exception {
+        String email = alias + "-" + UUID.randomUUID().toString().substring(0, 8) + "@example.com";
+        String created = mockMvc.perform(post("/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"email": "%s", "password": "%s", "firstName": "Prueba", "lastName": "%s"}
+                                """.formatted(email, Seed.PASSWORD, alias)))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        return new NewUser(UUID.fromString(JsonPath.read(created, "$.id")), email, login(email, Seed.PASSWORD));
+    }
+
+    protected record NewUser(UUID id, String email, String token) {}
 
     protected static String bearer(String token) {
         return "Bearer " + token;

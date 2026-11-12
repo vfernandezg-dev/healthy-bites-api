@@ -20,6 +20,10 @@ tags:
   name: Sesión
 - description: "Búsqueda, resumen y activación de cuentas (solo ADMIN)"
   name: Admin · Cuentas
+- description: "Suscripciones, pagos y resumen de ingresos (solo ADMIN)"
+  name: Admin · Facturación
+- description: "Planes, checkout con PayPal y pagos del usuario"
+  name: Suscripción
 - description: Alta de clientes y de nutricionistas invitados
   name: Registro
 - description: Alta de nutricionistas por invitación (solo ADMIN)
@@ -27,6 +31,20 @@ tags:
 - description: Formulario de contacto de la landing
   name: Contacto
 paths:
+  /admin/billing/summary:
+    get:
+      operationId: summary_1
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/BillingSummaryResponse"
+          description: OK
+      summary: "Suscripciones vigentes por nivel, ingreso mensual recurrente e ingresos\
+        \ de 30 días"
+      tags:
+      - Admin · Facturación
   /admin/nutritionist-invitations:
     get:
       operationId: list
@@ -101,6 +119,79 @@ paths:
       summary: Reenvía la invitación con un enlace nuevo (el anterior deja de valer)
       tags:
       - Admin · Invitaciones
+  /admin/payments:
+    get:
+      operationId: payments_1
+      parameters:
+      - in: query
+        name: status
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          enum:
+          - CREATED
+          - CAPTURED
+          - FAILED
+          - CANCELED
+      - in: query
+        name: pageable
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PagedModelAdminPaymentResponse"
+          description: OK
+      summary: Pagos por estado
+      tags:
+      - Admin · Facturación
+  /admin/subscriptions:
+    get:
+      operationId: subscriptions
+      parameters:
+      - in: query
+        name: status
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          enum:
+          - PENDING_PAYMENT
+          - ACTIVE
+          - CANCELED
+          - EXPIRED
+      - in: query
+        name: tier
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          enum:
+          - BASIC
+          - PREMIUM
+          - VIP
+      - in: query
+        name: pageable
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PagedModelAdminSubscriptionResponse"
+          description: OK
+      summary: Suscripciones por estado y nivel
+      tags:
+      - Admin · Facturación
   /admin/users:
     get:
       operationId: search
@@ -396,6 +487,25 @@ paths:
       summary: Cambia la contraseña
       tags:
       - Mi cuenta
+  /me/payments:
+    get:
+      operationId: payments
+      parameters:
+      - in: query
+        name: pageable
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PagedModelPaymentResponse"
+          description: OK
+      summary: Pagos del usuario
+      tags:
+      - Suscripción
   /me/profile:
     put:
       operationId: update
@@ -415,6 +525,72 @@ paths:
       summary: Actualiza el nombre y los datos del perfil
       tags:
       - Mi cuenta
+  /me/subscription:
+    get:
+      operationId: current
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CurrentSubscriptionResponse"
+          description: OK
+      summary: Nivel vigente del usuario y la suscripción que lo da
+      tags:
+      - Suscripción
+  /me/subscription/cancel:
+    post:
+      operationId: cancel
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CurrentSubscriptionResponse"
+          description: OK
+      summary: Cancela la renovación; el acceso sigue hasta el fin del período pagado
+      tags:
+      - Suscripción
+  /me/subscription/checkout:
+    post:
+      description: Devuelve la URL de PayPal donde el usuario aprueba el pago. PayPal
+        vuelve a /client/subscription/checkout/return (o /cancel) del web-app.
+      operationId: checkout
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckoutRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CheckoutResponse"
+          description: OK
+      summary: Empieza el pago de un plan
+      tags:
+      - Suscripción
+  /me/subscription/checkout/capture:
+    post:
+      operationId: capture
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CaptureRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CurrentSubscriptionResponse"
+          description: OK
+      summary: Captura el pago aprobado y activa la suscripción (idempotente)
+      tags:
+      - Suscripción
   /media:
     post:
       description: "El tipo se detecta por su contenido. POST_IMAGE: cualquier usuario,\
@@ -490,6 +666,22 @@ paths:
         \ firmada"
       tags:
       - Ficheros
+  /subscription-plans:
+    get:
+      operationId: plans
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PlanResponse"
+          description: OK
+      security: []
+      summary: Planes disponibles con su precio
+      tags:
+      - Suscripción
 components:
   schemas:
     AcceptInvitationRequest:
@@ -510,6 +702,69 @@ components:
       required:
       - password
       - token
+    AdminPaymentResponse:
+      type: object
+      properties:
+        amount:
+          $ref: "#/components/schemas/Money"
+        capturedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        id:
+          type: string
+          format: uuid
+        providerOrderId:
+          type: string
+        status:
+          type: string
+          enum:
+          - CREATED
+          - CAPTURED
+          - FAILED
+          - CANCELED
+        subscriptionId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+    AdminSubscriptionResponse:
+      type: object
+      properties:
+        canceledAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        currentPeriodEnd:
+          type: string
+          format: date-time
+        currentPeriodStart:
+          type: string
+          format: date-time
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+          - PENDING_PAYMENT
+          - ACTIVE
+          - CANCELED
+          - EXPIRED
+        tier:
+          type: string
+          enum:
+          - BASIC
+          - PREMIUM
+          - VIP
+        userId:
+          type: string
+          format: uuid
     AdminUserResponse:
       type: object
       properties:
@@ -539,6 +794,34 @@ components:
           enum:
           - ACTIVE
           - DEACTIVATED
+    BillingSummaryResponse:
+      type: object
+      properties:
+        activeByTier:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+        monthlyRecurringRevenue:
+          type: array
+          items:
+            $ref: "#/components/schemas/Money"
+        paymentsLast30Days:
+          type: integer
+          format: int64
+        revenueLast30Days:
+          type: array
+          items:
+            $ref: "#/components/schemas/Money"
+    CaptureRequest:
+      type: object
+      properties:
+        orderId:
+          type: string
+          maxLength: 64
+          minLength: 0
+      required:
+      - orderId
     ChangePasswordRequest:
       type: object
       properties:
@@ -553,6 +836,22 @@ components:
       required:
       - currentPassword
       - newPassword
+    CheckoutRequest:
+      type: object
+      properties:
+        tier:
+          type: string
+          enum:
+          - BASIC
+          - PREMIUM
+          - VIP
+      required:
+      - tier
+    CheckoutResponse:
+      type: object
+      properties:
+        approvalUrl:
+          type: string
     ClientData:
       type: object
       properties:
@@ -619,6 +918,30 @@ components:
       - correo
       - mensaje
       - nombre
+    CurrentSubscriptionResponse:
+      type: object
+      properties:
+        currentPeriodEnd:
+          type: string
+          format: date-time
+        renews:
+          type: boolean
+        status:
+          type: string
+          enum:
+          - PENDING_PAYMENT
+          - ACTIVE
+          - CANCELED
+          - EXPIRED
+        subscriptionId:
+          type: string
+          format: uuid
+        tier:
+          type: string
+          enum:
+          - BASIC
+          - PREMIUM
+          - VIP
     ForgotPasswordRequest:
       type: object
       properties:
@@ -732,6 +1055,15 @@ components:
           - ADMIN
           - CLIENT
           - NUTRITIONIST
+    Money:
+      type: object
+      properties:
+        amount:
+          type: number
+        currency:
+          type: string
+        zero:
+          type: boolean
     NutritionistProfileResponse:
       type: object
       properties:
@@ -772,6 +1104,30 @@ components:
           type: array
           items:
             type: string
+    PagedModelAdminPaymentResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminPaymentResponse"
+        page:
+          $ref: "#/components/schemas/PageMetadata"
+      required:
+      - content
+      - page
+    PagedModelAdminSubscriptionResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminSubscriptionResponse"
+        page:
+          $ref: "#/components/schemas/PageMetadata"
+      required:
+      - content
+      - page
     PagedModelAdminUserResponse:
       type: object
       properties:
@@ -796,6 +1152,63 @@ components:
       required:
       - content
       - page
+    PagedModelPaymentResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/PaymentResponse"
+        page:
+          $ref: "#/components/schemas/PageMetadata"
+      required:
+      - content
+      - page
+    PaymentResponse:
+      type: object
+      properties:
+        amount:
+          $ref: "#/components/schemas/Money"
+        capturedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+          - CREATED
+          - CAPTURED
+          - FAILED
+          - CANCELED
+        subscriptionId:
+          type: string
+          format: uuid
+    PlanResponse:
+      type: object
+      properties:
+        description:
+          type: string
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        periodDays:
+          type: integer
+          format: int32
+        price:
+          $ref: "#/components/schemas/Money"
+        tier:
+          type: string
+          enum:
+          - BASIC
+          - PREMIUM
+          - VIP
     RegisterRequest:
       type: object
       properties:
