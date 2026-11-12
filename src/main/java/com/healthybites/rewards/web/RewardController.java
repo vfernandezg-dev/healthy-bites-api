@@ -7,12 +7,20 @@ import com.healthybites.rewards.web.RewardDtos.RewardResponse;
 import com.healthybites.rewards.web.RewardDtos.StartStreakRequest;
 import com.healthybites.shared.security.CurrentUser;
 import com.healthybites.shared.web.Locations;
+import com.healthybites.shared.web.Sorting;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,11 +29,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @Tag(name = "Recompensas", description = "Rachas de los clientes y recompensas de los nutricionistas")
 class RewardController {
+
+    private static final Set<String> SORTABLE = Set.of("requiredStreakDays", "createdAt", "title");
 
     private final RewardService rewards;
 
@@ -36,10 +47,10 @@ class RewardController {
     @Operation(summary = "Recompensas activas con mi racha hacia cada una")
     @PreAuthorize("hasRole('CLIENT')")
     @GetMapping("/rewards")
-    List<RewardResponse> catalog() {
-        return rewards.catalog(CurrentUser.id()).stream()
-                .map(RewardResponse::of)
-                .toList();
+    PagedModel<RewardResponse> catalog(
+            @ParameterObject @PageableDefault(size = 20, sort = "requiredStreakDays") Pageable pageable) {
+        return new PagedModel<>(rewards.catalog(CurrentUser.id(), Sorting.restrict(pageable, SORTABLE))
+                .map(RewardResponse::of));
     }
 
     @PreAuthorize("hasRole('CLIENT')")
@@ -70,9 +81,14 @@ class RewardController {
 
     // ---------------------------------------------------------------- nutricionista
 
+    @Operation(summary = "Mis recompensas (todas, o solo activas o retiradas con ?active=)")
     @GetMapping("/nutritionist/rewards")
-    List<RewardResponse> mine() {
-        return rewards.mine(CurrentUser.id()).stream().map(RewardResponse::of).toList();
+    PagedModel<RewardResponse> mine(
+            @RequestParam(required = false) @Nullable Boolean active,
+            @ParameterObject @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
+                    Pageable pageable) {
+        return new PagedModel<>(rewards.mine(CurrentUser.id(), active, Sorting.restrict(pageable, SORTABLE))
+                .map(RewardResponse::of));
     }
 
     @Operation(summary = "Crea una recompensa que desbloquea un contenido o un plan propio y publicado")

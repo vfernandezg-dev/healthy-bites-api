@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.Set;
 import java.util.UUID;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -49,7 +50,8 @@ class AdminInvitationsController {
     @Operation(summary = "Lista las invitaciones con su estado")
     @GetMapping
     PagedModel<InvitationResponse> list(
-            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
+                    Pageable pageable) {
         return new PagedModel<>(
                 invitations.list(Sorting.restrict(pageable, SORTABLE)).map(InvitationResponse::of));
     }

@@ -65,7 +65,7 @@ class CommunityTests extends IntegrationTest {
 
         String pedro = bearer(token(Seed.PEDRO));
         mockMvc.perform(get("/groups/" + G3 + "/members").header(HttpHeaders.AUTHORIZATION, pedro))
-                .andExpect(jsonPath("$[*].status", hasItem("PENDING")));
+                .andExpect(jsonPath("$.content[*].status", hasItem("PENDING")));
         mockMvc.perform(post("/groups/" + G3 + "/members/" + client.id() + "/approve")
                         .header(HttpHeaders.AUTHORIZATION, pedro))
                 .andExpect(status().isNoContent());
@@ -98,7 +98,7 @@ class CommunityTests extends IntegrationTest {
                         .content("{\"body\": \"¡Bienvenida!\"}"))
                 .andExpect(status().isCreated());
         mockMvc.perform(get("/posts/" + post + "/comments").header(HttpHeaders.AUTHORIZATION, auth))
-                .andExpect(jsonPath("$[*].body", contains("¡Bienvenida!")));
+                .andExpect(jsonPath("$.content[*].body", contains("¡Bienvenida!")));
 
         mockMvc.perform(put("/posts/" + post)
                         .header(HttpHeaders.AUTHORIZATION, bearer(token(Seed.MARIA)))

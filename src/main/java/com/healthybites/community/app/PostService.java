@@ -13,7 +13,6 @@ import com.healthybites.media.MediaFiles;
 import com.healthybites.media.MediaPurpose;
 import com.healthybites.shared.web.ApiException;
 import java.time.Clock;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -111,15 +110,13 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<CommentCard> comments(UUID postId, UUID userId) {
+    public Page<CommentCard> comments(UUID postId, UUID userId, Pageable pageable) {
         Post post = visible(postId);
         groups.requireReader(groups.find(post.getGroupId()), userId);
-        List<Comment> list = comments.findByPostIdAndHiddenAtIsNullOrderByCreatedAtAsc(postId);
+        Page<Comment> page = comments.findByPostIdAndHiddenAtIsNull(postId, pageable);
         Map<UUID, UserAccount> authors = accounts.findAllById(
-                list.stream().map(Comment::getAuthorId).distinct().toList());
-        return list.stream()
-                .map(c -> new CommentCard(c, authors.get(c.getAuthorId())))
-                .toList();
+                page.getContent().stream().map(Comment::getAuthorId).distinct().toList());
+        return page.map(c -> new CommentCard(c, authors.get(c.getAuthorId())));
     }
 
     @Transactional

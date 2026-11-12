@@ -17,11 +17,12 @@ import com.healthybites.shared.web.Sorting;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.List;
+import jakarta.validation.constraints.Size;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -54,7 +55,8 @@ class NutritionistMealPlanController {
     @GetMapping("/meal-plans")
     PagedModel<MealPlanSummaryResponse> mine(
             @RequestParam(required = false) @Nullable MealPlanStatus status,
-            @PageableDefault(sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 20, sort = "updatedAt", direction = Sort.Direction.DESC)
+                    Pageable pageable) {
         return new PagedModel<>(plans.mine(CurrentUser.id(), status, Sorting.restrict(pageable, SORTABLE))
                 .map(MealPlanSummaryResponse::of));
     }
@@ -126,11 +128,13 @@ class NutritionistMealPlanController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Clientes que siguen alguno de mis planes")
+    @Operation(
+            summary = "Clientes que siguen alguno de mis planes, los más recientes primero",
+            description = "q busca por nombre, apellidos o correo sin distinguir mayúsculas ni tildes.")
     @GetMapping("/clients")
-    List<NutritionistClientResponse> clients() {
-        return plans.clients(CurrentUser.id()).stream()
-                .map(NutritionistClientResponse::of)
-                .toList();
+    PagedModel<NutritionistClientResponse> clients(
+            @RequestParam(required = false) @Nullable @Size(max = 100, message = "Máximo 100 caracteres") String q,
+            @ParameterObject @PageableDefault(size = 20) Pageable pageable) {
+        return new PagedModel<>(plans.clients(CurrentUser.id(), q, pageable).map(NutritionistClientResponse::of));
     }
 }

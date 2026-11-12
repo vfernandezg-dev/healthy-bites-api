@@ -8,6 +8,7 @@ import com.healthybites.nutrition.domain.Meal;
 import com.healthybites.nutrition.domain.MealPlan;
 import com.healthybites.nutrition.domain.MealPlanEnrollment;
 import com.healthybites.nutrition.domain.MealPlanEnrollmentRepository;
+import com.healthybites.nutrition.domain.MealPlanEnrollmentRepository.ClientSince;
 import com.healthybites.nutrition.domain.MealPlanRepository;
 import com.healthybites.nutrition.domain.NutritionEnums.MealCategory;
 import com.healthybites.nutrition.domain.NutritionEnums.MealPlanGoal;
@@ -17,14 +18,17 @@ import com.healthybites.profiles.ClientProfiles.ClientProfileView;
 import com.healthybites.shared.web.ApiException;
 import java.time.Clock;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -157,39 +161,47 @@ public class NutritionistPlanService {
         owned(planId, authorId).removeMeal(mealId);
     }
 
-    /** Clientes inscritos en sus planes, con los títulos de los planes que siguen y sus datos físicos. */
+    /**
+     * Clientes inscritos en sus planes (los más recientes primero), con los títulos de los planes que siguen y sus
+     * datos físicos. {@code text} busca por nombre, apellidos o correo sin distinguir tildes. Todo en lote: unas pocas
+     * consultas por página, tenga los clientes que tenga.
+     */
     @Transactional(readOnly = true)
-    public List<Client> clients(UUID authorId) {
-        List<MealPlanEnrollment> all = enrollments.findByAuthor(authorId);
-        Map<UUID, String> titles = new LinkedHashMap<>();
-        plans.findAllById(all.stream()
-                        .map(MealPlanEnrollment::getMealPlanId)
-                        .distinct()
-                        .toList())
-                .forEach(plan -> titles.put(plan.requireId(), plan.getTitle()));
-        Map<UUID, List<MealPlanEnrollment>> byClient = new LinkedHashMap<>();
-        all.forEach(e -> byClient.computeIfAbsent(e.getClientId(), id -> new ArrayList<>())
-                .add(e));
-
-        Map<UUID, UserAccount> people = accounts.findAllById(byClient.keySet());
-        Map<UUID, ClientProfileView> profiles = clientProfiles.findAll(byClient.keySet());
-        List<Client> result = new ArrayList<>();
-        byClient.forEach((clientId, list) -> {
-            UserAccount account = people.get(clientId);
-            if (account != null) {
-                result.add(new Client(
-                        account,
-                        profiles.get(clientId),
-                        list.stream()
-                                .map(e -> titles.getOrDefault(e.getMealPlanId(), ""))
-                                .toList(),
-                        list.stream()
-                                .map(MealPlanEnrollment::getEnrolledAt)
-                                .min(Instant::compareTo)
-                                .orElse(clock.instant())));
+    public Page<Client> clients(UUID authorId, @Nullable String text, Pageable pageable) {
+        Pageable page = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        Page<ClientSince> rows;
+        if (text == null || text.isBlank()) {
+            rows = enrollments.findClientsOf(authorId, page);
+        } else {
+            Set<UUID> matching = accounts.matching(enrollments.findClientIdsOf(authorId), text);
+            if (matching.isEmpty()) {
+                return Page.empty(page);
             }
-        });
-        return result;
+            rows = enrollments.findClientsOfAmong(authorId, matching, page);
+        }
+        List<UUID> clientIds =
+                rows.getContent().stream().map(ClientSince::getClientId).toList();
+        if (clientIds.isEmpty()) {
+            return new PageImpl<>(List.of(), page, rows.getTotalElements());
+        }
+
+        List<MealPlanEnrollment> theirs = enrollments.findByAuthorAndClientIdIn(authorId, clientIds);
+        Map<UUID, String> titles = plans
+                .findAllById(
+                        theirs.stream().map(MealPlanEnrollment::getMealPlanId).collect(Collectors.toSet()))
+                .stream()
+                .collect(Collectors.toMap(MealPlan::requireId, MealPlan::getTitle));
+        Map<UUID, List<String>> planTitles = theirs.stream()
+                .collect(Collectors.groupingBy(
+                        MealPlanEnrollment::getClientId,
+                        Collectors.mapping(e -> titles.getOrDefault(e.getMealPlanId(), ""), Collectors.toList())));
+        Map<UUID, UserAccount> people = accounts.findAllById(clientIds);
+        Map<UUID, ClientProfileView> profiles = clientProfiles.findAll(clientIds);
+        return rows.map(row -> new Client(
+                Objects.requireNonNull(people.get(row.getClientId())),
+                profiles.get(row.getClientId()),
+                planTitles.getOrDefault(row.getClientId(), List.of()),
+                row.getSince()));
     }
 
     private static PlanCard card(MealPlan plan) {

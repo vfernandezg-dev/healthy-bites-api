@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -47,7 +48,8 @@ class MealPlanController {
     @GetMapping("/meal-plans")
     PagedModel<MealPlanSummaryResponse> catalog(
             @RequestParam(required = false) @Nullable MealPlanGoal goal,
-            @PageableDefault(sort = "publishedAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 20, sort = "publishedAt", direction = Sort.Direction.DESC)
+                    Pageable pageable) {
         return new PagedModel<>(mealPlans
                 .catalog(CurrentUser.id(), isStaff(), goal, Sorting.restrict(pageable, SORTABLE))
                 .map(MealPlanSummaryResponse::of));

@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import org.jspecify.annotations.Nullable;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -50,7 +51,8 @@ class AdminBillingController {
     PagedModel<AdminSubscriptionResponse> subscriptions(
             @RequestParam(required = false) @Nullable SubscriptionStatus status,
             @RequestParam(required = false) @Nullable Tier tier,
-            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
+                    Pageable pageable) {
         Page<Subscription> page = billing.subscriptions(status, tier, Sorting.restrict(pageable, SUBSCRIPTION_SORT));
         Map<UUID, UserAccount> people = people(page, Subscription::getUserId);
         return new PagedModel<>(page.map(subscription -> AdminSubscriptionResponse.of(subscription, people)));
@@ -60,7 +62,8 @@ class AdminBillingController {
     @GetMapping("/payments")
     PagedModel<AdminPaymentResponse> payments(
             @RequestParam(required = false) @Nullable PaymentStatus status,
-            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
+                    Pageable pageable) {
         Page<Payment> page = billing.payments(status, Sorting.restrict(pageable, PAYMENT_SORT));
         Map<UUID, UserAccount> people = people(page, Payment::getUserId);
         return new PagedModel<>(page.map(payment -> AdminPaymentResponse.of(payment, people)));

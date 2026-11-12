@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Set;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -77,7 +78,8 @@ class SubscriptionController {
     @Operation(summary = "Pagos del usuario")
     @GetMapping("/me/payments")
     PagedModel<PaymentResponse> payments(
-            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
+                    Pageable pageable) {
         return new PagedModel<>(subscriptions
                 .payments(CurrentUser.id(), Sorting.restrict(pageable, PAYMENT_SORT))
                 .map(PaymentResponse::of));

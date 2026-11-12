@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -49,7 +50,8 @@ class NutritionistContentController {
     @GetMapping
     PagedModel<ContentSummaryResponse> mine(
             @RequestParam(required = false) @Nullable ContentStatus status,
-            @PageableDefault(sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 20, sort = "updatedAt", direction = Sort.Direction.DESC)
+                    Pageable pageable) {
         return new PagedModel<>(contents.mine(CurrentUser.id(), status, Sorting.restrict(pageable, SORTABLE))
                 .map(ContentSummaryResponse::of));
     }

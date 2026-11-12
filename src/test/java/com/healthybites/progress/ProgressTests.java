@@ -31,6 +31,25 @@ class ProgressTests extends IntegrationTest {
     @Autowired
     private ApplicationEvents events;
 
+    /** Un listado pide como mucho un año: nunca toda la historia de golpe. */
+    @Test
+    void historiesAreRequestedAYearAtATime() throws Exception {
+        String auth = bearer(token(Seed.JUAN));
+        mockMvc.perform(get("/me/habit-logs")
+                        .param("from", "2020-01-01")
+                        .param("to", "2026-01-01")
+                        .header(HttpHeaders.AUTHORIZATION, auth))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.code").value("range-too-large"))
+                .andExpect(jsonPath("$.maxDays").value(366));
+        mockMvc.perform(get("/me/habit-logs")
+                        .param("from", "2026-02-01")
+                        .param("to", "2026-01-01")
+                        .header(HttpHeaders.AUTHORIZATION, auth))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.code").value("invalid-range"));
+    }
+
     @Test
     void aClientHasOneActiveGoalAndItsHistory() throws Exception {
         NewUser client = newClient("metas");

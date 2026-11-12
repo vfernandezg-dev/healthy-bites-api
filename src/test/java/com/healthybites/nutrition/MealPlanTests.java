@@ -166,9 +166,20 @@ class MealPlanTests extends IntegrationTest {
     void nutritionistsSeeTheClientsOfTheirPlansAndClientsCannotUseTheirSpace() throws Exception {
         mockMvc.perform(get("/nutritionist/clients").header(HttpHeaders.AUTHORIZATION, bearer(token(Seed.CARLOS))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].email", hasItem(Seed.JUAN)))
+                .andExpect(jsonPath("$.content[*].email", hasItem(Seed.JUAN)))
                 .andExpect(jsonPath(
-                        "$[?(@.email == '" + Seed.JUAN + "')].plans[0]", contains("Mantenimiento equilibrado")));
+                        "$.content[?(@.email == '" + Seed.JUAN + "')].plans[0]",
+                        contains("Mantenimiento equilibrado")));
+        // Búsqueda en el servidor sin distinguir mayúsculas ni tildes: "PEREZ" encuentra a Juan Pérez.
+        mockMvc.perform(get("/nutritionist/clients")
+                        .param("q", "JUAN PEREZ")
+                        .header(HttpHeaders.AUTHORIZATION, bearer(token(Seed.CARLOS))))
+                .andExpect(jsonPath("$.page.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].email").value(Seed.JUAN));
+        mockMvc.perform(get("/nutritionist/clients")
+                        .param("q", "nadie_se_llama%asi")
+                        .header(HttpHeaders.AUTHORIZATION, bearer(token(Seed.CARLOS))))
+                .andExpect(jsonPath("$.page.totalElements").value(0));
         mockMvc.perform(get("/nutritionist/meal-plans").header(HttpHeaders.AUTHORIZATION, bearer(token(Seed.JUAN))))
                 .andExpect(status().isForbidden());
     }

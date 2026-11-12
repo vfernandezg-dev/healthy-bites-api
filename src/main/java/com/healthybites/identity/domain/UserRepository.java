@@ -2,6 +2,7 @@ package com.healthybites.identity.domain;
 
 import com.healthybites.identity.Role;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,6 +23,17 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
     /** Cuentas por rol y estado, para el resumen del panel de administración. */
     @Query("select u.role as role, u.status as status, count(u) as total from User u group by u.role, u.status")
     List<RoleStatusCount> countByRoleAndStatus();
+
+    /**
+     * De entre {@code ids}, las cuentas cuyo nombre o correo contiene el patrón, sin distinguir mayúsculas ni tildes
+     * ({@code pattern} ya en minúsculas, con {@code %} y {@code _} escapados con una barra invertida).
+     */
+    @Query(value = """
+                    select u.id from users u
+                    where u.id in (:ids)
+                      and unaccent(lower(u.first_name || ' ' || u.last_name || ' ' || u.email))
+                          like unaccent(:pattern) escape '\\'""", nativeQuery = true)
+    List<UUID> findIdsMatching(@Param("ids") Collection<UUID> ids, @Param("pattern") String pattern);
 
     long countByCreatedAtAfter(Instant since);
 

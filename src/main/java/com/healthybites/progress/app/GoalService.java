@@ -9,6 +9,7 @@ import com.healthybites.progress.domain.WeightEntry;
 import com.healthybites.progress.domain.WeightEntryRepository;
 import com.healthybites.progress.events.GoalCompleted;
 import com.healthybites.shared.web.ApiException;
+import com.healthybites.shared.web.DateRanges;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Clock;
@@ -130,6 +131,7 @@ public class GoalService {
     /** Todos los pesajes de la meta en el rango (para el gráfico), del más antiguo al más reciente. */
     @Transactional(readOnly = true)
     public List<WeightEntry> weights(UUID goalId, UUID clientId, @Nullable LocalDate from, @Nullable LocalDate to) {
+        DateRanges.check(from, to);
         Goal goal = owned(goalId, clientId);
         if (from == null && to == null) {
             return weights.findByGoalIdOrderByMeasuredOnAsc(goal.requireId());

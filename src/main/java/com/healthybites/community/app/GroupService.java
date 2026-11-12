@@ -131,16 +131,16 @@ public class GroupService {
 
     /** Miembros activos (para los miembros) y también las solicitudes pendientes (para el creador). */
     @Transactional(readOnly = true)
-    public List<Member> members(UUID groupId, UUID userId) {
+    /** Miembros activos; el creador ve también las solicitudes pendientes. */
+    public Page<Member> members(UUID groupId, UUID userId, Pageable pageable) {
         CommunityGroup group = find(groupId);
         requireActiveMember(group, userId);
-        boolean owner = group.isOwnedBy(userId);
-        List<GroupMembership> list = memberships.findByGroupIdOrderByCreatedAtAsc(groupId).stream()
-                .filter(m -> owner || m.isActive())
-                .toList();
+        Page<GroupMembership> page = group.isOwnedBy(userId)
+                ? memberships.findByGroupId(groupId, pageable)
+                : memberships.findByGroupIdAndStatus(groupId, GroupMembership.Status.ACTIVE, pageable);
         Map<UUID, UserAccount> people = accounts.findAllById(
-                list.stream().map(GroupMembership::getUserId).toList());
-        return list.stream().map(m -> new Member(m, people.get(m.getUserId()))).toList();
+                page.getContent().stream().map(GroupMembership::getUserId).toList());
+        return page.map(m -> new Member(m, people.get(m.getUserId())));
     }
 
     @Transactional

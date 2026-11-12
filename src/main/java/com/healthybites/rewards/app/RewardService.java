@@ -16,6 +16,9 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,10 +54,12 @@ public class RewardService implements RewardDirectory {
             Reward reward, Target target, @Nullable RewardStreak streak) {}
 
     @Transactional(readOnly = true)
-    public List<RewardView> catalog(UUID clientId) {
+    public Page<RewardView> catalog(UUID clientId, Pageable pageable) {
+        Page<Reward> page = rewards.findByActiveTrue(pageable);
         Map<UUID, RewardStreak> mine = streaks.findByClientIdOrderByCreatedAtDesc(clientId).stream()
                 .collect(Collectors.toMap(RewardStreak::getRewardId, Function.identity()));
-        return views(rewards.findByActiveTrueOrderByRequiredStreakDaysAsc(), reward -> mine.get(reward.requireId()));
+        return new PageImpl<>(
+                views(page.getContent(), reward -> mine.get(reward.requireId())), pageable, page.getTotalElements());
     }
 
     @Transactional(readOnly = true)
@@ -111,9 +116,13 @@ public class RewardService implements RewardDirectory {
 
     // ---------------------------------------------------------------- nutricionista
 
+    /** Sus recompensas: todas, o solo las activas o las retiradas. */
     @Transactional(readOnly = true)
-    public List<RewardView> mine(UUID authorId) {
-        return views(rewards.findByAuthorIdOrderByCreatedAtDesc(authorId), reward -> null);
+    public Page<RewardView> mine(UUID authorId, @Nullable Boolean active, Pageable pageable) {
+        Page<Reward> page = active == null
+                ? rewards.findByAuthorId(authorId, pageable)
+                : rewards.findByAuthorIdAndActive(authorId, active, pageable);
+        return new PageImpl<>(views(page.getContent(), reward -> null), pageable, page.getTotalElements());
     }
 
     @Transactional
