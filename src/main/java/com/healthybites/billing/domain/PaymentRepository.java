@@ -24,6 +24,9 @@ public interface PaymentRepository extends JpaRepository<Payment, UUID>, JpaSpec
     @Query("select p from Payment p where p.providerOrderId = :orderId")
     Optional<Payment> findByOrderIdForUpdate(@Param("orderId") String orderId);
 
+    /** El pago del pedido, sin bloquearlo (comprobaciones previas a llamar a la pasarela). */
+    Optional<Payment> findByProviderOrderId(String providerOrderId);
+
     Page<Payment> findByUserId(UUID userId, Pageable pageable);
 
     List<Payment> findBySubscriptionIdAndStatus(UUID subscriptionId, PaymentStatus status);

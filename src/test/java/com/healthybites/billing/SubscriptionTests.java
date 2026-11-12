@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -14,13 +15,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.healthybites.IntegrationTest;
+import com.healthybites.billing.app.PaymentGateway.CapturedOrder;
+import com.healthybites.billing.app.PaymentGateway.CreatedOrder;
 import com.healthybites.billing.app.SubscriptionLifecycleJob;
 import com.healthybites.billing.events.SubscriptionActivated;
 import com.healthybites.billing.events.SubscriptionExpired;
-import com.healthybites.billing.infra.PayPalClient.CapturedOrder;
-import com.healthybites.billing.infra.PayPalClient.CreatedOrder;
 import com.healthybites.shared.domain.Money;
+import com.healthybites.shared.web.ApiException;
 import com.healthybites.support.Seed;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -31,6 +35,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.event.ApplicationEvents;
 import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /** Planes, checkout con PayPal (simulado), captura verificada e idempotente, cancelación y vencimiento. */
 @RecordApplicationEvents
@@ -115,6 +120,72 @@ class SubscriptionTests extends IntegrationTest {
                 .andExpect(status().isBadGateway())
                 .andExpect(jsonPath("$.code").value("payment-mismatch"));
         assertThat(entitlements.tierOf(buyer.id())).isEqualTo(Tier.BASIC);
+        // El rechazo queda guardado aunque la petición falle (antes el rollback lo deshacía).
+        assertThat(paymentStatus(orderId)).isEqualTo("FAILED");
+    }
+
+    @Test
+    void aCaptureThatPayPalDoesNotCompleteLeavesThePaymentFailedAndTheOrderClosed() throws Exception {
+        NewUser buyer = newClient("pendiente");
+        String orderId = stubOrder();
+        checkout(buyer.token(), "PREMIUM").andExpect(status().isOk());
+        when(payPal.captureOrder(orderId))
+                .thenReturn(new CapturedOrder("PENDING", subscriptionOf(orderId), null, null));
+
+        capture(buyer.token(), orderId)
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("payment-not-completed"));
+        assertThat(paymentStatus(orderId)).isEqualTo("FAILED");
+
+        capture(buyer.token(), orderId)
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("order-closed"));
+        verify(payPal, times(1)).captureOrder(orderId);
+        assertThat(entitlements.tierOf(buyer.id())).isEqualTo(Tier.BASIC);
+    }
+
+    @Test
+    void ifPayPalFailsAtCheckoutNoPaymentIsRecordedAndTheNextCheckoutWorks() throws Exception {
+        NewUser buyer = newClient("caida");
+        when(payPal.createOrder(anyString(), anyString(), any(), anyString(), anyString()))
+                .thenThrow(ApiException.badGateway("payment-provider-error", "PayPal no responde"));
+
+        checkout(buyer.token(), "PREMIUM")
+                .andExpect(status().isBadGateway())
+                .andExpect(jsonPath("$.code").value("payment-provider-error"));
+        assertThat(jdbc.queryForObject("select count(*) from payments where user_id = ?", Integer.class, buyer.id()))
+                .isZero();
+
+        buy(buyer, "PREMIUM", "5.99");
+        assertThat(entitlements.tierOf(buyer.id())).isEqualTo(Tier.PREMIUM);
+        assertThat(jdbc.queryForList(
+                        "select status from subscriptions where user_id = ? order by created_at",
+                        String.class,
+                        buyer.id()))
+                .containsExactly("EXPIRED", "ACTIVE");
+    }
+
+    /** PayPal puede tardar segundos: ninguna conexión ni bloqueo de la base de datos debe esperar por él. */
+    @Test
+    void thePaymentGatewayIsNeverCalledInsideADatabaseTransaction() throws Exception {
+        NewUser buyer = newClient("pasarela");
+        String orderId = "ORDER" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        List<Boolean> insideTransaction = new ArrayList<>();
+        when(payPal.createOrder(anyString(), anyString(), any(), anyString(), anyString()))
+                .thenAnswer(invocation -> {
+                    insideTransaction.add(TransactionSynchronizationManager.isActualTransactionActive());
+                    return new CreatedOrder(orderId, "https://www.sandbox.paypal.com/checkoutnow?token=" + orderId);
+                });
+        checkout(buyer.token(), "PREMIUM").andExpect(status().isOk());
+
+        String subscriptionId = subscriptionOf(orderId);
+        when(payPal.captureOrder(orderId)).thenAnswer(invocation -> {
+            insideTransaction.add(TransactionSynchronizationManager.isActualTransactionActive());
+            return captured(subscriptionId, "5.99");
+        });
+        capture(buyer.token(), orderId).andExpect(status().isOk());
+
+        assertThat(insideTransaction).containsExactly(false, false);
     }
 
     @Test
@@ -192,9 +263,15 @@ class SubscriptionTests extends IntegrationTest {
 
     private String stubOrder() {
         String orderId = "ORDER" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-        when(payPal.createOrder(anyString(), anyString(), any(), anyString(), anyString()))
-                .thenReturn(new CreatedOrder(orderId, "https://www.sandbox.paypal.com/checkoutnow?token=" + orderId));
+        // doReturn: sustituye también un stub anterior que lanza una excepción.
+        doReturn(new CreatedOrder(orderId, "https://www.sandbox.paypal.com/checkoutnow?token=" + orderId))
+                .when(payPal)
+                .createOrder(anyString(), anyString(), any(), anyString(), anyString());
         return orderId;
+    }
+
+    private String paymentStatus(String orderId) {
+        return jdbc.queryForObject("select status from payments where provider_order_id = ?", String.class, orderId);
     }
 
     private String subscriptionOf(String orderId) {

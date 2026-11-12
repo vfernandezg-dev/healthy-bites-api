@@ -4,7 +4,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.healthybites.billing.infra.PayPalClient;
+import com.healthybites.billing.app.PaymentGateway;
 import com.healthybites.support.Seed;
 import com.jayway.jsonpath.JsonPath;
 import jakarta.mail.Session;
@@ -57,9 +57,9 @@ public abstract class IntegrationTest {
     @MockitoBean
     protected JavaMailSender mailSender;
 
-    // PayPal nunca se llama de verdad: cada test simula sus respuestas.
+    // La pasarela de pago (PayPal) nunca se llama de verdad: cada test simula sus respuestas.
     @MockitoBean
-    protected PayPalClient payPal;
+    protected PaymentGateway payPal;
 
     @BeforeEach
     void setUpMail() {

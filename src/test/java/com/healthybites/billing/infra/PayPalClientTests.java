@@ -10,8 +10,8 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
-import com.healthybites.billing.infra.PayPalClient.CapturedOrder;
-import com.healthybites.billing.infra.PayPalClient.CreatedOrder;
+import com.healthybites.billing.app.PaymentGateway.CapturedOrder;
+import com.healthybites.billing.app.PaymentGateway.CreatedOrder;
 import com.healthybites.shared.domain.Money;
 import com.healthybites.shared.web.ApiException;
 import com.healthybites.support.MutableClock;

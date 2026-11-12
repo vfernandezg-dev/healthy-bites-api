@@ -3,6 +3,7 @@ package com.healthybites.billing.infra;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.healthybites.billing.app.PaymentGateway;
 import com.healthybites.shared.domain.Money;
 import com.healthybites.shared.web.ApiException;
 import java.net.URI;
@@ -29,7 +30,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
 /**
- * Cliente de la API Orders v2 de PayPal.
+ * Cliente de la API Orders v2 de PayPal: la implementación de {@link PaymentGateway}.
  *
  * <ul>
  *   <li>Importes y URLs de vuelta los decide el servidor; el pedido lleva el id de la suscripción como referencia.</li>
@@ -41,7 +42,7 @@ import org.springframework.web.client.RestClientException;
  */
 @Slf4j
 @Component
-public class PayPalClient {
+public class PayPalClient implements PaymentGateway {
 
     private static final String UNAVAILABLE = "No se pudo completar la operación con PayPal. Inténtalo más tarde.";
     private static final Set<String> APPROVAL_RELS = Set.of("approve", "payer-action");
@@ -68,21 +69,7 @@ public class PayPalClient {
         this.clock = clock;
     }
 
-    /** Pedido creado: su id y la URL donde el comprador lo aprueba. */
-    public record CreatedOrder(String id, String approvalUrl) {}
-
-    /** Resultado de la captura. {@code captured} es lo que de verdad se cobró. */
-    public record CapturedOrder(
-            String status,
-            @Nullable String referenceId,
-            @Nullable String captureId,
-            @Nullable Money captured) {
-
-        public boolean isCompleted() {
-            return "COMPLETED".equals(status);
-        }
-    }
-
+    @Override
     public CreatedOrder createOrder(
             String referenceId, String description, Money amount, String returnUrl, String cancelUrl) {
         OrderRequest body = new OrderRequest(
@@ -112,6 +99,7 @@ public class PayPalClient {
         return new CreatedOrder(order.id(), approvalUrl);
     }
 
+    @Override
     public CapturedOrder captureOrder(String orderId) {
         CaptureResponse response = call(() -> http.post()
                 .uri("/v2/checkout/orders/{id}/capture", orderId)
