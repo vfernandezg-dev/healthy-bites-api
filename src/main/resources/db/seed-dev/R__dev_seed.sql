@@ -146,3 +146,45 @@ insert into content_unlocks (id, content_item_id, user_id, source, unlocked_at)
 values ('00000000-0000-7000-8000-0000000a1001', '00000000-0000-7000-8000-0000000a0003',
         '00000000-0000-7000-8000-000000000004', 'REWARD', now() - interval '3 days')
 on conflict do nothing;
+
+-- ---------- progress ----------
+insert into goals (id, client_id, title, description, target_weight_kg, status, started_on, completed_at)
+values ('00000000-0000-7000-8000-000000001001', '00000000-0000-7000-8000-000000000004', 'Bajar a 68 kg',
+        'Reducir grasa con un déficit moderado.', 68.0, 'ACTIVE', current_date - 35, null),
+       ('00000000-0000-7000-8000-000000001002', '00000000-0000-7000-8000-000000000004', 'Bajar los primeros 2 kg',
+        'Primera meta corta.', 74.0, 'COMPLETED', current_date - 70, now() - interval '36 days'),
+       ('00000000-0000-7000-8000-000000001003', '00000000-0000-7000-8000-000000000005', 'Mantener 58 kg',
+        'Mantener el peso y mejorar la composición corporal.', 58.0, 'ACTIVE', current_date - 35, null),
+       ('00000000-0000-7000-8000-000000001004', '00000000-0000-7000-8000-000000000006', 'Llegar a 82 kg',
+        'Ganar masa muscular con entrenamiento de fuerza.', 82.0, 'ACTIVE', current_date - 35, null)
+on conflict do nothing;
+
+insert into goal_status_changes (id, goal_id, from_status, to_status, changed_at)
+values ('00000000-0000-7000-8000-000000001101', '00000000-0000-7000-8000-000000001001', null, 'ACTIVE', now() - interval '35 days'),
+       ('00000000-0000-7000-8000-000000001102', '00000000-0000-7000-8000-000000001002', null, 'ACTIVE', now() - interval '70 days'),
+       ('00000000-0000-7000-8000-000000001103', '00000000-0000-7000-8000-000000001002', 'ACTIVE', 'COMPLETED', now() - interval '36 days'),
+       ('00000000-0000-7000-8000-000000001104', '00000000-0000-7000-8000-000000001003', null, 'ACTIVE', now() - interval '35 days'),
+       ('00000000-0000-7000-8000-000000001105', '00000000-0000-7000-8000-000000001004', null, 'ACTIVE', now() - interval '35 days')
+on conflict do nothing;
+
+insert into weight_entries (id, goal_id, measured_on, weight_kg, notes)
+values ('00000000-0000-7000-8000-000000001201', '00000000-0000-7000-8000-000000001001', current_date - 35, 74.0, 'Inicio del plan'),
+       ('00000000-0000-7000-8000-000000001202', '00000000-0000-7000-8000-000000001001', current_date - 28, 73.4, 'Buena adherencia'),
+       ('00000000-0000-7000-8000-000000001203', '00000000-0000-7000-8000-000000001001', current_date - 21, 73.0, 'Un par de excesos'),
+       ('00000000-0000-7000-8000-000000001204', '00000000-0000-7000-8000-000000001001', current_date - 14, 72.6, 'Empecé a caminar'),
+       ('00000000-0000-7000-8000-000000001205', '00000000-0000-7000-8000-000000001001', current_date - 7, 72.3, 'Más energía'),
+       ('00000000-0000-7000-8000-000000001206', '00000000-0000-7000-8000-000000001001', current_date - 1, 72.0, 'Sigo bajando'),
+       ('00000000-0000-7000-8000-000000001207', '00000000-0000-7000-8000-000000001003', current_date - 28, 60.2, null),
+       ('00000000-0000-7000-8000-000000001208', '00000000-0000-7000-8000-000000001003', current_date - 14, 60.1, null),
+       ('00000000-0000-7000-8000-000000001209', '00000000-0000-7000-8000-000000001003', current_date - 1, 60.0, 'Manteniendo'),
+       ('00000000-0000-7000-8000-00000000120a', '00000000-0000-7000-8000-000000001004', current_date - 21, 77.0, null),
+       ('00000000-0000-7000-8000-00000000120b', '00000000-0000-7000-8000-000000001004', current_date - 7, 77.6, null),
+       ('00000000-0000-7000-8000-00000000120c', '00000000-0000-7000-8000-000000001004', current_date - 1, 78.0, null)
+on conflict do nothing;
+
+insert into habit_logs (id, client_id, logged_on, hydration, nutrition, exercise, sleep, notes)
+values ('00000000-0000-7000-8000-000000001301', '00000000-0000-7000-8000-000000000004', current_date - 3, 7, 8, 5, 7, null),
+       ('00000000-0000-7000-8000-000000001302', '00000000-0000-7000-8000-000000000004', current_date - 2, 8, 7, 6, 8, null),
+       ('00000000-0000-7000-8000-000000001303', '00000000-0000-7000-8000-000000000005', current_date - 2, 6, 8, 7, 9, null),
+       ('00000000-0000-7000-8000-000000001304', '00000000-0000-7000-8000-000000000006', current_date - 2, 9, 9, 8, 7, 'Entreno de pierna')
+on conflict do nothing;

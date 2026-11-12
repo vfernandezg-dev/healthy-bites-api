@@ -14,20 +14,24 @@ servers:
 security:
 - bearer: []
 tags:
-- description: Subida de imágenes y ficheros de contenido
-  name: Ficheros
 - description: "Login, renovación, logout y restablecimiento de contraseña"
   name: Sesión
-- description: "Búsqueda, resumen y activación de cuentas (solo ADMIN)"
-  name: Admin · Cuentas
-- description: "Suscripciones, pagos y resumen de ingresos (solo ADMIN)"
-  name: Admin · Facturación
 - description: "Catálogo de artículos, vídeos y guías"
   name: Contenido
 - description: "Catálogo, detalle e inscripciones de los clientes"
   name: Planes de alimentación
 - description: "Planes, checkout con PayPal y pagos del usuario"
   name: Suscripción
+- description: "Metas, pesajes, hábitos y recomendación (solo clientes)"
+  name: Progreso
+- description: Formulario de contacto de la landing
+  name: Contacto
+- description: Subida de imágenes y ficheros de contenido
+  name: Ficheros
+- description: "Búsqueda, resumen y activación de cuentas (solo ADMIN)"
+  name: Admin · Cuentas
+- description: "Suscripciones, pagos y resumen de ingresos (solo ADMIN)"
+  name: Admin · Facturación
 - description: "Artículos, vídeos y guías propios"
   name: Nutricionista · Contenido
 - description: Alta de clientes y de nutricionistas invitados
@@ -36,8 +40,6 @@ tags:
   name: Admin · Invitaciones
 - description: "Planes de alimentación propios, sus comidas y sus clientes"
   name: Nutricionista · Planes
-- description: Formulario de contacto de la landing
-  name: Contacto
 paths:
   /admin/billing/summary:
     get:
@@ -578,6 +580,376 @@ paths:
       summary: Contenido que he desbloqueado
       tags:
       - Contenido
+  /me/goals:
+    get:
+      operationId: goals
+      parameters:
+      - in: query
+        name: status
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          enum:
+          - ACTIVE
+          - COMPLETED
+          - ABANDONED
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GoalResponse"
+          description: OK
+      tags:
+      - Progreso
+    post:
+      operationId: createGoal
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GoalRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/GoalResponse"
+          description: OK
+      summary: Crea una meta (solo puede haber una activa)
+      tags:
+      - Progreso
+  /me/goals/{id}:
+    get:
+      operationId: goal
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/GoalResponse"
+          description: OK
+      tags:
+      - Progreso
+    put:
+      operationId: updateGoal
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GoalRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/GoalResponse"
+          description: OK
+      tags:
+      - Progreso
+  /me/goals/{id}/abandon:
+    post:
+      operationId: abandon
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/GoalResponse"
+          description: OK
+      tags:
+      - Progreso
+  /me/goals/{id}/complete:
+    post:
+      operationId: complete
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/GoalResponse"
+          description: OK
+      tags:
+      - Progreso
+  /me/goals/{id}/recommendation:
+    get:
+      operationId: recommendation
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RecommendationResponse"
+          description: OK
+      summary: Rango de peso saludable para tu altura y estimación del tiempo hasta
+        el objetivo
+      tags:
+      - Progreso
+  /me/goals/{id}/status-history:
+    get:
+      operationId: history
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StatusChangeResponse"
+          description: OK
+      tags:
+      - Progreso
+  /me/goals/{id}/weight-entries:
+    get:
+      operationId: weights
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: from
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          format: date
+      - in: query
+        name: to
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          format: date
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WeightEntryResponse"
+          description: OK
+      summary: "Pesajes de la meta en un rango de fechas (todos si no hay rango),\
+        \ del más antiguo al último"
+      tags:
+      - Progreso
+    post:
+      operationId: addWeight
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WeightEntryRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/WeightEntryResponse"
+          description: OK
+      tags:
+      - Progreso
+  /me/goals/{id}/weight-entries/{entryId}:
+    delete:
+      operationId: deleteWeight
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: entryId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+      tags:
+      - Progreso
+    put:
+      operationId: updateWeight
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: entryId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WeightEntryRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/WeightEntryResponse"
+          description: OK
+      tags:
+      - Progreso
+  /me/habit-logs:
+    get:
+      operationId: habitLogs
+      parameters:
+      - in: query
+        name: from
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          format: date
+      - in: query
+        name: to
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          format: date
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HabitLogResponse"
+          description: OK
+      summary: "Registros de hábitos en un rango (por defecto, los últimos 30 días)"
+      tags:
+      - Progreso
+    post:
+      operationId: logHabits
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HabitLogRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HabitLogResponse"
+          description: OK
+      summary: Registra los hábitos de hoy (o de ayer); cuenta para las rachas
+      tags:
+      - Progreso
+  /me/habit-logs/{id}:
+    delete:
+      operationId: deleteHabits
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+      tags:
+      - Progreso
+    put:
+      operationId: updateHabits
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HabitLogRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/HabitLogResponse"
+          description: OK
+      tags:
+      - Progreso
   /me/meal-plan-enrollments:
     get:
       operationId: enrollments
@@ -1658,6 +2030,107 @@ components:
           minLength: 0
       required:
       - email
+    GoalRequest:
+      type: object
+      properties:
+        description:
+          type: string
+          maxLength: 500
+          minLength: 0
+        targetWeightKg:
+          type: number
+          maximum: 400
+          minimum: 20
+        title:
+          type: string
+          maxLength: 120
+          minLength: 0
+      required:
+      - targetWeightKg
+      - title
+    GoalResponse:
+      type: object
+      properties:
+        completedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        description:
+          type: string
+        id:
+          type: string
+          format: uuid
+        startedOn:
+          type: string
+          format: date
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - COMPLETED
+          - ABANDONED
+        targetWeightKg:
+          type: number
+        title:
+          type: string
+    HabitLogRequest:
+      type: object
+      properties:
+        exercise:
+          type: integer
+          format: int32
+          maximum: 10
+          minimum: 0
+        hydration:
+          type: integer
+          format: int32
+          maximum: 10
+          minimum: 0
+        loggedOn:
+          type: string
+          format: date
+        notes:
+          type: string
+          maxLength: 500
+          minLength: 0
+        nutrition:
+          type: integer
+          format: int32
+          maximum: 10
+          minimum: 0
+        sleep:
+          type: integer
+          format: int32
+          maximum: 10
+          minimum: 0
+    HabitLogResponse:
+      type: object
+      properties:
+        average:
+          type: number
+          format: double
+        exercise:
+          type: integer
+          format: int32
+        hydration:
+          type: integer
+          format: int32
+        id:
+          type: string
+          format: uuid
+        loggedOn:
+          type: string
+          format: date
+        notes:
+          type: string
+        nutrition:
+          type: integer
+          format: int32
+        sleep:
+          type: integer
+          format: int32
     InvitationPreviewRequest:
       type: object
       properties:
@@ -2106,6 +2579,32 @@ components:
           - BASIC
           - PREMIUM
           - VIP
+    RecommendationResponse:
+      type: object
+      properties:
+        currentBmi:
+          type: number
+        currentWeightKg:
+          type: number
+        estimatedWeeks:
+          type: integer
+          format: int32
+        healthyMaxKg:
+          type: number
+        healthyMinKg:
+          type: number
+        heightCm:
+          type: number
+        message:
+          type: string
+        targetBmi:
+          type: number
+        targetInHealthyRange:
+          type: boolean
+        targetWeightKg:
+          type: number
+        weeklyChangeKg:
+          type: number
     RegisterRequest:
       type: object
       properties:
@@ -2177,6 +2676,24 @@ components:
           - ADMIN
           - CLIENT
           - NUTRITIONIST
+    StatusChangeResponse:
+      type: object
+      properties:
+        changedAt:
+          type: string
+          format: date-time
+        from:
+          type: string
+          enum:
+          - ACTIVE
+          - COMPLETED
+          - ABANDONED
+        to:
+          type: string
+          enum:
+          - ACTIVE
+          - COMPLETED
+          - ABANDONED
     UpdateProfileRequest:
       type: object
       properties:
@@ -2230,6 +2747,36 @@ components:
         total:
           type: integer
           format: int64
+    WeightEntryRequest:
+      type: object
+      properties:
+        measuredOn:
+          type: string
+          format: date
+        notes:
+          type: string
+          maxLength: 500
+          minLength: 0
+        weightKg:
+          type: number
+          maximum: 400
+          minimum: 20
+      required:
+      - measuredOn
+      - weightKg
+    WeightEntryResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        measuredOn:
+          type: string
+          format: date
+        notes:
+          type: string
+        weightKg:
+          type: number
   securitySchemes:
     bearer:
       bearerFormat: JWT
