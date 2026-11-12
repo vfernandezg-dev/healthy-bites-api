@@ -22,10 +22,14 @@ tags:
   name: Admin · Cuentas
 - description: "Suscripciones, pagos y resumen de ingresos (solo ADMIN)"
   name: Admin · Facturación
+- description: "Catálogo de artículos, vídeos y guías"
+  name: Contenido
 - description: "Catálogo, detalle e inscripciones de los clientes"
   name: Planes de alimentación
 - description: "Planes, checkout con PayPal y pagos del usuario"
   name: Suscripción
+- description: "Artículos, vídeos y guías propios"
+  name: Nutricionista · Contenido
 - description: Alta de clientes y de nutricionistas invitados
   name: Registro
 - description: Alta de nutricionistas por invitación (solo ADMIN)
@@ -457,6 +461,95 @@ paths:
       summary: "Envía un mensaje al equipo (204, 422, 429 o 503)"
       tags:
       - Contacto
+  /content-items:
+    get:
+      operationId: catalog_1
+      parameters:
+      - in: query
+        name: type
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          enum:
+          - ARTICLE
+          - VIDEO
+          - GUIDE
+      - in: query
+        name: category
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          enum:
+          - NUTRITION
+          - EXERCISE
+          - MENTAL_HEALTH
+      - in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+      - in: query
+        name: pageable
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PagedModelContentSummaryResponse"
+          description: OK
+      summary: "Contenido publicado, con filtros; locked indica si el usuario no puede\
+        \ abrirlo"
+      tags:
+      - Contenido
+  /content-items/{id}/file:
+    get:
+      operationId: file
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/FileLinkResponse"
+          description: OK
+      summary: "Enlace firmado y temporal al fichero del contenido (vídeo, PDF...)"
+      tags:
+      - Contenido
+  /content-items/{slug}:
+    get:
+      operationId: detail_1
+      parameters:
+      - in: path
+        name: slug
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ContentDetailResponse"
+          description: OK
+      summary: "Detalle con el cuerpo (403 subscription-required, con requiredTier,\
+        \ si está bloqueado)"
+      tags:
+      - Contenido
   /me:
     get:
       operationId: me
@@ -470,6 +563,21 @@ paths:
       summary: Usuario actual con el perfil de su rol
       tags:
       - Mi cuenta
+  /me/content-unlocks:
+    get:
+      operationId: unlocked
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContentSummaryResponse"
+          description: OK
+      summary: Contenido que he desbloqueado
+      tags:
+      - Contenido
   /me/meal-plan-enrollments:
     get:
       operationId: enrollments
@@ -557,7 +665,7 @@ paths:
       - Suscripción
   /me/profile:
     put:
-      operationId: update_1
+      operationId: update_2
       requestBody:
         content:
           application/json:
@@ -781,6 +889,139 @@ paths:
       summary: Clientes que siguen alguno de mis planes
       tags:
       - Nutricionista · Planes
+  /nutritionist/content-items:
+    get:
+      operationId: mine_1
+      parameters:
+      - in: query
+        name: pageable
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PagedModelContentSummaryResponse"
+          description: OK
+      summary: Mi contenido (todos los estados)
+      tags:
+      - Nutricionista · Contenido
+    post:
+      operationId: create_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContentRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ContentDetailResponse"
+          description: OK
+      summary: "Crea un borrador (portada y fichero: ids subidos antes con POST /media)"
+      tags:
+      - Nutricionista · Contenido
+  /nutritionist/content-items/{id}:
+    delete:
+      operationId: delete_1
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+      summary: Borra un borrador (lo publicado se archiva)
+      tags:
+      - Nutricionista · Contenido
+    get:
+      operationId: get_1
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ContentDetailResponse"
+          description: OK
+      tags:
+      - Nutricionista · Contenido
+    put:
+      operationId: update_1
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContentRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ContentDetailResponse"
+          description: OK
+      tags:
+      - Nutricionista · Contenido
+  /nutritionist/content-items/{id}/archive:
+    post:
+      operationId: archive_1
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ContentDetailResponse"
+          description: OK
+      tags:
+      - Nutricionista · Contenido
+  /nutritionist/content-items/{id}/publish:
+    post:
+      operationId: publish_1
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ContentDetailResponse"
+          description: OK
+      tags:
+      - Nutricionista · Contenido
   /nutritionist/meal-plans:
     get:
       operationId: mine
@@ -1252,6 +1493,105 @@ components:
       - correo
       - mensaje
       - nombre
+    ContentDetailResponse:
+      type: object
+      properties:
+        body:
+          type: string
+        item:
+          $ref: "#/components/schemas/ContentSummaryResponse"
+    ContentRequest:
+      type: object
+      properties:
+        body:
+          type: string
+          maxLength: 20000
+          minLength: 0
+        category:
+          type: string
+          enum:
+          - NUTRITION
+          - EXERCISE
+          - MENTAL_HEALTH
+        coverMediaId:
+          type: string
+          format: uuid
+        fileMediaId:
+          type: string
+          format: uuid
+        requiredTier:
+          type: string
+          enum:
+          - BASIC
+          - PREMIUM
+          - VIP
+        summary:
+          type: string
+          maxLength: 500
+          minLength: 0
+        title:
+          type: string
+          maxLength: 120
+          minLength: 0
+        type:
+          type: string
+          enum:
+          - ARTICLE
+          - VIDEO
+          - GUIDE
+      required:
+      - category
+      - requiredTier
+      - summary
+      - title
+      - type
+    ContentSummaryResponse:
+      type: object
+      properties:
+        author:
+          $ref: "#/components/schemas/AuthorResponse"
+        category:
+          type: string
+          enum:
+          - NUTRITION
+          - EXERCISE
+          - MENTAL_HEALTH
+        coverPath:
+          type: string
+        hasFile:
+          type: boolean
+        id:
+          type: string
+          format: uuid
+        locked:
+          type: boolean
+        publishedAt:
+          type: string
+          format: date-time
+        requiredTier:
+          type: string
+          enum:
+          - BASIC
+          - PREMIUM
+          - VIP
+        slug:
+          type: string
+        status:
+          type: string
+          enum:
+          - DRAFT
+          - PUBLISHED
+          - ARCHIVED
+        summary:
+          type: string
+        title:
+          type: string
+        type:
+          type: string
+          enum:
+          - ARTICLE
+          - VIDEO
+          - GUIDE
     CurrentSubscriptionResponse:
       type: object
       properties:
@@ -1300,6 +1640,14 @@ components:
           enum:
           - SELF
           - REWARD
+    FileLinkResponse:
+      type: object
+      properties:
+        expiresInSeconds:
+          type: integer
+          format: int64
+        path:
+          type: string
     ForgotPasswordRequest:
       type: object
       properties:
@@ -1660,6 +2008,18 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AdminUserResponse"
+        page:
+          $ref: "#/components/schemas/PageMetadata"
+      required:
+      - content
+      - page
+    PagedModelContentSummaryResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContentSummaryResponse"
         page:
           $ref: "#/components/schemas/PageMetadata"
       required:

@@ -110,3 +110,39 @@ values ('00000000-0000-7000-8000-0000000f0001', '00000000-0000-7000-8000-0000000
        ('00000000-0000-7000-8000-0000000f0003', '00000000-0000-7000-8000-0000000d0002',
         '00000000-0000-7000-8000-000000000006', 'SELF', now() - interval '6 days')
 on conflict do nothing;
+
+-- ---------- content ----------
+-- Sin portadas ni ficheros: se suben desde la aplicación (nada viene de carpetas locales).
+insert into content_items (id, author_id, slug, title, summary, body, type, category, required_tier, status, published_at)
+values ('00000000-0000-7000-8000-0000000a0001', '00000000-0000-7000-8000-000000000002', 'guia-de-alimentacion-saludable',
+        'Guía de alimentación saludable', 'Principios básicos para armar platos equilibrados en el día a día.',
+        'Llena la mitad del plato con verduras, un cuarto con proteína y un cuarto con cereales integrales. Bebe agua a lo largo del día y deja los ultraprocesados para ocasiones especiales.',
+        'GUIDE', 'NUTRITION', 'BASIC', 'PUBLISHED', now() - interval '40 days'),
+       ('00000000-0000-7000-8000-0000000a0002', '00000000-0000-7000-8000-000000000002',
+        'como-interpretar-tu-composicion-corporal', 'Cómo interpretar tu composición corporal',
+        'IMC, porcentaje de grasa y masa muscular: qué significan y qué no.',
+        'El IMC es una referencia poblacional: no distingue grasa de músculo. Para seguir tu progreso combina el peso con medidas de cintura y cómo te sientes al entrenar.',
+        'ARTICLE', 'NUTRITION', 'PREMIUM', 'PUBLISHED', now() - interval '25 days'),
+       ('00000000-0000-7000-8000-0000000a0003', '00000000-0000-7000-8000-000000000003', 'rutina-de-fuerza-para-principiantes',
+        'Rutina de fuerza para principiantes', 'Los ejercicios básicos y cómo progresar sin lesiones.', null,
+        'GUIDE', 'EXERCISE', 'PREMIUM', 'PUBLISHED', now() - interval '20 days'),
+       ('00000000-0000-7000-8000-0000000a0004', '00000000-0000-7000-8000-000000000003', 'cardio-de-20-minutos-sin-equipamiento',
+        'Cardio de 20 minutos sin equipamiento', 'Una sesión para empezar a moverte en casa.', null,
+        'VIDEO', 'EXERCISE', 'BASIC', 'PUBLISHED', now() - interval '18 days'),
+       ('00000000-0000-7000-8000-0000000a0005', '00000000-0000-7000-8000-000000000003', 'alimentacion-consciente',
+        'Alimentación consciente', 'Técnicas para comer con atención plena y reducir la ansiedad.',
+        'Come sin pantallas, mastica despacio y para cuando estés satisfecho, no lleno. Anota cómo te sientes antes y después de comer durante una semana.',
+        'ARTICLE', 'MENTAL_HEALTH', 'BASIC', 'PUBLISHED', now() - interval '12 days'),
+       ('00000000-0000-7000-8000-0000000a0006', '00000000-0000-7000-8000-000000000002', 'recetas-altas-en-proteina',
+        'Recetas altas en proteína', 'Cinco recetas fáciles para ganar masa muscular.', null,
+        'VIDEO', 'NUTRITION', 'VIP', 'PUBLISHED', now() - interval '6 days'),
+       ('00000000-0000-7000-8000-0000000a0007', '00000000-0000-7000-8000-000000000002', 'meal-prep-de-domingo',
+        'Meal prep de domingo (borrador)', 'Cocinar la semana en dos horas.', null,
+        'GUIDE', 'NUTRITION', 'PREMIUM', 'DRAFT', null)
+on conflict do nothing;
+
+-- Juan desbloqueó la rutina de fuerza con una racha.
+insert into content_unlocks (id, content_item_id, user_id, source, unlocked_at)
+values ('00000000-0000-7000-8000-0000000a1001', '00000000-0000-7000-8000-0000000a0003',
+        '00000000-0000-7000-8000-000000000004', 'REWARD', now() - interval '3 days')
+on conflict do nothing;
