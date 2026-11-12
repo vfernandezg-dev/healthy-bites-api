@@ -27,6 +27,7 @@ public class RecompensaController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('NUTRICIONISTA') and @owner.isNutritionist(#recompensaFormDTO.nutricionistaId) and (#recompensaFormDTO.contenidoId == null or @owner.ownsContenido(#recompensaFormDTO.contenidoId)) and (#recompensaFormDTO.planAlimenticioId == null or @owner.ownsPlan(#recompensaFormDTO.planAlimenticioId))")
     public ResponseEntity<RecompensaDetailsDTO> create(@Valid @RequestBody RecompensaCreateUpdateDTO recompensaFormDTO) {
         RecompensaDetailsDTO recompensaDetailsDTO = recompensaService.create(recompensaFormDTO);
         return new ResponseEntity<>(recompensaDetailsDTO, HttpStatus.CREATED);
@@ -39,12 +40,14 @@ public class RecompensaController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('NUTRICIONISTA') and @owner.ownsRecompensa(#id) and @owner.isNutritionist(#recompensaFormDTO.nutricionistaId) and (#recompensaFormDTO.contenidoId == null or @owner.ownsContenido(#recompensaFormDTO.contenidoId)) and (#recompensaFormDTO.planAlimenticioId == null or @owner.ownsPlan(#recompensaFormDTO.planAlimenticioId))")
     public ResponseEntity<RecompensaDetailsDTO> update(@PathVariable Integer id, @Valid @RequestBody RecompensaCreateUpdateDTO recompensaFormDTO) {
         RecompensaDetailsDTO updatedRecompensa = recompensaService.update(id, recompensaFormDTO);
         return new ResponseEntity<>(updatedRecompensa, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('NUTRICIONISTA') and @owner.ownsRecompensa(#id)")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         recompensaService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

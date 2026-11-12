@@ -2,6 +2,7 @@ package com.healthybites.api;
 
 import com.healthybites.dto.GrupoCreateDTO;
 import com.healthybites.dto.GrupoDTO;
+import com.healthybites.security.CurrentUser;
 import com.healthybites.service.GrupoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class GrupoController {
     private final GrupoService grupoService;
 
     @GetMapping("/cliente/{id}")
+    @PreAuthorize("hasRole('CLIENTE') and @owner.isClient(#id)")
     public ResponseEntity<List<GrupoDTO>> getAll(@PathVariable Integer id) {
         List<GrupoDTO> grupos = grupoService.getAll(id);
         return new ResponseEntity<>(grupos, HttpStatus.OK);
@@ -28,35 +30,40 @@ public class GrupoController {
 
     @GetMapping
     public ResponseEntity<List<GrupoDTO>> getAllGrupos() {
-        List<GrupoDTO> grupos = grupoService.getAllGrupos();
+        List<GrupoDTO> grupos = grupoService.getAllGrupos(CurrentUser.id());
         return new ResponseEntity<>(grupos, HttpStatus.OK);
     }
 
     @GetMapping("/{grupoId}")
+    @PreAuthorize("hasRole('CLIENTE') and @owner.canReadGrupo(#grupoId)")
     public ResponseEntity<GrupoDTO> getGrupoById(@PathVariable Integer grupoId) {
         GrupoDTO grupo = grupoService.getGrupoById(grupoId);
         return new ResponseEntity<>(grupo, HttpStatus.OK);
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('CLIENTE') and @owner.isClient(#grupoCreateDTO.clienteId)")
     public ResponseEntity<GrupoDTO> create(@Valid @RequestBody GrupoCreateDTO grupoCreateDTO) {
         GrupoDTO grupoDTO = grupoService.create(grupoCreateDTO);
         return new ResponseEntity<>(grupoDTO, HttpStatus.CREATED);
     }
 
     @GetMapping("/{grupoId}/cliente/{clienteId}")
+    @PreAuthorize("hasRole('CLIENTE') and @owner.isClient(#clienteId) and @owner.ownsGrupo(#grupoId)")
     public ResponseEntity<GrupoDTO> getById(@PathVariable Integer clienteId, @PathVariable Integer grupoId) {
         GrupoDTO grupo = grupoService.findByIdAndClienteId(grupoId, clienteId);
         return new ResponseEntity<>(grupo, HttpStatus.OK);
     }
 
     @PutMapping("/{grupoId}/cliente/{clienteId}")
+    @PreAuthorize("hasRole('CLIENTE') and @owner.isClient(#clienteId) and @owner.ownsGrupo(#grupoId) and @owner.isClient(#updatedGrupoDTO.clienteId)")
     public ResponseEntity<GrupoDTO> update(@PathVariable Integer clienteId, @PathVariable Integer grupoId,@Valid @RequestBody GrupoCreateDTO updatedGrupoDTO) {
         GrupoDTO grupo = grupoService.update(grupoId, clienteId, updatedGrupoDTO);
         return new ResponseEntity<>(grupo, HttpStatus.OK);
     }
 
     @DeleteMapping("/{grupoId}/cliente/{clienteId}")
+    @PreAuthorize("hasRole('CLIENTE') and @owner.isClient(#clienteId) and @owner.ownsGrupo(#grupoId)")
     public ResponseEntity<Void> delete(@PathVariable Integer clienteId, @PathVariable Integer grupoId) {
         grupoService.delete(grupoId, clienteId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

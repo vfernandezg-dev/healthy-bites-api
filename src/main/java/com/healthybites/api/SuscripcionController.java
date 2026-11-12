@@ -29,12 +29,14 @@ public class SuscripcionController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('CLIENTE') and @owner.isUser(#suscripcionFormDTO.usuarioId))")
     public ResponseEntity<SuscripcionDetailsDTO> create(@Valid @RequestBody SuscripcionCreateUpdateDTO suscripcionFormDTO) {
         SuscripcionDetailsDTO suscripcionDetailsDTO = suscripcionService.create(suscripcionFormDTO);
         return new ResponseEntity<>(suscripcionDetailsDTO, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('CLIENTE') and @owner.ownsSuscripcion(#id))")
     public ResponseEntity<SuscripcionDetailsDTO> get(@PathVariable Integer id) {
         SuscripcionDetailsDTO suscripcion = suscripcionService.findById(id);
         return new ResponseEntity<>(suscripcion, HttpStatus.OK);

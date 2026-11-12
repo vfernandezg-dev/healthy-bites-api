@@ -18,6 +18,7 @@ public class UserProfileController {
 
     // Actualizar el perfil de un usuario
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('CLIENTE','NUTRICIONISTA') and @owner.isUser(#id)")
     public ResponseEntity<UserProfileDTO> updateProfile(@PathVariable Integer id, @Valid @RequestBody UserProfileDTO profileDTO) {
         UserProfileDTO updatedProfile = usuarioService.updateProfile(id, profileDTO);
         return new ResponseEntity<>(updatedProfile, HttpStatus.OK);
@@ -25,6 +26,7 @@ public class UserProfileController {
 
     // Obtener el perfil de un usuario por su id
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('CLIENTE','NUTRICIONISTA') and @owner.isUser(#id)")
     public ResponseEntity<UserProfileDTO> getUserProfile(@PathVariable Integer id) {
         UserProfileDTO userProfileDTO = usuarioService.getUserProfileById(id);
         return new ResponseEntity<>(userProfileDTO, HttpStatus.OK);

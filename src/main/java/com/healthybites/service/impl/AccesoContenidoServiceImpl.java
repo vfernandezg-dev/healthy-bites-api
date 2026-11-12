@@ -6,12 +6,12 @@ import com.healthybites.model.entity.AccesoContenido;
 import com.healthybites.model.entity.Cliente;
 import com.healthybites.model.entity.Contenido;
 import com.healthybites.model.entity.Suscripcion;
-import com.healthybites.model.enums.TipoSuscripcion;
 import com.healthybites.repository.AccesoContenidoRepository;
 import com.healthybites.repository.ClienteRepository;
 import com.healthybites.repository.ContenidoRepository;
 import com.healthybites.service.AccesoContenidoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -37,11 +37,10 @@ public class AccesoContenidoServiceImpl implements AccesoContenidoService {
 
         Suscripcion suscripcion = cliente.getUsuario().getSuscripcion();
 
-        // Validación de acceso de acuerdo al tipo de suscripción y si el contenido es gratuito o no
-        if (suscripcion != null
-                && suscripcion.getTipoSuscripcion().equals(TipoSuscripcion.BASICO)
-                && !contenido.isEsGratis()) {
-            throw new RuntimeException("No se puede acceder a contenido premium con suscripción básica");
+        // Contenido de pago: solo con una suscripción PREMIUM o VIP pagada. Antes, sin suscripción (o sin pagar)
+        // se concedía el acceso.
+        if (!contenido.isEsGratis() && !Suscripcion.isPremiumActiva(suscripcion)) {
+            throw new AccessDeniedException("Necesitas una suscripción Premium o VIP pagada para este contenido");
         }
 
         LocalDateTime fecha = LocalDateTime.now();
@@ -64,8 +63,8 @@ public class AccesoContenidoServiceImpl implements AccesoContenidoService {
 
         List<Contenido> contenidos;
 
-        if (suscripcion != null && suscripcion.getTipoSuscripcion().equals(TipoSuscripcion.BASICO)) {
-            // Contenidos gratuitos y específicos del cliente en suscripción básica
+        if (!Suscripcion.isPremiumActiva(suscripcion)) {
+            // Sin suscripción premium pagada: contenidos gratuitos y los desbloqueados por el cliente
             contenidos = contenidoRepository.findByEsGratisTrue();
             contenidos.addAll(accesoContenidoRepository.findByCliente(cliente)
                     .stream()
@@ -90,12 +89,8 @@ public class AccesoContenidoServiceImpl implements AccesoContenidoService {
         Cliente cliente = clienteRepository.findById(clientId)
                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
 
-        TipoSuscripcion tipoSuscripcion = cliente.getUsuario().getSuscripcion().getTipoSuscripcion();
-        if (tipoSuscripcion == TipoSuscripcion.BASICO) {
-            return false;
-        } else {
-            return tipoSuscripcion == TipoSuscripcion.PREMIUM || tipoSuscripcion == TipoSuscripcion.VIP;
-        }
+        // Antes fallaba con NullPointerException si el usuario no tenía suscripción y no miraba si estaba pagada.
+        return Suscripcion.isPremiumActiva(cliente.getUsuario().getSuscripcion());
     }
 }
 

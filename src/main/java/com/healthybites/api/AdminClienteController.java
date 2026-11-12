@@ -15,7 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/admin/cliente")
-@PreAuthorize("hasAnyRole('ADMIN','NUTRICIONISTA')")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminClienteController {
 
     private final AdminClienteService adminClienteService;

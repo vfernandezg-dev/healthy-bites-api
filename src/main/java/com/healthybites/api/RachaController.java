@@ -21,6 +21,7 @@ public class RachaController {
     // Metodo para obtener la recompensa a un cliente
     //http://localhost:8080/racha/1/recompensa/1
     @PostMapping("/{clientId}/recompensa/{recompensaId}")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('CLIENTE') and @owner.isClient(#clientId))")
     public ResponseEntity<RecompensaDetailsDTO> addRecompensaToClient(@PathVariable Integer clientId,
                                                                       @PathVariable Integer recompensaId) {
         RecompensaDetailsDTO recompensaDetailsDTO = rachaService.addRecompensaToClient(clientId, recompensaId);
@@ -30,6 +31,7 @@ public class RachaController {
     // Metodo para eliminar la recompensa de un cliente
     //http://localhost:8080/racha/1/remove/1
     @DeleteMapping("/{clientId}/remove/{recompensaId}")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('CLIENTE') and @owner.isClient(#clientId))")
     public ResponseEntity<Void> removeRecompensaFromClient(@PathVariable Integer clientId,
                                                            @PathVariable Integer recompensaId) {
         rachaService.removeRecompensaFromClient(clientId, recompensaId);
@@ -39,6 +41,7 @@ public class RachaController {
     // Metodo para obtener todas las recompensas de un cliente
     //http://localhost:8080/racha/1/all-recompensas
     @GetMapping("/{clientId}/all-recompensas")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('CLIENTE') and @owner.isClient(#clientId))")
     public ResponseEntity<List<RecompensaDetailsDTO>> getAllRecompensasByClient(@PathVariable Integer clientId) {
         List<RecompensaDetailsDTO> recompensas = rachaService.getAllRecompensasByClient(clientId);
         return new ResponseEntity<>(recompensas, HttpStatus.OK);

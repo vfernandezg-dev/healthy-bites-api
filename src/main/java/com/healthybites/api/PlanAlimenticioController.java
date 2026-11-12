@@ -33,24 +33,28 @@ public class PlanAlimenticioController {
     }
 
     @GetMapping("/{planId}")
+    @PreAuthorize("hasRole('NUTRICIONISTA') or (hasRole('CLIENTE') and @owner.canReadPlan(#planId))")
     public ResponseEntity<PlanAlimenticioDTO> getById(@PathVariable Integer planId) {
         PlanAlimenticioDTO planAlimenticio = planAlimenticioService.findById(planId);
         return new ResponseEntity<>(planAlimenticio, HttpStatus.OK);
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('NUTRICIONISTA') and @owner.isNutritionist(#planAlimenticioCreateDTO.nutricionistaId)")
     public ResponseEntity<PlanAlimenticioDTO> create(@Valid @RequestBody PlanAlimenticioCreateDTO planAlimenticioCreateDTO) {
         PlanAlimenticioDTO planAlimenticioDTO = planAlimenticioService.create(planAlimenticioCreateDTO);
         return new ResponseEntity<>(planAlimenticioDTO, HttpStatus.CREATED);
     }
 
     @GetMapping("/{planId}/nutricionista/{nutricionistaId}")
+    @PreAuthorize("hasRole('NUTRICIONISTA') and @owner.isNutritionist(#nutricionistaId) and @owner.ownsPlan(#planId)")
     public ResponseEntity<PlanAlimenticioDTO> getById(@PathVariable Integer nutricionistaId, @PathVariable Integer planId) {
         PlanAlimenticioDTO planAlimenticio = planAlimenticioService.findByIdAndNutricionistaId(planId, nutricionistaId);
         return new ResponseEntity<>(planAlimenticio, HttpStatus.OK);
     }
 
     @PutMapping("/{planId}/nutricionista/{nutricionistaId}")
+    @PreAuthorize("hasRole('NUTRICIONISTA') and @owner.isNutritionist(#nutricionistaId) and @owner.ownsPlan(#planId)")
     public ResponseEntity<PlanAlimenticioDTO> update(@PathVariable Integer nutricionistaId,
                                                      @PathVariable Integer planId,
                                                      @Valid @RequestBody PlanAlimenticioCreateDTO updatedPlanAlimenticioDTO) {
@@ -59,6 +63,7 @@ public class PlanAlimenticioController {
     }
 
     @DeleteMapping("/{planId}/nutricionista/{nutricionistaId}")
+    @PreAuthorize("hasRole('NUTRICIONISTA') and @owner.isNutritionist(#nutricionistaId) and @owner.ownsPlan(#planId)")
     public ResponseEntity<Void> delete(@PathVariable Integer nutricionistaId, @PathVariable Integer planId) {
         planAlimenticioService.delete(planId, nutricionistaId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

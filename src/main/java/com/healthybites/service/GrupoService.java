@@ -8,7 +8,8 @@ import java.util.List;
 
 public interface GrupoService {
     List<GrupoDTO> getAll(Integer id);
-    List<GrupoDTO> getAllGrupos();
+    /** Directorio: grupos públicos y los privados que el usuario creó o a los que pertenece. */
+    List<GrupoDTO> getAllGrupos(Integer usuarioId);
     GrupoDTO getGrupoById(Integer grupoId);
     GrupoDTO findByIdAndClienteId(Integer grupoId, Integer clienteId);
     GrupoDTO create(GrupoCreateDTO grupoCreateDTO);

@@ -32,8 +32,8 @@ public class GrupoServiceImpl implements GrupoService {
     }
 
     @Override
-    public List<GrupoDTO> getAllGrupos() {
-        List<Grupo> grupos = grupoRepository.findAll();
+    public List<GrupoDTO> getAllGrupos(Integer usuarioId) {
+        List<Grupo> grupos = grupoRepository.findVisibleTo(usuarioId);
         return grupos.stream()
                 .map(grupoMapper::toDTO)
                 .toList();

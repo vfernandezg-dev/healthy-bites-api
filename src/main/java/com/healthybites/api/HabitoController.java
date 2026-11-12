@@ -21,30 +21,35 @@ public class HabitoController {
     private final HabitoService habitoService;
 
     @GetMapping("/cliente/{clienteId}")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('CLIENTE') and @owner.isClient(#clienteId))")
     public ResponseEntity<List<HabitoDTO>> getAllHabitosByClienteId(@PathVariable Integer clienteId) {
         List<HabitoDTO> habitos = habitoService.getAll(clienteId);
         return ResponseEntity.ok(habitos);
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('CLIENTE') and @owner.ownsHabito(#id))")
     public ResponseEntity<HabitoDTO> getHabitoById(@PathVariable Integer id) {
         HabitoDTO habitoDTO = habitoService.findById(id);
         return ResponseEntity.ok(habitoDTO);
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('CLIENTE') and @owner.isClient(#habitoCreateDTO.clienteId))")
     public ResponseEntity<HabitoDTO> registrarHabito(@Valid @RequestBody HabitoCreateDTO habitoCreateDTO) {
         HabitoDTO habitoDTO = habitoService.registrarHabito(habitoCreateDTO);
         return new ResponseEntity<>(habitoDTO, HttpStatus.CREATED);
     }
 
     @PutMapping("/{habitoId}")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('CLIENTE') and @owner.ownsHabito(#habitoId) and @owner.isClient(#habitoCreateDTO.clienteId))")
     public ResponseEntity<HabitoDTO> actualizarHabito(@PathVariable Integer habitoId, @Valid @RequestBody HabitoCreateDTO habitoCreateDTO) {
         HabitoDTO habitoDTO = habitoService.actualizarHabito(habitoId, habitoCreateDTO);
         return new ResponseEntity<>(habitoDTO, HttpStatus.OK);
     }
 
     @DeleteMapping("/{habitoId}")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('CLIENTE') and @owner.ownsHabito(#habitoId))")
     public ResponseEntity<Void> deleteHabito(@PathVariable Integer habitoId)    {
         habitoService.delete(habitoId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

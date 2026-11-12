@@ -21,6 +21,7 @@ public class AccesoContenidoController {
     // Metodo para agregar un contenido a un cliente
     //http://localhost:8080/acceso-contenido/1/add-contenido?contentId=1
     @PostMapping("/{clientId}/add-contenido")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('CLIENTE') and @owner.isClient(#clientId))")
     public ResponseEntity<ContenidoDTO> addContentToClient(@PathVariable Integer clientId,
                                                            @RequestParam Integer contentId) {
         ContenidoDTO contenidoDetailsDTO = accesoContenidoService.addContentToClient(clientId, contentId);
@@ -30,6 +31,7 @@ public class AccesoContenidoController {
     // Metodo para eliminar un contenido de un cliente
     //http://localhost:8080/acceso-contenido/1/remove-contenido/1
     @DeleteMapping("/{clientId}/remove-contenido/{contentId}")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('CLIENTE') and @owner.isClient(#clientId))")
     public ResponseEntity<Void> removeContentFromClient(@PathVariable Integer clientId,
                                                         @PathVariable Integer contentId) {
         accesoContenidoService.removeContentFromClient(clientId, contentId);
@@ -39,12 +41,14 @@ public class AccesoContenidoController {
     // Metodo para obtener todos los contenidos de un cliente
     //http://localhost:8080/acceso-contenido/1/all-contenidos
     @GetMapping("/{clientId}/all-contenidos")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('CLIENTE') and @owner.isClient(#clientId))")
     public ResponseEntity<List<ContenidoDTO>> getAllContentByClient(@PathVariable Integer clientId) {
         List<ContenidoDTO> contenidos = accesoContenidoService.getAllContentByClient(clientId);
         return new ResponseEntity<>(contenidos, HttpStatus.OK);
     }
 
     @GetMapping("/{clientId}/contenido/{contentId}")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('CLIENTE') and @owner.isClient(#clientId))")
     public ResponseEntity<ContenidoDTO> getContentForClient(@PathVariable Integer clientId,
                                                             @PathVariable Integer contentId) {
         ContenidoDTO contenidoDetailsDTO = accesoContenidoService.addContentToClient(clientId, contentId);
@@ -52,6 +56,7 @@ public class AccesoContenidoController {
     }
 
     @GetMapping("/{clientId}/is-premium-or-vip")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('CLIENTE') and @owner.isClient(#clientId))")
     public ResponseEntity<Boolean> isClientePremiumOrVip(@PathVariable Integer clientId) {
         boolean isPremiumOrVip = accesoContenidoService.isClientePremiumOrVip(clientId);
         return new ResponseEntity<>(isPremiumOrVip, HttpStatus.OK);

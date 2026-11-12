@@ -18,6 +18,7 @@ public class ClienteController {
 
     // Actualiza el perfil del cliente y, si se indica metaID, tambien esa meta
     @PutMapping("/{id}/perfil")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('CLIENTE') and @owner.isClient(#id) and (#clienteMetaDTO.metaID == null or @owner.ownsMeta(#clienteMetaDTO.metaID)))")
     public ResponseEntity<ClienteMetaDTO> updateProfileAndMeta(@PathVariable Integer id,
                                                                @Valid @RequestBody ClienteMetaDTO clienteMetaDTO) {
         ClienteMetaDTO actualizado = clienteService.actualizarClienteConMeta(id, clienteMetaDTO);

@@ -24,18 +24,21 @@ public class SeguimientoController {
     private final SeguimientoService seguimientoService;
 
     @GetMapping
+    @PreAuthorize("hasRole('CLIENTE') and @owner.ownsMeta(#metaId)")
     public ResponseEntity<List<SeguimientoDTO>> getAll(@PathVariable Integer metaId) {
         List<SeguimientoDTO> seguimientos = seguimientoService.getAll(metaId);
         return new ResponseEntity<>(seguimientos, HttpStatus.OK);
     }
 
     @GetMapping("/cliente/{clienteId}")
+    @PreAuthorize("hasRole('CLIENTE') and @owner.isClient(#clienteId) and @owner.ownsMeta(#metaId)")
     public ResponseEntity<List<SeguimientoDTO>> getAllByClienteId(@PathVariable Integer metaId, @PathVariable Integer clienteId) {
         List<SeguimientoDTO> seguimientos = seguimientoService.getAllSeguimientosByMetaIdAndClienteId(metaId, clienteId);
         return new ResponseEntity<>(seguimientos, HttpStatus.OK);
     }
 
     @GetMapping("/cliente/{clienteId}/page")
+    @PreAuthorize("hasRole('CLIENTE') and @owner.isClient(#clienteId) and @owner.ownsMeta(#metaId)")
     public ResponseEntity<Page<SeguimientoDTO>> paginateByClienteId(
             @PathVariable Integer metaId,
             @PathVariable Integer clienteId,
@@ -45,6 +48,7 @@ public class SeguimientoController {
     }
 
     @GetMapping("/page")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<SeguimientoDTO>>paginate(
             @PageableDefault(size = 5, sort = "fecha") Pageable pageable) {
         Page<SeguimientoDTO> page = seguimientoService.paginate(pageable);
@@ -52,18 +56,21 @@ public class SeguimientoController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('CLIENTE') and @owner.ownsMeta(#metaId)")
     public ResponseEntity<SeguimientoDTO> create(@PathVariable Integer metaId, @Valid @RequestBody SeguimientoCreateDTO seguimientoCreateDTO) {
         SeguimientoDTO seguimientoDTO = seguimientoService.create(metaId, seguimientoCreateDTO);
         return new ResponseEntity<>(seguimientoDTO, HttpStatus.CREATED);
     }
 
     @GetMapping("/{seguimientoId}")
+    @PreAuthorize("hasRole('CLIENTE') and @owner.ownsSeguimiento(#metaId, #seguimientoId)")
     public ResponseEntity<SeguimientoDTO> getById(@PathVariable Integer metaId, @PathVariable Integer seguimientoId) {
         SeguimientoDTO seguimiento = seguimientoService.findByIdAndMetaId(seguimientoId, metaId);
         return new ResponseEntity<>(seguimiento, HttpStatus.OK);
     }
 
     @PutMapping("/{seguimientoId}")
+    @PreAuthorize("hasRole('CLIENTE') and @owner.ownsSeguimiento(#metaId, #seguimientoId)")
     public ResponseEntity<SeguimientoDTO> update(@PathVariable Integer metaId,
                                                   @PathVariable Integer seguimientoId,
                                                   @Valid @RequestBody SeguimientoCreateDTO updatedSeguimientoDTO) {
@@ -72,6 +79,7 @@ public class SeguimientoController {
     }
 
     @DeleteMapping("/{seguimientoId}")
+    @PreAuthorize("hasRole('CLIENTE') and @owner.ownsSeguimiento(#metaId, #seguimientoId)")
     public ResponseEntity<Void> delete(@PathVariable Integer metaId, @PathVariable Integer seguimientoId) {
         seguimientoService.delete(metaId, seguimientoId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

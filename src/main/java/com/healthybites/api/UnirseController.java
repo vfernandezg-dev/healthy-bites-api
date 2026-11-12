@@ -19,6 +19,7 @@ public class UnirseController {
     // Method to add a client to a group
     //http://localhost:8080/unirse/1/add-grupo?groupId=1
     @PostMapping("/{clientId}/add-grupo")
+    @PreAuthorize("hasRole('CLIENTE') and @owner.isClient(#clientId) and @owner.canJoinGrupo(#groupId)")
     public ResponseEntity<GrupoDTO> addClientToGroup(@PathVariable Integer clientId,
                                                      @RequestParam Integer groupId) {
         GrupoDTO grupoDTO = unirseService.addClientToGroup(clientId, groupId);
@@ -28,6 +29,7 @@ public class UnirseController {
     // Method to remove a client from a group
     //http://localhost:8080/unirse/1/remove-grupo/1
     @DeleteMapping("/{clientId}/remove-grupo/{groupId}")
+    @PreAuthorize("hasRole('CLIENTE') and @owner.isClient(#clientId)")
     public ResponseEntity<Void> removeClientFromGroup(@PathVariable Integer clientId,
                                                       @PathVariable Integer groupId) {
         unirseService.removeClientFromGroup(clientId, groupId);

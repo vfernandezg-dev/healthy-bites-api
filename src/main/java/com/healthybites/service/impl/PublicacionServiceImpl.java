@@ -26,8 +26,8 @@ public class PublicacionServiceImpl implements PublicacionService {
     private final PublicacionMapper publicacionMapper;
 
     @Override
-    public List<PublicacionDTO> getAll() {
-        List<Publicacion> publicaciones = publicacionRepository.findAll();
+    public List<PublicacionDTO> getFeed(Integer usuarioId) {
+        List<Publicacion> publicaciones = publicacionRepository.findVisibleTo(usuarioId);
         return publicaciones.stream()
                 .map(publicacionMapper::toDTO)
                 .toList();

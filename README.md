@@ -116,6 +116,7 @@ PostgreSQL efímero con [Testcontainers](https://testcontainers.com) y el seed d
 - `HealthyBitesApplicationTests`: login, registro, un flujo de cliente, uno de nutricionista y el
   formulario de contacto de la landing, de extremo a extremo.
 - `CriticalSecurityFixesTests`: regresiones de los agujeros de seguridad cerrados.
+- `AuthorizationTests`: matriz de accesos cruzados entre usuarios, acceso premium, grupos privados y rachas.
 - `ErrorResponsesTests`: formato de los errores.
 
 El resto son pruebas unitarias y de controlador (Mockito y MockMvc).
@@ -155,6 +156,12 @@ La aplicación **no arranca** si falta un secreto obligatorio o si `JWT_SECRET` 
   `X-Requested-With` y un `Origin` permitido (defensa CSRF además de SameSite).
 - Los refresh tokens se guardan solo como hash SHA-256. El login tiene límite de intentos fallidos (por cuenta e IP,
   con `Retry-After`).
+- **Autorización por propietario.** La identidad sale siempre del access token: los ids de la ruta o del cuerpo
+  solo se comparan con ella (`@PreAuthorize` + `OwnershipPolicy`). Un cliente no ve ni toca datos de otro, un
+  nutricionista solo gestiona sus planes, contenidos y recompensas, y `/admin/**` es solo de ADMIN.
+- **Acceso premium en el servidor.** Un contenido o plan de pago solo se abre con suscripción Premium/VIP **pagada**
+  o desbloqueándolo con una recompensa; el catálogo no entrega el fichero de lo que está bloqueado.
+- **Comunidad.** Los grupos privados (y sus publicaciones y comentarios) solo los ven su creador y sus miembros.
 - CORS por listas blancas, cabeceras de seguridad (CSP, `nosniff`, `Referrer-Policy`, `X-Frame-Options`) y Actuator
   limitado a `/actuator/health` (liveness y readiness).
 

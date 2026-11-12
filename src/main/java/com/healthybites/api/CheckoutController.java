@@ -19,6 +19,7 @@ public class CheckoutController {
     private final CheckoutService checkoutService;
 
     @PostMapping("/create")
+    @PreAuthorize("hasRole('CLIENTE') and @owner.ownsSuscripcion(#suscripcionId)")
     public ResponseEntity<PaymentOrderResponse> createPaymentOrder(
             @RequestParam Integer suscripcionId,
             @RequestParam String returnUrl,

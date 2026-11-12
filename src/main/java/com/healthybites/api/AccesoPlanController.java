@@ -21,6 +21,7 @@ public class AccesoPlanController {
     // Metodo para agregar un plan a un cliente
     //http://localhost:8080/acceso-plan/1/add-plan?planId=1
     @PostMapping("/{clientId}/add-plan")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('CLIENTE') and @owner.isClient(#clientId))")
     public ResponseEntity<PlanAlimenticioDTO> addPlanToClient(@PathVariable Integer clientId,
                                                               @RequestParam Integer planId) {
         PlanAlimenticioDTO planAlimenticioDTO = accesoPlanService.addPlanToClient(clientId, planId);
@@ -30,6 +31,7 @@ public class AccesoPlanController {
     // Metodo para eliminar un plan de un cliente
     //http://localhost:8080/acceso-plan/1/remove-plan/1
     @DeleteMapping("/{clientId}/remove-plan/{planId}")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('CLIENTE') and @owner.isClient(#clientId))")
     public ResponseEntity<Void> removePlanFromClient(@PathVariable Integer clientId,
                                                      @PathVariable Integer planId) {
         accesoPlanService.removePlanFromClient(clientId, planId);
@@ -39,12 +41,14 @@ public class AccesoPlanController {
     // Metodo para obtener todos los planes de un cliente
     //http://localhost:8080/acceso-plan/1/all-planes
     @GetMapping("/{clientId}/all-planes")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('CLIENTE') and @owner.isClient(#clientId))")
     public ResponseEntity<List<PlanAlimenticioDTO>> getAllPlansByClient(@PathVariable Integer clientId) {
         List<PlanAlimenticioDTO> planes = accesoPlanService.getAllPlansByClient(clientId);
         return new ResponseEntity<>(planes, HttpStatus.OK);
     }
 
     @GetMapping("/{clientId}/is-premium-or-vip")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('CLIENTE') and @owner.isClient(#clientId))")
     public ResponseEntity<Boolean> isClientePremiumOrVip(@PathVariable Integer clientId) {
         boolean isPremiumOrVip = accesoPlanService.isClientePremiumOrVip(clientId);
         return new ResponseEntity<>(isPremiumOrVip, HttpStatus.OK);

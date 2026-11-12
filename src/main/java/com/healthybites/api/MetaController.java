@@ -21,24 +21,28 @@ public class MetaController {
     private final MetaService metaService;
 
     @GetMapping("/cliente/{id}")
+    @PreAuthorize("hasRole('CLIENTE') and @owner.isClient(#id)")
     public ResponseEntity<List<MetaDTO>> getAll(@PathVariable Integer id) {
         List<MetaDTO> metas = metaService.getAll(id);
         return new ResponseEntity<>(metas, HttpStatus.OK);
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('CLIENTE') and @owner.isClient(#metaCreateDTO.clienteId)")
     public ResponseEntity<MetaDTO> create(@Valid @RequestBody MetaCreateDTO metaCreateDTO) {
         MetaDTO createdMeta = metaService.create(metaCreateDTO);
         return new ResponseEntity<>(createdMeta, HttpStatus.CREATED);
     }
 
     @GetMapping("/{metaId}/cliente/{clienteId}")
+    @PreAuthorize("hasRole('CLIENTE') and @owner.isClient(#clienteId) and @owner.ownsMeta(#metaId)")
     public ResponseEntity<MetaDTO> getById(@PathVariable Integer clienteId, @PathVariable Integer metaId) {
         MetaDTO meta = metaService.findByIdAndClienteId(metaId, clienteId);
         return new ResponseEntity<>(meta, HttpStatus.OK);
     }
 
     @PutMapping("/{metaId}/cliente/{clienteId}")
+    @PreAuthorize("hasRole('CLIENTE') and @owner.isClient(#clienteId) and @owner.ownsMeta(#metaId) and @owner.isClient(#updatedMetaDTO.clienteId)")
     public ResponseEntity<MetaDTO> update(@PathVariable Integer clienteId,
                                           @PathVariable Integer metaId,
                                           @Valid @RequestBody MetaCreateDTO updatedMetaDTO) {
@@ -47,6 +51,7 @@ public class MetaController {
     }
 
     @DeleteMapping("/{metaId}/cliente/{clienteId}")
+    @PreAuthorize("hasRole('CLIENTE') and @owner.isClient(#clienteId) and @owner.ownsMeta(#metaId)")
     public ResponseEntity<Void> delete(@PathVariable Integer clienteId, @PathVariable Integer metaId) {
         metaService.delete(metaId, clienteId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

@@ -23,7 +23,7 @@ public interface UnirseRepository extends JpaRepository<Unirse, UnirsePK> {
     @Modifying
     @Transactional
     @Query(value = "DELETE FROM unirse WHERE cliente_id = :clienteId AND grupo_id = :grupoId", nativeQuery = true)
-    void deleteByClienteAndGrupo(@Param("clienteId") Integer clienteId, @Param("grupoId") Integer grupoId);
+    int deleteByClienteAndGrupo(@Param("clienteId") Integer clienteId, @Param("grupoId") Integer grupoId);
 
     @Query(value = "SELECT COUNT(*) > 0 FROM unirse WHERE cliente_id = :clienteId AND grupo_id = :grupoId", nativeQuery = true)
     boolean existsByClienteIdAndGrupoId(@Param("clienteId") Integer clienteId, @Param("grupoId") Integer grupoId);

@@ -34,4 +34,15 @@ public class Suscripcion {
     @JoinColumn(name = "id_usuario", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "FK_suscripcion_usuario"))
     private Usuario usuario;
+
+    /** Da acceso al contenido y a los planes de pago: PREMIUM o VIP, y pagada. */
+    public boolean isPremiumActiva() {
+        return estadoPago == EstadoPago.PAGADO
+                && (tipoSuscripcion == TipoSuscripcion.PREMIUM || tipoSuscripcion == TipoSuscripcion.VIP);
+    }
+
+    /** Null-safe: sin suscripción no hay acceso premium. */
+    public static boolean isPremiumActiva(Suscripcion suscripcion) {
+        return suscripcion != null && suscripcion.isPremiumActiva();
+    }
 }

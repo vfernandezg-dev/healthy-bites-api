@@ -8,12 +8,16 @@ import com.healthybites.model.entity.*;
 import com.healthybites.repository.*;
 import com.healthybites.service.HabitoService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @RequiredArgsConstructor
+@Slf4j
 @Service
 public class HabitoServiceImpl implements HabitoService {
 
@@ -40,6 +44,7 @@ public class HabitoServiceImpl implements HabitoService {
     }
 
     @Override
+    @Transactional
     public HabitoDTO registrarHabito(HabitoCreateDTO habitoCreateDTO) {
         LocalDateTime now = LocalDateTime.now();
         Integer clienteId = habitoCreateDTO.getClienteId();
@@ -80,14 +85,23 @@ public class HabitoServiceImpl implements HabitoService {
     private void incrementarContadorRachas(Integer clienteId, LocalDateTime now) {
         List<Racha> rachas = rachaRepository.findByCliente(clienteId);
 
+        LocalDate today = now.toLocalDate();
         for (Racha racha : rachas) {
             if (!racha.isEntregada()) {
-                racha.setContadorDias(racha.getContadorDias() + 1);
+                // Como mucho un día por fecha (antes cada hábito registrado sumaba un día y se podían desbloquear
+                // recompensas en segundos); un día sin registro reinicia la racha.
+                LocalDate last = racha.getUltimaFechaRegistro() == null ? null : racha.getUltimaFechaRegistro().toLocalDate();
+                boolean started = racha.getContadorDias() > 0;
+                if (started && today.equals(last)) {
+                    continue;
+                }
+                boolean consecutive = started && last != null && last.plusDays(1).equals(today);
+                racha.setContadorDias(consecutive ? racha.getContadorDias() + 1 : 1);
                 racha.setUltimaFechaRegistro(now);
 
                 Recompensa recompensa = racha.getRecompensa();
                 if (racha.getContadorDias() >= recompensa.getDiasRequeridos()) {
-                    System.out.println("¡Felicidades! Has alcanzado una recompensa.");
+                    log.info("Recompensa {} conseguida por el cliente {}", recompensa.getId(), clienteId);
                     racha.setEntregada(true);
 
                     // Verifica el tipo de recompensa

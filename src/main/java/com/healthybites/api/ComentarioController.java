@@ -22,30 +22,35 @@ public class ComentarioController {
     private final ComentarioService comentarioService;
 
     @GetMapping
+    @PreAuthorize("hasRole('CLIENTE') and @owner.canReadPublicacion(#publicacionId)")
     public ResponseEntity<List<ComentarioDTO>> getAll(@PathVariable Integer publicacionId) {
         List<ComentarioDTO> comentarios = comentarioService.getAll(publicacionId);
         return new ResponseEntity<>(comentarios, HttpStatus.OK);
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('CLIENTE') and @owner.canReadPublicacion(#publicacionId) and @owner.isClient(#comentarioCreateDTO.clienteId)")
     public ResponseEntity<ComentarioDTO> create(@PathVariable Integer publicacionId, @Valid @RequestBody ComentarioCreateDTO comentarioCreateDTO) {
         ComentarioDTO comentarioDTO = comentarioService.create(publicacionId, comentarioCreateDTO);
         return new ResponseEntity<>(comentarioDTO, HttpStatus.CREATED);
     }
 
     @GetMapping("/{comentarioId}")
+    @PreAuthorize("hasRole('CLIENTE') and @owner.canReadPublicacion(#publicacionId)")
     public ResponseEntity<ComentarioDTO> getById(@PathVariable Integer publicacionId, @PathVariable Integer comentarioId) {
         ComentarioDTO comentario = comentarioService.findByIdAndPublicacionId(comentarioId, publicacionId);
         return new ResponseEntity<>(comentario, HttpStatus.OK);
     }
 
     @PutMapping("/{comentarioId}")
+    @PreAuthorize("hasRole('CLIENTE') and @owner.ownsComentario(#publicacionId, #comentarioId) and @owner.isClient(#updatedComentarioDTO.clienteId)")
     public ResponseEntity<ComentarioDTO> update(@PathVariable Integer publicacionId, @PathVariable Integer comentarioId, @Valid @RequestBody ComentarioCreateDTO updatedComentarioDTO) {
         ComentarioDTO comentario = comentarioService.update(comentarioId, publicacionId, updatedComentarioDTO);
         return new ResponseEntity<>(comentario, HttpStatus.OK);
     }
 
     @DeleteMapping("/{comentarioId}")
+    @PreAuthorize("hasRole('CLIENTE') and @owner.ownsComentario(#publicacionId, #comentarioId)")
     public ResponseEntity<Void> delete(@PathVariable Integer publicacionId, @PathVariable Integer comentarioId) {
         comentarioService.delete(comentarioId, publicacionId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
