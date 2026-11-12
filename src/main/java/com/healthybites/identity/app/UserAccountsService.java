@@ -4,10 +4,12 @@ import com.healthybites.identity.UserAccount;
 import com.healthybites.identity.UserAccounts;
 import com.healthybites.identity.domain.User;
 import com.healthybites.identity.domain.UserRepository;
+import com.healthybites.shared.persistence.TextSearch;
 import com.healthybites.shared.web.ApiException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
@@ -36,6 +38,14 @@ class UserAccountsService implements UserAccounts {
         return users.findAllById(ids).stream()
                 .map(User::toAccount)
                 .collect(Collectors.toUnmodifiableMap(UserAccount::id, account -> account));
+    }
+
+    @Override
+    public Set<UUID> matching(Collection<UUID> ids, String text) {
+        if (ids.isEmpty() || text.isBlank()) {
+            return Set.of();
+        }
+        return Set.copyOf(users.findIdsMatching(ids, TextSearch.containsPattern(text)));
     }
 
     @Override

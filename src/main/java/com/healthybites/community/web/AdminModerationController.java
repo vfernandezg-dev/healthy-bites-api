@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.Set;
 import java.util.UUID;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -38,7 +39,8 @@ class AdminModerationController {
     @GetMapping("/reports")
     PagedModel<ReportResponse> reports(
             @RequestParam(defaultValue = "OPEN") ModerationReport.Status status,
-            @PageableDefault(sort = "createdAt", direction = Sort.Direction.ASC) Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.ASC)
+                    Pageable pageable) {
         return new PagedModel<>(moderation
                 .reports(status, Sorting.restrict(pageable, Set.of("createdAt")))
                 .map(ReportResponse::of));

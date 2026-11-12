@@ -6,9 +6,13 @@ import com.healthybites.content.domain.ContentItemRepository;
 import com.healthybites.content.domain.Slugs;
 import com.healthybites.media.MediaFiles;
 import com.healthybites.media.MediaPurpose;
+import com.healthybites.shared.domain.PublicationStatus;
 import com.healthybites.shared.web.ApiException;
 import java.time.Clock;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -35,8 +39,22 @@ public class NutritionistContentService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ContentCard> mine(UUID authorId, Pageable pageable) {
-        return items.findByAuthorId(authorId, pageable).map(item -> contents.card(item, null, false));
+    public Page<ContentCard> mine(UUID authorId, @Nullable PublicationStatus status, Pageable pageable) {
+        Page<ContentItem> page = status == null
+                ? items.findByAuthorId(authorId, pageable)
+                : items.findByAuthorIdAndStatus(authorId, status, pageable);
+        return page.map(item -> contents.card(item, null, false));
+    }
+
+    /** Cuántos contenidos tiene en cada estado (todos los estados, con cero si no hay). */
+    @Transactional(readOnly = true)
+    public Map<PublicationStatus, Long> countByStatus(UUID authorId) {
+        Map<PublicationStatus, Long> counts = new EnumMap<>(PublicationStatus.class);
+        for (PublicationStatus status : PublicationStatus.values()) {
+            counts.put(status, 0L);
+        }
+        items.countByStatus(authorId).forEach(row -> counts.put(row.getStatus(), row.getTotal()));
+        return counts;
     }
 
     @Transactional(readOnly = true)

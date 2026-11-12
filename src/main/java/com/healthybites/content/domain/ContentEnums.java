@@ -17,12 +17,6 @@ public final class ContentEnums {
         MENTAL_HEALTH
     }
 
-    public enum ContentStatus {
-        DRAFT,
-        PUBLISHED,
-        ARCHIVED
-    }
-
     public enum UnlockSource {
         REWARD,
         ADMIN

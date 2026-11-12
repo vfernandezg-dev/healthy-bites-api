@@ -34,7 +34,6 @@ public class EntitlementsService implements Entitlements {
     /** La suscripción vigente de nivel más alto (y, a igual nivel, la que termina más tarde). */
     Optional<Subscription> grantingSubscription(UUID userId, Instant now) {
         return subscriptions.findGrantingAccess(userId, now).stream()
-                .filter(subscription -> subscription.grantsAccessAt(now))
                 .max(Comparator.comparing(Subscription::getTier)
                         .thenComparing(
                                 subscription -> subscription.getCurrentPeriodEnd(),

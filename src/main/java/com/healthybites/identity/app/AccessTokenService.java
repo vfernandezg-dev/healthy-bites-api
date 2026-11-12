@@ -44,7 +44,6 @@ public class AccessTokenService {
                 .issuedAt(now)
                 .expiresAt(expiresAt)
                 .claim(TokenClaims.ROLES, List.of(account.role().name()))
-                .claim(TokenClaims.EMAIL, account.email())
                 .build();
         // El algoritmo se fija explícitamente en la cabecera: el decoder solo acepta HS512.
         JwsHeader header = JwsHeader.with(MacAlgorithm.HS512).type("JWT").build();

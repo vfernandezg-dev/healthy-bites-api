@@ -5,20 +5,15 @@ import com.healthybites.billing.domain.Payment;
 import com.healthybites.billing.domain.PaymentRepository;
 import com.healthybites.billing.domain.PaymentStatus;
 import com.healthybites.billing.domain.Subscription;
-import com.healthybites.billing.domain.SubscriptionPlan;
-import com.healthybites.billing.domain.SubscriptionPlanRepository;
 import com.healthybites.billing.domain.SubscriptionRepository;
 import com.healthybites.billing.domain.SubscriptionStatus;
 import com.healthybites.shared.domain.Money;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,17 +28,11 @@ public class BillingAdminService {
 
     private final SubscriptionRepository subscriptions;
     private final PaymentRepository payments;
-    private final SubscriptionPlanRepository plans;
     private final Clock clock;
 
-    public BillingAdminService(
-            SubscriptionRepository subscriptions,
-            PaymentRepository payments,
-            SubscriptionPlanRepository plans,
-            Clock clock) {
+    public BillingAdminService(SubscriptionRepository subscriptions, PaymentRepository payments, Clock clock) {
         this.subscriptions = subscriptions;
         this.payments = payments;
-        this.plans = plans;
         this.clock = clock;
     }
 
@@ -86,25 +75,11 @@ public class BillingAdminService {
         activeByTier.put(Tier.VIP, 0L);
         subscriptions.countGrantingAccessByTier(now).forEach(row -> activeByTier.put(row.getTier(), row.getTotal()));
 
-        Map<String, BigDecimal> mrr = new TreeMap<>();
-        for (Subscription subscription :
-                subscriptions.findAll((root, query, cb) -> cb.equal(root.get("status"), SubscriptionStatus.ACTIVE))) {
-            if (!subscription.grantsAccessAt(now)) {
-                continue;
-            }
-            SubscriptionPlan plan = plans.findById(subscription.getPlanId()).orElseThrow();
-            BigDecimal monthly = plan.getPrice()
-                    .amount()
-                    .multiply(BigDecimal.valueOf(30))
-                    .divide(BigDecimal.valueOf(plan.getPeriodDays()), 2, RoundingMode.HALF_UP);
-            mrr.merge(plan.getPrice().currency(), monthly, BigDecimal::add);
-        }
-
         List<PaymentRepository.Revenue> revenue = payments.revenueSince(now.minus(Duration.ofDays(30)));
         return new Summary(
                 activeByTier,
-                mrr.entrySet().stream()
-                        .map(e -> new Money(e.getValue(), e.getKey()))
+                subscriptions.monthlyRecurringRevenue(now).stream()
+                        .map(row -> new Money(row.getTotal(), row.getCurrency()))
                         .toList(),
                 revenue.stream()
                         .map(r -> new Money(r.getTotal(), r.getCurrency()))

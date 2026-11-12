@@ -1,8 +1,8 @@
 package com.healthybites.identity.domain;
 
-import com.healthybites.identity.Role;
 import com.healthybites.identity.UserAccount;
 import com.healthybites.shared.domain.BaseEntity;
+import com.healthybites.shared.security.Role;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

@@ -9,11 +9,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.healthybites.identity.Role;
 import com.healthybites.identity.domain.RefreshToken;
 import com.healthybites.identity.domain.RefreshTokenRepository;
 import com.healthybites.identity.domain.User;
 import com.healthybites.shared.security.OpaqueTokens;
+import com.healthybites.shared.security.Role;
 import com.healthybites.support.MutableClock;
 import java.time.Duration;
 import java.time.Instant;
@@ -55,7 +55,7 @@ class RefreshTokenServiceTests {
 
         assertThat(next.value()).isNotBlank().isNotEqualTo("valor-actual");
         assertThat(next.expiresAt()).isEqualTo(clock.instant().plus(Duration.ofDays(7)));
-        assertThat(current.isRevoked()).isTrue();
+        assertThat(current.getRevokedAt()).isNotNull();
         assertThat(current.getReplacedById()).isEqualTo(NEXT_ID);
     }
 

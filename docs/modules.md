@@ -26,7 +26,6 @@ flowchart LR
     content --> billing
     content --> identity
     content --> media
-    media --> identity
     notifications --> billing
     notifications --> community
     notifications --> identity
@@ -52,7 +51,7 @@ flowchart LR
 | Contact | `com.healthybites.contact` | shared | — | — |
 | Content | `com.healthybites.content` | billing, identity, media, shared | — | — |
 | Identity | `com.healthybites.identity` | shared | UserDeactivated, UserRegistered | — |
-| Media | `com.healthybites.media` | identity, shared | — | — |
+| Media | `com.healthybites.media` | shared | — | — |
 | Notifications | `com.healthybites.notifications` | billing, community, identity, rewards, shared | — | MembershipRequested, RewardEarned, SubscriptionActivated, SubscriptionExpired, UserRegistered |
 | Nutrition | `com.healthybites.nutrition` | billing, identity, profiles, shared | — | — |
 | Profiles | `com.healthybites.profiles` | identity, shared | — | — |

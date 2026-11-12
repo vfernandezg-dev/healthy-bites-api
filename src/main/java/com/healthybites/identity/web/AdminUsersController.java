@@ -1,17 +1,18 @@
 package com.healthybites.identity.web;
 
-import com.healthybites.identity.Role;
 import com.healthybites.identity.app.AdminUserService;
 import com.healthybites.identity.domain.UserStatus;
 import com.healthybites.identity.web.AdminDtos.AdminUserResponse;
 import com.healthybites.identity.web.AdminDtos.UserSummaryResponse;
 import com.healthybites.shared.security.CurrentUser;
+import com.healthybites.shared.security.Role;
 import com.healthybites.shared.web.Sorting;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Set;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -42,7 +43,8 @@ class AdminUsersController {
             @RequestParam(required = false) @Nullable Role role,
             @RequestParam(required = false) @Nullable UserStatus status,
             @RequestParam(required = false) @Nullable String q,
-            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
+                    Pageable pageable) {
         return new PagedModel<>(adminUsers
                 .search(role, status, q, Sorting.restrict(pageable, SORTABLE))
                 .map(AdminUserResponse::of));

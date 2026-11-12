@@ -88,10 +88,7 @@ final class BillingDtos {
     record CustomerResponse(UUID id, String name, String email) {
 
         static @Nullable CustomerResponse of(@Nullable UserAccount account) {
-            return account == null
-                    ? null
-                    : new CustomerResponse(
-                            account.id(), account.firstName() + " " + account.lastName(), account.email());
+            return account == null ? null : new CustomerResponse(account.id(), account.fullName(), account.email());
         }
     }
 

@@ -1,4 +1,4 @@
-# Servicios locales de Healthy Bites: PostgreSQL y Mailpit.
+# Servicios locales de Healthy Bites: PostgreSQL y Mailpit (y un S3 de pruebas opcional, perfil s3).
 #
 # `./mvnw spring-boot:run` los levanta solo (spring-boot-docker-compose) y conecta la BD automáticamente.
 # A mano:
@@ -37,6 +37,19 @@ services:
     ports:
       - "127.0.0.1:1025:1025"
       - "127.0.0.1:8025:8025"
+
+  # Almacenamiento S3 de pruebas (opcional, para probar STORAGE_TYPE=s3 y varias instancias en local):
+  #   docker compose --profile s3 up -d s3
+  #   STORAGE_TYPE=s3 S3_ENDPOINT=http://127.0.0.1:9090 S3_BUCKET=healthybites S3_ACCESS_KEY=local S3_SECRET_KEY=local
+  # No comprueba las firmas ni guarda nada al borrar el contenedor: solo para desarrollo.
+  s3:
+    image: adobe/s3mock:4.9.1
+    container_name: healthybites-s3
+    profiles: ["s3"]
+    environment:
+      COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS: healthybites
+    ports:
+      - "127.0.0.1:9090:9090"
 
 volumes:
   healthybites-pgdata-18:

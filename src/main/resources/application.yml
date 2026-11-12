@@ -12,6 +12,12 @@ spring:
     url: ${DB_URL:}
     username: ${DB_USERNAME:}
     password: ${DB_PASSWORD:}
+    # Con hilos virtuales no hay tope de peticiones simultáneas: el pool es el límite real. Una petición que no
+    # consigue conexión en 5 s responde 503 (database-unavailable) en vez de esperar 30 s. Con varias instancias,
+    # instancias × DB_POOL_SIZE debe quedar por debajo del límite de conexiones de la base de datos.
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+      connection-timeout: 5000
 
   # El esquema lo crean las migraciones de Flyway (src/main/resources/db/migration); Hibernate solo comprueba que
   # las entidades coinciden con él.
@@ -24,19 +30,33 @@ spring:
       # Entre corchetes para conservar el "_" de la clave al enlazarla al mapa de propiedades de Hibernate.
       "[hibernate.format_sql]": true
       "[hibernate.jdbc.time_zone]": UTC
+      # Escrituras agrupadas (los ids UUIDv7 los genera la aplicación, así que los INSERT también se agrupan) y
+      # colecciones perezosas cargadas por lotes en lugar de una consulta por entidad.
+      "[hibernate.jdbc.batch_size]": 50
+      "[hibernate.order_inserts]": true
+      "[hibernate.order_updates]": true
+      "[hibernate.default_batch_fetch_size]": 50
+      # Paginar sobre un fetch join de una colección paginaría en memoria: mejor un error en los tests.
+      "[hibernate.query.fail_on_pagination_over_collection_fetch]": true
 
   flyway:
     locations: classpath:db/migration
 
   # Eventos entre módulos: se guardan en event_publication (lo crea la migración V1) hasta que su listener
-  # termina; los que quedan a medias se reintentan al arrancar.
+  # termina. Los que se quedan a medias (una instancia que se cae) pasan a fallidos a los 15 minutos y los reintenta
+  # FailedEventRetryJob en una sola instancia. No se reenvían al arrancar: con varias réplicas se duplicarían
+  # eventos que otra instancia está procesando.
   modulith:
     events:
       jdbc:
         schema-initialization:
           enabled: false
       completion-mode: delete
-      republish-outstanding-events-on-restart: true
+      republish-outstanding-events-on-restart: false
+      staleness:
+        published: PT15M
+        processing: PT15M
+        resubmitted: PT15M
 
   threads:
     virtual:
@@ -122,6 +142,29 @@ healthybites:
     # Zona horaria de las fechas que leen las personas (correos). La API trabaja siempre en UTC.
     time-zone: ${APP_TIME_ZONE:America/Lima}
   security:
+    # Dónde se cuentan los límites de peticiones (login, registro, contacto...): jdbc (PostgreSQL, compartido por
+    # todas las instancias) o memory (cada instancia por su cuenta; solo con una instancia).
+    rate-limit:
+      store: ${RATE_LIMIT_STORE:jdbc}
+      # Inicio de sesión: fallos por cuenta (desde una IP) y por IP en la ventana; tras un login correcto, la cuenta
+      # vuelve a empezar.
+      login-per-account: 5
+      login-per-ip: 20
+      login-window: PT15M
+      refresh-per-ip: 60
+      refresh-window: PT5M
+      # Solicitudes de restablecimiento de contraseña (cuentan existan o no las cuentas).
+      password-reset-per-account: 3
+      password-reset-per-ip: 10
+      password-reset-window: PT1H
+      # Registros públicos de clientes desde una misma IP.
+      registrations-per-ip: 10
+      registration-window: PT1H
+    # Validez del enlace para restablecer la contraseña y de las invitaciones de nutricionistas.
+    password-reset:
+      token-ttl: PT30M
+    invitations:
+      validity: P7D
     jwt:
       secret: ${JWT_SECRET:}
       access-token-ttl: ${JWT_ACCESS_TOKEN_TTL:PT15M}
@@ -142,9 +185,19 @@ healthybites:
     client-id: ${PAYPAL_CLIENT_ID:}
     client-secret: ${PAYPAL_CLIENT_SECRET:}
     api-base: ${PAYPAL_API_BASE:https://api-m.sandbox.paypal.com}
+  # Ficheros subidos: local (una carpeta; solo con una instancia y disco persistente) o s3 (Cloudflare R2, AWS S3...;
+  # compartido por todas las instancias). Con s3, el navegador los lee con URLs prefirmadas, sin pasar por la API.
   storage:
-    # Carpeta de los ficheros subidos (fuera del repo; nunca mediafiles/).
+    type: ${STORAGE_TYPE:local}
+    # Carpeta de los ficheros subidos con type=local (fuera del repo; nunca mediafiles/).
     location: ${STORAGE_LOCATION:uploads}
+    s3:
+      endpoint: ${S3_ENDPOINT:}
+      bucket: ${S3_BUCKET:}
+      access-key: ${S3_ACCESS_KEY:}
+      secret-key: ${S3_SECRET_KEY:}
+      region: ${S3_REGION:auto}
+      path-style: ${S3_PATH_STYLE:true}
   openapi:
     contact-email: ${OPENAPI_CONTACT_EMAIL:projects@vfernandezg.dev}
   # Formulario de contacto de la landing page (POST /api/v1/contact)

@@ -102,14 +102,20 @@ solo despliegue, pero cada funcionalidad vive en su módulo con fronteras que se
 | Eventos persistidos entre módulos                           | [0005](docs/adr/0005-eventos-persistidos.md)         |
 | Errores RFC 9457 con código estable                         | [0006](docs/adr/0006-errores-rfc-9457.md)            |
 | Contrato OpenAPI versionado y tipos generados en el web-app | [0007](docs/adr/0007-contrato-openapi.md)            |
+| Ficheros en un almacenamiento de objetos S3-compatible      | [0008](docs/adr/0008-almacenamiento-de-objetos.md)   |
+| REST estandarizado en lugar de GraphQL                      | [0009](docs/adr/0009-rest-frente-a-graphql.md)       |
+| Preparada para varias instancias                            | [0010](docs/adr/0010-varias-instancias.md)           |
 
 ### Convenciones de la API
 
+La guía completa, con la deuda conocida, está en [`docs/api-guidelines.md`](docs/api-guidelines.md).
+
 - Recursos en plural y en kebab-case, agrupados por audiencia: público (`/auth`, `/contact`), usuario actual
   (`/me/**`), catálogos, espacio del nutricionista (`/nutritionist/**`) y administración (`/admin/**`).
-- Crear responde `201` con `Location`; modificar es un `PUT` completo; las transiciones son `POST /<acción>`
-  (`publish`, `complete`, `cancel`...); borrar responde `204`.
-- Listados paginados con `?page&size&sort` (20 por defecto, 100 como máximo) y solo por campos permitidos.
+- Crear responde `201` con una `Location` absoluta; modificar es un `PUT` completo; las transiciones son
+  `POST /<acción>` (`publish`, `complete`, `cancel`...); borrar responde `204`.
+- Toda colección que crece se pagina con `?page&size&sort` (20 por defecto, 100 como máximo) y solo por campos
+  permitidos; los paneles usan resúmenes (`…/summary`) en lugar de descargar listas.
 - Errores en formato [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) con un `code` estable y, si hay campos
   inválidos, `errors[{field, message}]` en español.
 - Fechas en ISO-8601, ids UUID e importes como texto (`"5.99"`). Ningún cuerpo lleva el id del propietario: sale del
@@ -211,7 +217,11 @@ Ningún secreto se versiona. Toda la configuración llega de variables de entorn
 | `CORS_APP_ORIGINS`, `CORS_LANDING_ORIGINS` | En producción                      | Orígenes del web-app (toda la API, con credenciales) y de la landing (`/contact`) |
 | `CONTACT_RECIPIENT`                        | No                                 | Buzón del formulario de contacto (por defecto, `MAIL_USERNAME`)                   |
 | `APP_TIME_ZONE`                            | No                                 | Zona horaria de las fechas de los correos (por defecto, `America/Lima`)           |
-| `STORAGE_LOCATION`                         | No                                 | Carpeta de los ficheros subidos (por defecto, `uploads`)                          |
+| `STORAGE_TYPE`                             | Con varias instancias              | `local` (carpeta, por defecto) o `s3` (Cloudflare R2, AWS S3) para los ficheros   |
+| `STORAGE_LOCATION`                         | No                                 | Carpeta de los ficheros con `STORAGE_TYPE=local` (por defecto, `uploads`)         |
+| `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY`, `S3_SECRET_KEY` | Con `STORAGE_TYPE=s3` | Almacenamiento de objetos (`S3_REGION` y `S3_PATH_STYLE`: `auto` y `true`) |
+| `DB_POOL_SIZE`                             | No                                 | Conexiones del pool por instancia (por defecto, 10)                               |
+| `RATE_LIMIT_STORE`                         | No                                 | Límites de peticiones en `jdbc` (compartidos, por defecto) o `memory`             |
 | `SERVER_TOMCAT_REMOTEIP_INTERNAL_PROXIES`  | Según el hosting                   | IPs del proxy en las que confiar para `X-Forwarded-For`                           |
 | `PORT`                                     | No                                 | Puerto HTTP (por defecto, `8090`)                                                 |
 | `JWT_ACCESS_TOKEN_TTL`, `SHOW_SQL`         | No                                 | Validez del access token (ISO-8601, `PT15M`) y log del SQL                        |

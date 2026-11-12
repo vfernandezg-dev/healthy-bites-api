@@ -4,12 +4,14 @@ import com.healthybites.identity.app.InvitationService;
 import com.healthybites.identity.web.AdminDtos.InvitationResponse;
 import com.healthybites.identity.web.AdminDtos.InviteNutritionistRequest;
 import com.healthybites.shared.security.CurrentUser;
+import com.healthybites.shared.web.Locations;
 import com.healthybites.shared.web.Sorting;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.Set;
 import java.util.UUID;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -22,7 +24,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
 @RequestMapping("/admin/nutritionist-invitations")
@@ -42,17 +43,15 @@ class AdminInvitationsController {
     ResponseEntity<InvitationResponse> invite(@Valid @RequestBody InviteNutritionistRequest body) {
         InvitationResponse created = InvitationResponse.of(
                 invitations.invite(body.email(), body.firstName(), body.lastName(), CurrentUser.id()));
-        return ResponseEntity.created(ServletUriComponentsBuilder.fromCurrentRequest()
-                        .path("/{id}")
-                        .buildAndExpand(created.id())
-                        .toUri())
+        return ResponseEntity.created(Locations.of("/admin/nutritionist-invitations/{id}", created.id()))
                 .body(created);
     }
 
     @Operation(summary = "Lista las invitaciones con su estado")
     @GetMapping
     PagedModel<InvitationResponse> list(
-            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
+                    Pageable pageable) {
         return new PagedModel<>(
                 invitations.list(Sorting.restrict(pageable, SORTABLE)).map(InvitationResponse::of));
     }

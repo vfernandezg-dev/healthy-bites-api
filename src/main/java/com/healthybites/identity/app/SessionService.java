@@ -6,6 +6,7 @@ import com.healthybites.identity.app.RefreshTokenService.IssuedRefreshToken;
 import com.healthybites.identity.domain.User;
 import com.healthybites.identity.domain.UserRepository;
 import java.time.Clock;
+import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -13,6 +14,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionOperations;
 
 /**
  * Sesiones: login, renovación y logout. Cada sesión es un access token corto (en el cuerpo de la respuesta) más un
@@ -26,6 +28,7 @@ public class SessionService {
     private final RefreshTokenService refreshTokens;
     private final AuthRateLimiter rateLimiter;
     private final UserRepository users;
+    private final TransactionOperations transactions;
     private final Clock clock;
 
     public SessionService(
@@ -34,19 +37,24 @@ public class SessionService {
             RefreshTokenService refreshTokens,
             AuthRateLimiter rateLimiter,
             UserRepository users,
+            TransactionOperations transactions,
             Clock clock) {
         this.authenticationManager = authenticationManager;
         this.accessTokens = accessTokens;
         this.refreshTokens = refreshTokens;
         this.rateLimiter = rateLimiter;
         this.users = users;
+        this.transactions = transactions;
         this.clock = clock;
     }
 
     /** Una sesión abierta: la cuenta, el access token y el refresh token (para la cookie). */
     public record Session(UserAccount user, AccessToken accessToken, IssuedRefreshToken refreshToken) {}
 
-    @Transactional
+    /**
+     * Sin transacción alrededor de los límites: un intento fallido se registra aunque se lance el error, y nunca se
+     * retienen dos conexiones a la vez (ver {@code RateLimiter}). Solo abrir la sesión es transaccional.
+     */
     public Session login(String email, String password, String clientIp) {
         rateLimiter.checkLogin(clientIp, email);
         try {
@@ -56,14 +64,18 @@ public class SessionService {
             throw e;
         }
         rateLimiter.loginSucceeded(clientIp, email);
-        User user =
-                users.findByEmail(email.trim()).orElseThrow(() -> new BadCredentialsException("Cuenta no encontrada"));
-        user.recordLogin(clock.instant());
-        return open(user, refreshTokens.issue(user));
+        return Objects.requireNonNull(transactions.execute(status -> {
+            User user = users.findByEmail(email.trim())
+                    .orElseThrow(() -> new BadCredentialsException("Cuenta no encontrada"));
+            user.recordLogin(clock.instant());
+            return open(user, refreshTokens.issue(user));
+        }));
     }
 
-    /** La revocación por reutilización debe confirmarse aunque se lance la excepción. */
-    @Transactional(noRollbackFor = InvalidRefreshTokenException.class)
+    /**
+     * Rota el refresh token en su propia transacción ({@code RefreshTokenService.rotate}), que confirma la revocación
+     * por reutilización aunque se lance la excepción.
+     */
     public Session refresh(@Nullable String refreshToken, String clientIp) {
         rateLimiter.checkRefresh(clientIp);
         IssuedRefreshToken next = refreshTokens.rotate(refreshToken);

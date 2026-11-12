@@ -49,7 +49,7 @@ tags:
 paths:
   /admin/billing/summary:
     get:
-      operationId: summary_1
+      operationId: summary_3
       responses:
         "200":
           content:
@@ -75,11 +75,33 @@ paths:
           - OPEN
           - RESOLVED
           - DISMISSED
-      - in: query
-        name: pageable
-        required: true
+      - description: Zero-based page index (0..N)
+        in: query
+        name: page
+        required: false
         schema:
-          $ref: "#/components/schemas/Pageable"
+          type: integer
+          default: 0
+          minimum: 0
+      - description: The size of the page to be returned
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+      - description: "Sorting criteria in the format: property,(asc|desc). Default\
+          \ sort order is ascending. Multiple sort criteria are supported."
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: array
+          default:
+          - "createdAt,ASC"
+          items:
+            type: string
       responses:
         "200":
           content:
@@ -120,11 +142,33 @@ paths:
     get:
       operationId: list
       parameters:
-      - in: query
-        name: pageable
-        required: true
+      - description: Zero-based page index (0..N)
+        in: query
+        name: page
+        required: false
         schema:
-          $ref: "#/components/schemas/Pageable"
+          type: integer
+          default: 0
+          minimum: 0
+      - description: The size of the page to be returned
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+      - description: "Sorting criteria in the format: property,(asc|desc). Default\
+          \ sort order is ascending. Multiple sort criteria are supported."
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: array
+          default:
+          - "createdAt,DESC"
+          items:
+            type: string
       responses:
         "200":
           content:
@@ -206,11 +250,33 @@ paths:
           - CAPTURED
           - FAILED
           - CANCELED
-      - in: query
-        name: pageable
-        required: true
+      - description: Zero-based page index (0..N)
+        in: query
+        name: page
+        required: false
         schema:
-          $ref: "#/components/schemas/Pageable"
+          type: integer
+          default: 0
+          minimum: 0
+      - description: The size of the page to be returned
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+      - description: "Sorting criteria in the format: property,(asc|desc). Default\
+          \ sort order is ascending. Multiple sort criteria are supported."
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: array
+          default:
+          - "createdAt,DESC"
+          items:
+            type: string
       responses:
         "200":
           content:
@@ -248,11 +314,33 @@ paths:
           - BASIC
           - PREMIUM
           - VIP
-      - in: query
-        name: pageable
-        required: true
+      - description: Zero-based page index (0..N)
+        in: query
+        name: page
+        required: false
         schema:
-          $ref: "#/components/schemas/Pageable"
+          type: integer
+          default: 0
+          minimum: 0
+      - description: The size of the page to be returned
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+      - description: "Sorting criteria in the format: property,(asc|desc). Default\
+          \ sort order is ascending. Multiple sort criteria are supported."
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: array
+          default:
+          - "createdAt,DESC"
+          items:
+            type: string
       responses:
         "200":
           content:
@@ -295,11 +383,33 @@ paths:
           type:
           - string
           - "null"
-      - in: query
-        name: pageable
-        required: true
+      - description: Zero-based page index (0..N)
+        in: query
+        name: page
+        required: false
         schema:
-          $ref: "#/components/schemas/Pageable"
+          type: integer
+          default: 0
+          minimum: 0
+      - description: The size of the page to be returned
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+      - description: "Sorting criteria in the format: property,(asc|desc). Default\
+          \ sort order is ascending. Multiple sort criteria are supported."
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: array
+          default:
+          - "createdAt,DESC"
+          items:
+            type: string
       responses:
         "200":
           content:
@@ -312,7 +422,7 @@ paths:
       - Admin · Cuentas
   /admin/users/summary:
     get:
-      operationId: summary
+      operationId: summary_2
       responses:
         "200":
           content:
@@ -593,11 +703,33 @@ paths:
           type:
           - string
           - "null"
-      - in: query
-        name: pageable
-        required: true
+      - description: Zero-based page index (0..N)
+        in: query
+        name: page
+        required: false
         schema:
-          $ref: "#/components/schemas/Pageable"
+          type: integer
+          default: 0
+          minimum: 0
+      - description: The size of the page to be returned
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+      - description: "Sorting criteria in the format: property,(asc|desc). Default\
+          \ sort order is ascending. Multiple sort criteria are supported."
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: array
+          default:
+          - "publishedAt,DESC"
+          items:
+            type: string
       responses:
         "200":
           content:
@@ -660,11 +792,33 @@ paths:
           type:
           - string
           - "null"
-      - in: query
-        name: pageable
-        required: true
+      - description: Zero-based page index (0..N)
+        in: query
+        name: page
+        required: false
         schema:
-          $ref: "#/components/schemas/Pageable"
+          type: integer
+          default: 0
+          minimum: 0
+      - description: The size of the page to be returned
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+      - description: "Sorting criteria in the format: property,(asc|desc). Default\
+          \ sort order is ascending. Multiple sort criteria are supported."
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: array
+          default:
+          - "createdAt,DESC"
+          items:
+            type: string
       responses:
         "200":
           content:
@@ -759,14 +913,39 @@ paths:
         schema:
           type: string
           format: uuid
+      - description: Zero-based page index (0..N)
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          default: 0
+          minimum: 0
+      - description: The size of the page to be returned
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+      - description: "Sorting criteria in the format: property,(asc|desc). Default\
+          \ sort order is ascending. Multiple sort criteria are supported."
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: array
+          default:
+          - "createdAt,ASC"
+          items:
+            type: string
       responses:
         "200":
           content:
             '*/*':
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/MemberResponse"
+                $ref: "#/components/schemas/PagedModelMemberResponse"
           description: OK
       summary: Miembros (el creador ve también las solicitudes pendientes)
       tags:
@@ -858,11 +1037,33 @@ paths:
         schema:
           type: string
           format: uuid
-      - in: query
-        name: pageable
-        required: true
+      - description: Zero-based page index (0..N)
+        in: query
+        name: page
+        required: false
         schema:
-          $ref: "#/components/schemas/Pageable"
+          type: integer
+          default: 0
+          minimum: 0
+      - description: The size of the page to be returned
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+      - description: "Sorting criteria in the format: property,(asc|desc). Default\
+          \ sort order is ascending. Multiple sort criteria are supported."
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: array
+          default:
+          - "createdAt,DESC"
+          items:
+            type: string
       responses:
         "200":
           content:
@@ -1364,11 +1565,33 @@ paths:
     get:
       operationId: payments
       parameters:
-      - in: query
-        name: pageable
-        required: true
+      - description: Zero-based page index (0..N)
+        in: query
+        name: page
+        required: false
         schema:
-          $ref: "#/components/schemas/Pageable"
+          type: integer
+          default: 0
+          minimum: 0
+      - description: The size of the page to be returned
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+      - description: "Sorting criteria in the format: property,(asc|desc). Default\
+          \ sort order is ascending. Multiple sort criteria are supported."
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: array
+          default:
+          - "createdAt,DESC"
+          items:
+            type: string
       responses:
         "200":
           content:
@@ -1526,11 +1749,33 @@ paths:
           - WEIGHT_LOSS
           - MAINTENANCE
           - MUSCLE_GAIN
-      - in: query
-        name: pageable
-        required: true
+      - description: Zero-based page index (0..N)
+        in: query
+        name: page
+        required: false
         schema:
-          $ref: "#/components/schemas/Pageable"
+          type: integer
+          default: 0
+          minimum: 0
+      - description: The size of the page to be returned
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+      - description: "Sorting criteria in the format: property,(asc|desc). Default\
+          \ sort order is ascending. Multiple sort criteria are supported."
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: array
+          default:
+          - "publishedAt,DESC"
+          items:
+            type: string
       responses:
         "200":
           content:
@@ -1639,17 +1884,52 @@ paths:
       - Ficheros
   /nutritionist/clients:
     get:
+      description: "q busca por nombre, apellidos o correo sin distinguir mayúsculas\
+        \ ni tildes."
       operationId: clients
+      parameters:
+      - in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: Zero-based page index (0..N)
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          default: 0
+          minimum: 0
+      - description: The size of the page to be returned
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+      - description: "Sorting criteria in the format: property,(asc|desc). Default\
+          \ sort order is ascending. Multiple sort criteria are supported."
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
       responses:
         "200":
           content:
             '*/*':
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/NutritionistClientResponse"
+                $ref: "#/components/schemas/PagedModelNutritionistClientResponse"
           description: OK
-      summary: Clientes que siguen alguno de mis planes
+      summary: "Clientes que siguen alguno de mis planes, los más recientes primero"
       tags:
       - Nutricionista · Planes
   /nutritionist/content-items:
@@ -1657,10 +1937,43 @@ paths:
       operationId: mine_2
       parameters:
       - in: query
-        name: pageable
-        required: true
+        name: status
+        required: false
         schema:
-          $ref: "#/components/schemas/Pageable"
+          type:
+          - string
+          - "null"
+          enum:
+          - DRAFT
+          - PUBLISHED
+          - ARCHIVED
+      - description: Zero-based page index (0..N)
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          default: 0
+          minimum: 0
+      - description: The size of the page to be returned
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+      - description: "Sorting criteria in the format: property,(asc|desc). Default\
+          \ sort order is ascending. Multiple sort criteria are supported."
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: array
+          default:
+          - "updatedAt,DESC"
+          items:
+            type: string
       responses:
         "200":
           content:
@@ -1668,7 +1981,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/PagedModelContentSummaryResponse"
           description: OK
-      summary: Mi contenido (todos los estados)
+      summary: "Mi contenido (todos los estados, o solo uno con ?status=)"
       tags:
       - Nutricionista · Contenido
     post:
@@ -1689,8 +2002,22 @@ paths:
       summary: "Crea un borrador (portada y fichero: ids subidos antes con POST /media)"
       tags:
       - Nutricionista · Contenido
+  /nutritionist/content-items/summary:
+    get:
+      operationId: summary_1
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PublicationSummaryResponse"
+          description: OK
+      summary: Cuántos contenidos tengo en cada estado
+      tags:
+      - Nutricionista · Contenido
   /nutritionist/content-items/{id}:
     delete:
+      description: "Lo publicado no se borra (409): se retira con POST /{id}/archive."
       operationId: delete_1
       parameters:
       - in: path
@@ -1702,7 +2029,7 @@ paths:
       responses:
         "200":
           description: OK
-      summary: Borra un borrador (lo publicado se archiva)
+      summary: Borra un borrador
       tags:
       - Nutricionista · Contenido
     get:
@@ -1790,10 +2117,43 @@ paths:
       operationId: mine_1
       parameters:
       - in: query
-        name: pageable
-        required: true
+        name: status
+        required: false
         schema:
-          $ref: "#/components/schemas/Pageable"
+          type:
+          - string
+          - "null"
+          enum:
+          - DRAFT
+          - PUBLISHED
+          - ARCHIVED
+      - description: Zero-based page index (0..N)
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          default: 0
+          minimum: 0
+      - description: The size of the page to be returned
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+      - description: "Sorting criteria in the format: property,(asc|desc). Default\
+          \ sort order is ascending. Multiple sort criteria are supported."
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: array
+          default:
+          - "updatedAt,DESC"
+          items:
+            type: string
       responses:
         "200":
           content:
@@ -1801,7 +2161,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/PagedModelMealPlanSummaryResponse"
           description: OK
-      summary: Mis planes (todos los estados)
+      summary: "Mis planes (todos los estados, o solo uno con ?status=)"
       tags:
       - Nutricionista · Planes
     post:
@@ -1822,8 +2182,23 @@ paths:
       summary: Crea un plan en borrador
       tags:
       - Nutricionista · Planes
+  /nutritionist/meal-plans/summary:
+    get:
+      operationId: summary
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PublicationSummaryResponse"
+          description: OK
+      summary: Cuántos planes tengo en cada estado
+      tags:
+      - Nutricionista · Planes
   /nutritionist/meal-plans/{id}:
     delete:
+      description: "Un plan publicado no se borra (409 plan-not-draft): se retira\
+        \ con POST /{id}/archive."
       operationId: delete
       parameters:
       - in: path
@@ -1835,7 +2210,7 @@ paths:
       responses:
         "200":
           description: OK
-      summary: Borra un borrador (un plan publicado se archiva)
+      summary: Borra un borrador
       tags:
       - Nutricionista · Planes
     get:
@@ -1999,15 +2374,49 @@ paths:
   /nutritionist/rewards:
     get:
       operationId: mine
+      parameters:
+      - in: query
+        name: active
+        required: false
+        schema:
+          type:
+          - boolean
+          - "null"
+      - description: Zero-based page index (0..N)
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          default: 0
+          minimum: 0
+      - description: The size of the page to be returned
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+      - description: "Sorting criteria in the format: property,(asc|desc). Default\
+          \ sort order is ascending. Multiple sort criteria are supported."
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: array
+          default:
+          - "createdAt,DESC"
+          items:
+            type: string
       responses:
         "200":
           content:
             '*/*':
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/RewardResponse"
+                $ref: "#/components/schemas/PagedModelRewardResponse"
           description: OK
+      summary: "Mis recompensas (todas, o solo activas o retiradas con ?active=)"
       tags:
       - Recompensas
     post:
@@ -2137,15 +2546,41 @@ paths:
         schema:
           type: string
           format: uuid
+      - description: Zero-based page index (0..N)
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          default: 0
+          minimum: 0
+      - description: The size of the page to be returned
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+      - description: "Sorting criteria in the format: property,(asc|desc). Default\
+          \ sort order is ascending. Multiple sort criteria are supported."
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: array
+          default:
+          - "createdAt,ASC"
+          items:
+            type: string
       responses:
         "200":
           content:
             '*/*':
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/CommentResponse"
+                $ref: "#/components/schemas/PagedModelCommentResponse"
           description: OK
+      summary: "Comentarios de una publicación, del más antiguo al más reciente"
       tags:
       - Comunidad
     post:
@@ -2197,14 +2632,40 @@ paths:
   /rewards:
     get:
       operationId: catalog
+      parameters:
+      - description: Zero-based page index (0..N)
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          default: 0
+          minimum: 0
+      - description: The size of the page to be returned
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+      - description: "Sorting criteria in the format: property,(asc|desc). Default\
+          \ sort order is ascending. Multiple sort criteria are supported."
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: array
+          default:
+          - "requiredStreakDays,ASC"
+          items:
+            type: string
       responses:
         "200":
           content:
             '*/*':
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/RewardResponse"
+                $ref: "#/components/schemas/PagedModelRewardResponse"
           description: OK
       summary: Recompensas activas con mi racha hacia cada una
       tags:
@@ -2382,17 +2843,6 @@ components:
       - lastName
       - role
       - status
-    AuthorResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-      required:
-      - id
-      - name
     BillingSummaryResponse:
       type: object
       properties:
@@ -2642,7 +3092,7 @@ components:
       properties:
         author:
           oneOf:
-          - $ref: "#/components/schemas/AuthorResponse"
+          - $ref: "#/components/schemas/PersonResponse"
           - type: "null"
         category:
           type: string
@@ -3195,7 +3645,7 @@ components:
       properties:
         author:
           oneOf:
-          - $ref: "#/components/schemas/AuthorResponse"
+          - $ref: "#/components/schemas/PersonResponse"
           - type: "null"
         averageDailyCalories:
           type: integer
@@ -3434,21 +3884,6 @@ components:
       - size
       - totalElements
       - totalPages
-    Pageable:
-      type: object
-      properties:
-        page:
-          type: integer
-          format: int32
-          minimum: 0
-        size:
-          type: integer
-          format: int32
-          minimum: 1
-        sort:
-          type: array
-          items:
-            type: string
     PagedModelAdminPaymentResponse:
       type: object
       properties:
@@ -3480,6 +3915,18 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AdminUserResponse"
+        page:
+          $ref: "#/components/schemas/PageMetadata"
+      required:
+      - content
+      - page
+    PagedModelCommentResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/CommentResponse"
         page:
           $ref: "#/components/schemas/PageMetadata"
       required:
@@ -3533,6 +3980,30 @@ components:
       required:
       - content
       - page
+    PagedModelMemberResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/MemberResponse"
+        page:
+          $ref: "#/components/schemas/PageMetadata"
+      required:
+      - content
+      - page
+    PagedModelNutritionistClientResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/NutritionistClientResponse"
+        page:
+          $ref: "#/components/schemas/PageMetadata"
+      required:
+      - content
+      - page
     PagedModelPaymentResponse:
       type: object
       properties:
@@ -3564,6 +4035,18 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ReportResponse"
+        page:
+          $ref: "#/components/schemas/PageMetadata"
+      required:
+      - content
+      - page
+    PagedModelRewardResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/RewardResponse"
         page:
           $ref: "#/components/schemas/PageMetadata"
       required:
@@ -3696,6 +4179,22 @@ components:
       - groupId
       - id
       - title
+    PublicationSummaryResponse:
+      type: object
+      properties:
+        archived:
+          type: integer
+          format: int64
+        draft:
+          type: integer
+          format: int64
+        published:
+          type: integer
+          format: int64
+      required:
+      - archived
+      - draft
+      - published
     RecommendationResponse:
       type: object
       properties:

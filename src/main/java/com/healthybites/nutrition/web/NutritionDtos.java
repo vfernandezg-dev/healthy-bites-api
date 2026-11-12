@@ -1,7 +1,7 @@
 package com.healthybites.nutrition.web;
 
 import com.healthybites.billing.Tier;
-import com.healthybites.identity.UserAccount;
+import com.healthybites.identity.PersonResponse;
 import com.healthybites.nutrition.app.MealPlanService.PlanCard;
 import com.healthybites.nutrition.app.NutritionistPlanService;
 import com.healthybites.nutrition.domain.Meal;
@@ -10,8 +10,8 @@ import com.healthybites.nutrition.domain.MealPlanEnrollment;
 import com.healthybites.nutrition.domain.NutritionEnums.EnrollmentSource;
 import com.healthybites.nutrition.domain.NutritionEnums.MealCategory;
 import com.healthybites.nutrition.domain.NutritionEnums.MealPlanGoal;
-import com.healthybites.nutrition.domain.NutritionEnums.MealPlanStatus;
 import com.healthybites.profiles.ClientProfiles.ClientProfileView;
+import com.healthybites.shared.domain.PublicationStatus;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -28,13 +28,6 @@ final class NutritionDtos {
 
     private NutritionDtos() {}
 
-    record AuthorResponse(UUID id, String name) {
-
-        static @Nullable AuthorResponse of(@Nullable UserAccount account) {
-            return account == null ? null : new AuthorResponse(account.id(), account.fullName());
-        }
-    }
-
     /** Ficha del catálogo: sin comidas. {@code locked} indica si el lector puede abrirlo. */
     record MealPlanSummaryResponse(
             UUID id,
@@ -45,8 +38,8 @@ final class NutritionDtos {
             Tier requiredTier,
             boolean locked,
             int averageDailyCalories,
-            MealPlanStatus status,
-            @Nullable AuthorResponse author,
+            PublicationStatus status,
+            @Nullable PersonResponse author,
             @Nullable Instant publishedAt) {
 
         static MealPlanSummaryResponse of(PlanCard card) {
@@ -61,7 +54,7 @@ final class NutritionDtos {
                     card.locked(),
                     card.averageDailyCalories(),
                     plan.getStatus(),
-                    AuthorResponse.of(card.author()),
+                    PersonResponse.of(card.author()),
                     plan.getPublishedAt());
         }
     }
@@ -87,7 +80,7 @@ final class NutritionDtos {
         }
     }
 
-    record MealPlanDetailResponse(MealPlanSummaryResponse plan, MealPlanStatus status, List<MealResponse> meals) {
+    record MealPlanDetailResponse(MealPlanSummaryResponse plan, PublicationStatus status, List<MealResponse> meals) {
 
         static MealPlanDetailResponse of(PlanCard card) {
             return new MealPlanDetailResponse(

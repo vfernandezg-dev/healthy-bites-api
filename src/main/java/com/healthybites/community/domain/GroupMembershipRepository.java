@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,7 +14,9 @@ public interface GroupMembershipRepository extends JpaRepository<GroupMembership
 
     Optional<GroupMembership> findByGroupIdAndUserId(UUID groupId, UUID userId);
 
-    List<GroupMembership> findByGroupIdOrderByCreatedAtAsc(UUID groupId);
+    Page<GroupMembership> findByGroupId(UUID groupId, Pageable pageable);
+
+    Page<GroupMembership> findByGroupIdAndStatus(UUID groupId, GroupMembership.Status status, Pageable pageable);
 
     List<GroupMembership> findByUserIdAndGroupIdIn(UUID userId, Collection<UUID> groupIds);
 

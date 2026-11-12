@@ -1,7 +1,8 @@
 package com.healthybites.nutrition.domain;
 
 import com.healthybites.nutrition.domain.NutritionEnums.MealPlanGoal;
-import com.healthybites.nutrition.domain.NutritionEnums.MealPlanStatus;
+import com.healthybites.shared.domain.PublicationStatus;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -12,15 +13,27 @@ import org.springframework.data.repository.query.Param;
 
 public interface MealPlanRepository extends JpaRepository<MealPlan, UUID> {
 
-    Page<MealPlan> findByStatus(MealPlanStatus status, Pageable pageable);
+    Page<MealPlan> findByStatus(PublicationStatus status, Pageable pageable);
 
-    Page<MealPlan> findByStatusAndGoal(MealPlanStatus status, MealPlanGoal goal, Pageable pageable);
+    Page<MealPlan> findByStatusAndGoal(PublicationStatus status, MealPlanGoal goal, Pageable pageable);
 
     Page<MealPlan> findByAuthorId(UUID authorId, Pageable pageable);
+
+    Page<MealPlan> findByAuthorIdAndStatus(UUID authorId, PublicationStatus status, Pageable pageable);
+
+    @Query(
+            "select p.status as status, count(p) as total from MealPlan p where p.authorId = :authorId group by p.status")
+    List<StatusCount> countByStatus(@Param("authorId") UUID authorId);
+
+    interface StatusCount {
+        PublicationStatus getStatus();
+
+        long getTotal();
+    }
 
     Optional<MealPlan> findByIdAndAuthorId(UUID id, UUID authorId);
 
     @Query("select count(p) > 0 from MealPlan p where p.id = :id and p.authorId = :authorId"
-            + " and p.status = com.healthybites.nutrition.domain.NutritionEnums.MealPlanStatus.PUBLISHED")
+            + " and p.status = com.healthybites.shared.domain.PublicationStatus.PUBLISHED")
     boolean isPublishedBy(@Param("id") UUID id, @Param("authorId") UUID authorId);
 }

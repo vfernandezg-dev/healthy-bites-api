@@ -1,9 +1,10 @@
 package com.healthybites.identity.web;
 
-import com.healthybites.identity.Role;
 import com.healthybites.identity.UserAccount;
 import com.healthybites.identity.app.SessionService.Session;
-import jakarta.validation.constraints.Email;
+import com.healthybites.shared.security.Role;
+import com.healthybites.shared.validation.EmailAddress;
+import com.healthybites.shared.validation.Password;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.util.UUID;
@@ -14,18 +15,18 @@ final class AuthDtos {
     private AuthDtos() {}
 
     record LoginRequest(
-            @NotBlank(message = "El correo es obligatorio") @Email(message = "Debe ser un correo válido") @Size(max = 254) String email,
+            @EmailAddress String email,
 
             @NotBlank(message = "La contraseña es obligatoria") @Size(max = 128) String password) {}
 
-    record ForgotPasswordRequest(
-            @NotBlank(message = "El correo es obligatorio") @Email(message = "Debe ser un correo válido") @Size(max = 254) String email) {}
+    record ForgotPasswordRequest(@EmailAddress String email) {}
 
     // Misma política que el registro: bcrypt solo usa los primeros 72 bytes.
     record ResetPasswordRequest(
             @NotBlank(message = "El enlace no es válido") @Size(max = 128, message = "El enlace no es válido") String token,
 
-            @NotBlank(message = "La nueva contraseña es obligatoria") @Size(min = 10, max = 64, message = "La contraseña debe tener entre 10 y 64 caracteres") String password) {}
+            @NotBlank(message = "La nueva contraseña es obligatoria") @Password
+            String password) {}
 
     /** Sesión abierta: el access token va en el cuerpo (el web-app lo guarda solo en memoria). */
     record SessionResponse(String accessToken, String tokenType, long expiresIn, SessionUser user) {

@@ -10,7 +10,7 @@ import com.healthybites.community.app.PostService.PostCard;
 import com.healthybites.community.domain.CommunityGroup;
 import com.healthybites.community.domain.GroupMembership;
 import com.healthybites.community.domain.ModerationReport;
-import com.healthybites.identity.UserAccount;
+import com.healthybites.identity.PersonResponse;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -21,13 +21,6 @@ import org.jspecify.annotations.Nullable;
 final class CommunityDtos {
 
     private CommunityDtos() {}
-
-    record PersonResponse(UUID id, String name) {
-
-        static @Nullable PersonResponse of(@Nullable UserAccount account) {
-            return account == null ? null : new PersonResponse(account.id(), account.fullName());
-        }
-    }
 
     record MembershipResponse(GroupMembership.Role role, GroupMembership.Status status) {
 

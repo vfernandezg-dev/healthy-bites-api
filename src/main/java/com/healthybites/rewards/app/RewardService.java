@@ -16,6 +16,9 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,12 +54,12 @@ public class RewardService implements RewardDirectory {
             Reward reward, Target target, @Nullable RewardStreak streak) {}
 
     @Transactional(readOnly = true)
-    public List<RewardView> catalog(UUID clientId) {
+    public Page<RewardView> catalog(UUID clientId, Pageable pageable) {
+        Page<Reward> page = rewards.findByActiveTrue(pageable);
         Map<UUID, RewardStreak> mine = streaks.findByClientIdOrderByCreatedAtDesc(clientId).stream()
                 .collect(Collectors.toMap(RewardStreak::getRewardId, Function.identity()));
-        return rewards.findByActiveTrueOrderByRequiredStreakDaysAsc().stream()
-                .map(reward -> new RewardView(reward, target(reward), mine.get(reward.requireId())))
-                .toList();
+        return new PageImpl<>(
+                views(page.getContent(), reward -> mine.get(reward.requireId())), pageable, page.getTotalElements());
     }
 
     @Transactional(readOnly = true)
@@ -66,13 +69,15 @@ public class RewardService implements RewardDirectory {
                 .findAllById(mine.stream().map(RewardStreak::getRewardId).toList())
                 .stream()
                 .collect(Collectors.toMap(Reward::requireId, Function.identity()));
-        return mine.stream()
+        Map<UUID, RewardStreak> streakByReward = mine.stream()
                 .filter(streak -> byId.containsKey(streak.getRewardId()))
-                .map(streak -> {
-                    Reward reward = byId.get(streak.getRewardId());
-                    return new RewardView(reward, target(reward), streak);
-                })
-                .toList();
+                .collect(Collectors.toMap(RewardStreak::getRewardId, Function.identity()));
+        return views(
+                mine.stream()
+                        .filter(streak -> byId.containsKey(streak.getRewardId()))
+                        .map(streak -> byId.get(streak.getRewardId()))
+                        .toList(),
+                reward -> streakByReward.get(reward.requireId()));
     }
 
     /** Empieza una racha hacia una recompensa activa. Solo una por recompensa. */
@@ -111,11 +116,13 @@ public class RewardService implements RewardDirectory {
 
     // ---------------------------------------------------------------- nutricionista
 
+    /** Sus recompensas: todas, o solo las activas o las retiradas. */
     @Transactional(readOnly = true)
-    public List<RewardView> mine(UUID authorId) {
-        return rewards.findByAuthorIdOrderByCreatedAtDesc(authorId).stream()
-                .map(reward -> new RewardView(reward, target(reward), null))
-                .toList();
+    public Page<RewardView> mine(UUID authorId, @Nullable Boolean active, Pageable pageable) {
+        Page<Reward> page = active == null
+                ? rewards.findByAuthorId(authorId, pageable)
+                : rewards.findByAuthorIdAndActive(authorId, active, pageable);
+        return new PageImpl<>(views(page.getContent(), reward -> null), pageable, page.getTotalElements());
     }
 
     @Transactional
@@ -153,13 +160,33 @@ public class RewardService implements RewardDirectory {
         }
     }
 
+    /** Vistas de varias recompensas con los títulos de sus premios cargados de una vez (dos consultas en total). */
+    private List<RewardView> views(List<Reward> list, Function<Reward, @Nullable RewardStreak> streakOf) {
+        Map<UUID, String> contentTitles = contents.titlesOf(list.stream()
+                .map(Reward::getContentItemId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet()));
+        Map<UUID, String> planTitles = mealPlans.titlesOf(list.stream()
+                .map(Reward::getMealPlanId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet()));
+        return list.stream()
+                .map(reward ->
+                        new RewardView(reward, target(reward, contentTitles, planTitles), streakOf.apply(reward)))
+                .toList();
+    }
+
     private Target target(Reward reward) {
+        return views(List.of(reward), any -> null).getFirst().target();
+    }
+
+    private static Target target(Reward reward, Map<UUID, String> contentTitles, Map<UUID, String> planTitles) {
         if (reward.getContentItemId() != null) {
             UUID id = reward.getContentItemId();
-            return new Target(TargetType.CONTENT, id, contents.titleOf(id).orElse(""));
+            return new Target(TargetType.CONTENT, id, contentTitles.getOrDefault(id, ""));
         }
         UUID id = Objects.requireNonNull(reward.getMealPlanId());
-        return new Target(TargetType.MEAL_PLAN, id, mealPlans.titleOf(id).orElse(""));
+        return new Target(TargetType.MEAL_PLAN, id, planTitles.getOrDefault(id, ""));
     }
 
     private Reward owned(UUID rewardId, UUID authorId) {

@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -64,7 +65,7 @@ class CommunityTests extends IntegrationTest {
 
         String pedro = bearer(token(Seed.PEDRO));
         mockMvc.perform(get("/groups/" + G3 + "/members").header(HttpHeaders.AUTHORIZATION, pedro))
-                .andExpect(jsonPath("$[*].status", hasItem("PENDING")));
+                .andExpect(jsonPath("$.content[*].status", hasItem("PENDING")));
         mockMvc.perform(post("/groups/" + G3 + "/members/" + client.id() + "/approve")
                         .header(HttpHeaders.AUTHORIZATION, pedro))
                 .andExpect(status().isNoContent());
@@ -97,7 +98,7 @@ class CommunityTests extends IntegrationTest {
                         .content("{\"body\": \"¡Bienvenida!\"}"))
                 .andExpect(status().isCreated());
         mockMvc.perform(get("/posts/" + post + "/comments").header(HttpHeaders.AUTHORIZATION, auth))
-                .andExpect(jsonPath("$[*].body", contains("¡Bienvenida!")));
+                .andExpect(jsonPath("$.content[*].body", contains("¡Bienvenida!")));
 
         mockMvc.perform(put("/posts/" + post)
                         .header(HttpHeaders.AUTHORIZATION, bearer(token(Seed.MARIA)))
@@ -143,6 +144,46 @@ class CommunityTests extends IntegrationTest {
                 .andExpect(jsonPath("$.targetHidden").value(true));
         mockMvc.perform(get("/posts/" + MARIA_POST_IN_G1).header(HttpHeaders.AUTHORIZATION, bearer(token(Seed.JUAN))))
                 .andExpect(status().isNotFound());
+    }
+
+    /** La Location de un 201 es la URL absoluta del recurso, con el context path (/api/v1). */
+    @Test
+    void aCreatedGroupPointsToItsAbsoluteUrl() throws Exception {
+        mockMvc.perform(post("/api/v1/groups")
+                        .contextPath("/api/v1")
+                        .header(HttpHeaders.AUTHORIZATION, bearer(token(Seed.JUAN)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\": \"Grupo con ubicación\", \"visibility\": \"PUBLIC\"}"))
+                .andExpect(status().isCreated())
+                .andExpect(header().string(
+                                HttpHeaders.LOCATION,
+                                org.hamcrest.Matchers.matchesPattern("http://localhost/api/v1/groups/[0-9a-f-]{36}")));
+    }
+
+    /** La lista de denuncias hace las mismas consultas tenga las filas que tenga: ninguna consulta por fila. */
+    @Test
+    void theReportListRunsTheSameQueriesWhateverItsSize() throws Exception {
+        String admin = bearer(token(Seed.ADMIN));
+        NewUser author = newClient("autora");
+        join(bearer(author.token()), G1).andExpect(status().isOk());
+        String postId = JsonPath.read(
+                publish(bearer(author.token()), G1)
+                        .andExpect(status().isCreated())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString(),
+                "$.id");
+        report(bearer(newClient("testigo").token()), postId).andExpect(status().isAccepted());
+        Action listReports = () -> mockMvc.perform(
+                        get("/admin/moderation/reports").param("size", "100").header(HttpHeaders.AUTHORIZATION, admin))
+                .andExpect(status().isOk());
+        long before = statementsDuring(listReports);
+
+        for (int reporter = 0; reporter < 3; reporter++) {
+            report(bearer(newClient("testigo").token()), postId).andExpect(status().isAccepted());
+        }
+
+        assertThat(statementsDuring(listReports)).isEqualTo(before);
     }
 
     private ResultActions posts(String group, String accessToken) throws Exception {

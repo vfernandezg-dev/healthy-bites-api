@@ -4,16 +4,20 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.healthybites.billing.infra.PayPalClient;
+import com.healthybites.billing.app.PaymentGateway;
+import com.healthybites.media.app.FileStorage;
 import com.healthybites.support.Seed;
 import com.jayway.jsonpath.JsonPath;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.persistence.EntityManagerFactory;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import org.hibernate.SessionFactory;
+import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,6 +29,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
@@ -57,9 +62,16 @@ public abstract class IntegrationTest {
     @MockitoBean
     protected JavaMailSender mailSender;
 
-    // PayPal nunca se llama de verdad: cada test simula sus respuestas.
+    // La pasarela de pago (PayPal) nunca se llama de verdad: cada test simula sus respuestas.
     @MockitoBean
-    protected PayPalClient payPal;
+    protected PaymentGateway payPal;
+
+    // Almacenamiento real envuelto en un espía: permite comprobar cuándo y cómo se escriben los ficheros.
+    @MockitoSpyBean
+    protected FileStorage storage;
+
+    @Autowired
+    private EntityManagerFactory entityManagerFactory;
 
     @BeforeEach
     void setUpMail() {
@@ -106,6 +118,20 @@ public abstract class IntegrationTest {
     }
 
     protected record NewUser(UUID id, String email, String token) {}
+
+    /** Sentencias SQL que ejecuta Hibernate durante la acción: sirve para comprobar que no hay consultas N+1. */
+    protected long statementsDuring(Action action) throws Exception {
+        Statistics statistics =
+                entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+        statistics.clear();
+        action.run();
+        return statistics.getPrepareStatementCount();
+    }
+
+    @FunctionalInterface
+    protected interface Action {
+        void run() throws Exception;
+    }
 
     protected static String bearer(String token) {
         return "Bearer " + token;

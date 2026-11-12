@@ -5,8 +5,6 @@ import com.healthybites.shared.web.ApiException;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.MailException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -24,13 +22,10 @@ public class ContactService {
     private final ContactRateLimiter rateLimiter;
     private final String recipient;
 
-    public ContactService(
-            MailService mailService,
-            ContactRateLimiter rateLimiter,
-            @Value("${healthybites.contact.recipient:${spring.mail.username}}") String recipient) {
+    public ContactService(MailService mailService, ContactRateLimiter rateLimiter, ContactProperties properties) {
         this.mailService = mailService;
         this.rateLimiter = rateLimiter;
-        this.recipient = recipient;
+        this.recipient = properties.recipient();
     }
 
     /** Mensaje ya validado; {@code honeypot} es el campo oculto que solo rellenan los bots. */
@@ -61,13 +56,8 @@ public class ContactService {
                 "mensaje", message.message().trim());
         // El equipo responde directamente al visitante. Nunca se le envía un correo automático: eso convertiría el
         // endpoint en un relay de spam hacia direcciones arbitrarias.
-        try {
-            mailService.send(
-                    recipient, "Nuevo mensaje de contacto: " + firstName + " " + lastName, TEMPLATE, model, email);
-        } catch (MailException e) {
-            log.error("No se pudo enviar el correo de contacto", e);
-            throw e;
-        }
+        // Si el SMTP falla, GlobalExceptionHandler lo registra y responde 503 mail-unavailable.
+        mailService.send(recipient, "Nuevo mensaje de contacto: " + firstName + " " + lastName, TEMPLATE, model, email);
     }
 
     /** Quita saltos de línea y caracteres de control (evita inyección en las cabeceras del correo). */

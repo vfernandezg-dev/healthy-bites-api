@@ -13,12 +13,13 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionOperations;
 
 /**
  * Restablecimiento de contraseña.
@@ -43,6 +44,7 @@ public class PasswordResetService {
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenService refreshTokens;
     private final AuthRateLimiter rateLimiter;
+    private final TransactionOperations transactions;
     private final ApplicationEventPublisher events;
     private final AppProperties appProperties;
     private final Clock clock;
@@ -54,30 +56,34 @@ public class PasswordResetService {
             PasswordEncoder passwordEncoder,
             RefreshTokenService refreshTokens,
             AuthRateLimiter rateLimiter,
+            TransactionOperations transactions,
             ApplicationEventPublisher events,
             AppProperties appProperties,
             Clock clock,
-            @Value("${healthybites.security.password-reset.token-ttl:PT30M}") Duration tokenTtl) {
+            AuthProperties properties) {
         this.tokens = tokens;
         this.users = users;
         this.passwordEncoder = passwordEncoder;
         this.refreshTokens = refreshTokens;
         this.rateLimiter = rateLimiter;
+        this.transactions = transactions;
         this.events = events;
         this.appProperties = appProperties;
         this.clock = clock;
-        this.tokenTtl = tokenTtl;
+        this.tokenTtl = properties.passwordReset().tokenTtl();
     }
 
-    /** Si la cuenta existe y está activa, crea un enlace nuevo (invalida los anteriores) y lo envía por correo. */
-    @Transactional
+    /**
+     * Si la cuenta existe y está activa, crea un enlace nuevo (invalida los anteriores) y lo envía por correo. El
+     * límite se comprueba antes de abrir la transacción (ver {@code RateLimiter}).
+     */
     public void requestReset(String email, String clientIp) {
         rateLimiter.checkPasswordReset(clientIp, email);
-        users.findByEmail(email.trim())
+        transactions.executeWithoutResult(status -> users.findByEmail(email.trim())
                 .filter(User::isActive)
                 .ifPresentOrElse(
                         this::issueLink,
-                        () -> log.debug("Restablecimiento pedido para una cuenta inexistente o inactiva"));
+                        () -> log.debug("Restablecimiento pedido para una cuenta inexistente o inactiva")));
     }
 
     /** Cambia la contraseña con un enlace válido, lo consume y cierra todas las sesiones del usuario. */
@@ -99,6 +105,7 @@ public class PasswordResetService {
     }
 
     @Scheduled(cron = "0 45 4 * * *")
+    @SchedulerLock(name = "password-reset-cleanup", lockAtMostFor = "PT10M")
     @Transactional
     public void purgeExpired() {
         int purged = tokens.deleteExpiredBefore(clock.instant());

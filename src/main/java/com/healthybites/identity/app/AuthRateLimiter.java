@@ -1,12 +1,11 @@
 package com.healthybites.identity.app;
 
-import com.healthybites.shared.security.ratelimit.SlidingWindowRateLimiter;
+import com.healthybites.shared.security.ratelimit.RateLimiter;
+import com.healthybites.shared.security.ratelimit.RateLimiters;
 import com.healthybites.shared.web.ApiException;
-import java.time.Clock;
 import java.time.Duration;
 import java.util.Locale;
 import org.jspecify.annotations.Nullable;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -20,28 +19,22 @@ public class AuthRateLimiter {
     private static final String TOO_MANY_REFRESHES = "Demasiadas renovaciones de sesión. Inténtalo más tarde.";
     private static final String TOO_MANY_RESETS = "Demasiadas solicitudes de restablecimiento. Inténtalo más tarde.";
 
-    private final SlidingWindowRateLimiter loginFailuresByAccount;
-    private final SlidingWindowRateLimiter loginFailuresByIp;
-    private final SlidingWindowRateLimiter refreshesByIp;
-    private final SlidingWindowRateLimiter passwordResetsByAccount;
-    private final SlidingWindowRateLimiter passwordResetsByIp;
+    private final RateLimiter loginFailuresByAccount;
+    private final RateLimiter loginFailuresByIp;
+    private final RateLimiter refreshesByIp;
+    private final RateLimiter passwordResetsByAccount;
+    private final RateLimiter passwordResetsByIp;
 
-    public AuthRateLimiter(
-            @Value("${healthybites.security.rate-limit.login-per-account:5}") int loginPerAccount,
-            @Value("${healthybites.security.rate-limit.login-per-ip:20}") int loginPerIp,
-            @Value("${healthybites.security.rate-limit.login-window:PT15M}") Duration loginWindow,
-            @Value("${healthybites.security.rate-limit.refresh-per-ip:60}") int refreshPerIp,
-            @Value("${healthybites.security.rate-limit.refresh-window:PT5M}") Duration refreshWindow,
-            @Value("${healthybites.security.rate-limit.password-reset-per-account:3}") int passwordResetPerAccount,
-            @Value("${healthybites.security.rate-limit.password-reset-per-ip:10}") int passwordResetPerIp,
-            @Value("${healthybites.security.rate-limit.password-reset-window:PT1H}") Duration passwordResetWindow,
-            Clock clock) {
-        this.loginFailuresByAccount = new SlidingWindowRateLimiter(loginPerAccount, loginWindow, clock);
-        this.loginFailuresByIp = new SlidingWindowRateLimiter(loginPerIp, loginWindow, clock);
-        this.refreshesByIp = new SlidingWindowRateLimiter(refreshPerIp, refreshWindow, clock);
-        this.passwordResetsByAccount =
-                new SlidingWindowRateLimiter(passwordResetPerAccount, passwordResetWindow, clock);
-        this.passwordResetsByIp = new SlidingWindowRateLimiter(passwordResetPerIp, passwordResetWindow, clock);
+    public AuthRateLimiter(AuthProperties properties, RateLimiters rateLimiters) {
+        AuthProperties.RateLimit limits = properties.rateLimit();
+        this.loginFailuresByAccount =
+                rateLimiters.create("login-account", limits.loginPerAccount(), limits.loginWindow());
+        this.loginFailuresByIp = rateLimiters.create("login-ip", limits.loginPerIp(), limits.loginWindow());
+        this.refreshesByIp = rateLimiters.create("refresh-ip", limits.refreshPerIp(), limits.refreshWindow());
+        this.passwordResetsByAccount = rateLimiters.create(
+                "password-reset-account", limits.passwordResetPerAccount(), limits.passwordResetWindow());
+        this.passwordResetsByIp =
+                rateLimiters.create("password-reset-ip", limits.passwordResetPerIp(), limits.passwordResetWindow());
     }
 
     /** @throws ApiException 429 si la cuenta o la IP acumulan demasiados fallos recientes */

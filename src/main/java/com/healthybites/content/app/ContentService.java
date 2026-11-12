@@ -1,10 +1,9 @@
 package com.healthybites.content.app;
 
+import com.healthybites.billing.Access;
 import com.healthybites.billing.Entitlements;
-import com.healthybites.billing.Tier;
 import com.healthybites.content.ContentAccess;
 import com.healthybites.content.domain.ContentEnums.ContentCategory;
-import com.healthybites.content.domain.ContentEnums.ContentStatus;
 import com.healthybites.content.domain.ContentEnums.ContentType;
 import com.healthybites.content.domain.ContentEnums.UnlockSource;
 import com.healthybites.content.domain.ContentItem;
@@ -14,14 +13,14 @@ import com.healthybites.content.domain.ContentUnlockRepository;
 import com.healthybites.identity.UserAccount;
 import com.healthybites.identity.UserAccounts;
 import com.healthybites.media.MediaFiles;
+import com.healthybites.shared.domain.PublicationStatus;
+import com.healthybites.shared.persistence.TextSearch;
 import com.healthybites.shared.web.ApiException;
 import java.time.Clock;
 import java.time.Duration;
+import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -78,39 +77,29 @@ public class ContentService implements ContentAccess {
 
     @Transactional(readOnly = true)
     public Page<ContentCard> catalog(UUID userId, boolean staff, Filter filter, Pageable pageable) {
-        Specification<ContentItem> spec = (root, q, cb) -> cb.equal(root.get("status"), ContentStatus.PUBLISHED);
+        Specification<ContentItem> spec = (root, q, cb) -> cb.equal(root.get("status"), PublicationStatus.PUBLISHED);
         if (filter.type() != null) {
             spec = spec.and((root, q, cb) -> cb.equal(root.get("type"), filter.type()));
         }
         if (filter.category() != null) {
             spec = spec.and((root, q, cb) -> cb.equal(root.get("category"), filter.category()));
         }
-        if (filter.query() != null && !filter.query().isBlank()) {
-            String like = "%"
-                    + filter.query()
-                            .trim()
-                            .toLowerCase(Locale.ROOT)
-                            .replace("%", "\\%")
-                            .replace("_", "\\_") + "%";
-            spec = spec.and((root, q, cb) -> cb.or(
-                    cb.like(cb.lower(root.get("title")), like, '\\'),
-                    cb.like(cb.lower(root.get("summary")), like, '\\')));
-        }
+        spec = spec.and(TextSearch.anyContains(filter.query(), "title", "summary"));
         Page<ContentItem> page = items.findAll(spec, pageable);
-        Reader reader = reader(userId, staff);
+        Access reader = reader(userId, staff);
         Map<UUID, UserAccount> authors = accounts.findAllById(page.getContent().stream()
                 .map(ContentItem::getAuthorId)
                 .distinct()
                 .toList());
-        return page.map(item -> card(item, authors.get(item.getAuthorId()), !reader.canOpen(item)));
+        return page.map(item ->
+                card(item, authors.get(item.getAuthorId()), !reader.canOpen(item.getRequiredTier(), item.requireId())));
     }
 
     /** Detalle por slug: 403 {@code subscription-required} (con {@code requiredTier}) si no se puede abrir. */
     @Transactional(readOnly = true)
     public ContentCard open(String slug, UUID userId, boolean staff) {
         ContentItem item = items.findBySlug(slug)
-                .filter(candidate -> candidate.isPublished()
-                        || (staff && candidate.getAuthorId().equals(userId)))
+                .filter(candidate -> candidate.isVisibleTo(userId, staff))
                 .orElseThrow(ContentService::notFound);
         requireOpen(item, userId, staff);
         return card(item, accounts.findById(item.getAuthorId()).orElse(null), false);
@@ -120,8 +109,7 @@ public class ContentService implements ContentAccess {
     @Transactional(readOnly = true)
     public String fileLink(UUID itemId, UUID userId, boolean staff) {
         ContentItem item = items.findById(itemId)
-                .filter(candidate -> candidate.isPublished()
-                        || (staff && candidate.getAuthorId().equals(userId)))
+                .filter(candidate -> candidate.isVisibleTo(userId, staff))
                 .orElseThrow(ContentService::notFound);
         requireOpen(item, userId, staff);
         UUID file = item.getFileMediaId();
@@ -166,8 +154,9 @@ public class ContentService implements ContentAccess {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<String> titleOf(UUID contentItemId) {
-        return items.findById(contentItemId).map(ContentItem::getTitle);
+    public Map<UUID, String> titlesOf(Collection<UUID> contentItemIds) {
+        return items.findAllById(contentItemIds).stream()
+                .collect(Collectors.toMap(ContentItem::requireId, ContentItem::getTitle));
     }
 
     ContentCard card(ContentItem item, @Nullable UserAccount author, boolean locked) {
@@ -176,26 +165,16 @@ public class ContentService implements ContentAccess {
     }
 
     private void requireOpen(ContentItem item, UUID userId, boolean staff) {
-        if (!reader(userId, staff).canOpen(item)) {
-            throw ApiException.forbidden(
-                            "subscription-required",
-                            "Este contenido requiere una suscripción " + item.getRequiredTier()
-                                    + " o desbloquearlo con una recompensa")
-                    .with("requiredTier", item.getRequiredTier());
+        if (!reader(userId, staff).canOpen(item.getRequiredTier(), item.requireId())) {
+            throw Access.subscriptionRequired(
+                    item.getRequiredTier(),
+                    "Este contenido requiere una suscripción " + item.getRequiredTier()
+                            + " o desbloquearlo con una recompensa");
         }
     }
 
-    private Reader reader(UUID userId, boolean staff) {
-        return staff
-                ? new Reader(true, Tier.VIP, Set.of())
-                : new Reader(false, entitlements.tierOf(userId), unlocks.unlockedIds(userId));
-    }
-
-    private record Reader(boolean staff, Tier tier, Set<UUID> unlocked) {
-
-        boolean canOpen(ContentItem item) {
-            return staff || tier.includes(item.getRequiredTier()) || unlocked.contains(item.requireId());
-        }
+    private Access reader(UUID userId, boolean staff) {
+        return staff ? Access.forStaff() : new Access(false, entitlements.tierOf(userId), unlocks.unlockedIds(userId));
     }
 
     static ApiException notFound() {

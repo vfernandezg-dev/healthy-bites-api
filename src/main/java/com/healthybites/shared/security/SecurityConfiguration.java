@@ -80,9 +80,9 @@ public class SecurityConfiguration {
                         .requestMatchers(publicRequests)
                         .permitAll()
                         .requestMatchers("/admin/**")
-                        .hasRole("ADMIN")
+                        .hasRole(Role.ADMIN.name())
                         .requestMatchers("/nutritionist/**")
-                        .hasRole("NUTRITIONIST")
+                        .hasRole(Role.NUTRITIONIST.name())
                         .anyRequest()
                         .authenticated())
                 .oauth2ResourceServer(resourceServer -> resourceServer

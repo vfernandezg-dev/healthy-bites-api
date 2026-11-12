@@ -50,10 +50,6 @@ public enum FileType {
         return maxBytes / (1024L * 1024L);
     }
 
-    public boolean isImage() {
-        return contentType.startsWith("image/");
-    }
-
     public static Optional<FileType> detect(byte[] header) {
         if (startsWith(header, 0, new byte[] {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF})) {
             return Optional.of(JPEG);

@@ -14,15 +14,16 @@ import com.healthybites.community.web.CommunityDtos.PostRequest;
 import com.healthybites.community.web.CommunityDtos.PostResponse;
 import com.healthybites.community.web.CommunityDtos.ReportRequest;
 import com.healthybites.shared.security.CurrentUser;
+import com.healthybites.shared.security.Role;
+import com.healthybites.shared.web.Locations;
 import com.healthybites.shared.web.Sorting;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.net.URI;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -43,6 +44,7 @@ class CommunityController {
 
     private static final Set<String> GROUP_SORT = Set.of("createdAt", "name");
     private static final Set<String> POST_SORT = Set.of("createdAt");
+    private static final Set<String> CREATED = Set.of("createdAt");
 
     private final GroupService groups;
     private final PostService posts;
@@ -58,7 +60,8 @@ class CommunityController {
     @GetMapping("/groups")
     PagedModel<GroupResponse> directory(
             @RequestParam(required = false) @Nullable String q,
-            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
+                    Pageable pageable) {
         return new PagedModel<>(groups.directory(CurrentUser.id(), q, Sorting.restrict(pageable, GROUP_SORT))
                 .map(GroupResponse::of));
     }
@@ -66,7 +69,7 @@ class CommunityController {
     @PostMapping("/groups")
     ResponseEntity<GroupResponse> create(@Valid @RequestBody GroupRequest body) {
         GroupCard card = groups.create(CurrentUser.id(), body.toData());
-        return ResponseEntity.created(URI.create("/groups/" + card.group().requireId()))
+        return ResponseEntity.created(Locations.of("/groups/{id}", card.group().requireId()))
                 .body(GroupResponse.of(card));
     }
 
@@ -82,7 +85,7 @@ class CommunityController {
 
     @DeleteMapping("/groups/{id}")
     ResponseEntity<Void> delete(@PathVariable UUID id) {
-        groups.delete(id, CurrentUser.id(), CurrentUser.hasRole("ADMIN"));
+        groups.delete(id, CurrentUser.id(), CurrentUser.hasRole(Role.ADMIN));
         return ResponseEntity.noContent().build();
     }
 
@@ -102,10 +105,12 @@ class CommunityController {
 
     @Operation(summary = "Miembros (el creador ve también las solicitudes pendientes)")
     @GetMapping("/groups/{id}/members")
-    List<MemberResponse> members(@PathVariable UUID id) {
-        return groups.members(id, CurrentUser.id()).stream()
-                .map(MemberResponse::of)
-                .toList();
+    PagedModel<MemberResponse> members(
+            @PathVariable UUID id,
+            @ParameterObject @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.ASC)
+                    Pageable pageable) {
+        return new PagedModel<>(groups.members(id, CurrentUser.id(), Sorting.restrict(pageable, CREATED))
+                .map(MemberResponse::of));
     }
 
     @PostMapping("/groups/{id}/members/{userId}/approve")
@@ -126,7 +131,8 @@ class CommunityController {
     @GetMapping("/groups/{id}/posts")
     PagedModel<PostResponse> posts(
             @PathVariable UUID id,
-            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
+                    Pageable pageable) {
         return new PagedModel<>(posts.posts(id, CurrentUser.id(), Sorting.restrict(pageable, POST_SORT))
                 .map(PostResponse::of));
     }
@@ -134,7 +140,7 @@ class CommunityController {
     @PostMapping("/groups/{id}/posts")
     ResponseEntity<PostResponse> publish(@PathVariable UUID id, @Valid @RequestBody PostRequest body) {
         PostCard card = posts.create(id, CurrentUser.id(), body.toData());
-        return ResponseEntity.created(URI.create("/posts/" + card.post().requireId()))
+        return ResponseEntity.created(Locations.of("/posts/{id}", card.post().requireId()))
                 .body(PostResponse.of(card));
     }
 
@@ -154,17 +160,22 @@ class CommunityController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Comentarios de una publicación, del más antiguo al más reciente")
     @GetMapping("/posts/{id}/comments")
-    List<CommentResponse> comments(@PathVariable UUID id) {
-        return posts.comments(id, CurrentUser.id()).stream()
-                .map(CommentResponse::of)
-                .toList();
+    PagedModel<CommentResponse> comments(
+            @PathVariable UUID id,
+            @ParameterObject @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.ASC)
+                    Pageable pageable) {
+        return new PagedModel<>(posts.comments(id, CurrentUser.id(), Sorting.restrict(pageable, CREATED))
+                .map(CommentResponse::of));
     }
 
     @PostMapping("/posts/{id}/comments")
     ResponseEntity<CommentResponse> comment(@PathVariable UUID id, @Valid @RequestBody CommentRequest body) {
         CommentCard card = posts.comment(id, CurrentUser.id(), body.body());
-        return ResponseEntity.status(201).body(CommentResponse.of(card));
+        return ResponseEntity.created(
+                        Locations.of("/comments/{id}", card.comment().requireId()))
+                .body(CommentResponse.of(card));
     }
 
     @DeleteMapping("/comments/{id}")

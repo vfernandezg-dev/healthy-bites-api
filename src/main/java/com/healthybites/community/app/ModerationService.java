@@ -11,10 +11,17 @@ import com.healthybites.identity.UserAccounts;
 import com.healthybites.shared.web.ApiException;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,7 +71,8 @@ public class ModerationService {
 
     @Transactional(readOnly = true)
     public Page<ReportCard> reports(ModerationReport.Status status, Pageable pageable) {
-        return reports.findByStatus(status, pageable).map(this::card);
+        Page<ModerationReport> page = reports.findByStatus(status, pageable);
+        return new PageImpl<>(cards(page.getContent()), pageable, page.getTotalElements());
     }
 
     /** Ocultar cierra todas las denuncias abiertas de lo mismo; descartar solo esta. */
@@ -76,10 +84,15 @@ public class ModerationService {
             throw ApiException.conflict("report-closed", "La denuncia ya está resuelta");
         }
         Instant now = clock.instant();
-        if (action == Action.DISMISS) {
-            report.close(ModerationReport.Status.DISMISSED, moderatorId, now);
-            return card(report);
+        switch (action) {
+            case DISMISS -> report.close(ModerationReport.Status.DISMISSED, moderatorId, now);
+            case HIDE -> hideTarget(report, moderatorId, note, now);
         }
+        return card(report);
+    }
+
+    /** Oculta lo denunciado y cierra todas las denuncias abiertas sobre ello. */
+    private void hideTarget(ModerationReport report, UUID moderatorId, String note, Instant now) {
         if (report.getPostId() != null) {
             posts.findById(report.getPostId()).ifPresent(post -> post.hide(moderatorId, note, now));
             reports.findByPostIdAndStatus(report.getPostId(), ModerationReport.Status.OPEN)
@@ -89,32 +102,60 @@ public class ModerationService {
             reports.findByCommentIdAndStatus(report.getCommentId(), ModerationReport.Status.OPEN)
                     .forEach(r -> r.close(ModerationReport.Status.RESOLVED, moderatorId, now));
         }
-        return card(report);
     }
 
     private ReportCard card(ModerationReport report) {
-        UserAccount reporter = accounts.findById(report.getReporterId()).orElse(null);
-        if (report.getPostId() != null) {
-            Post post = posts.findById(report.getPostId()).orElseThrow();
-            return new ReportCard(
-                    report,
-                    TargetType.POST,
-                    post.requireId(),
-                    excerpt(post.getTitle() + " — " + post.getBody()),
-                    post.isHidden(),
-                    accounts.findById(post.getAuthorId()).orElse(null),
-                    reporter);
-        }
-        Comment comment =
-                comments.findById(Objects.requireNonNull(report.getCommentId())).orElseThrow();
-        return new ReportCard(
-                report,
-                TargetType.COMMENT,
-                comment.requireId(),
-                excerpt(comment.getBody()),
-                comment.isHidden(),
-                accounts.findById(comment.getAuthorId()).orElse(null),
-                reporter);
+        return cards(List.of(report)).getFirst();
+    }
+
+    /** Las denuncias con lo denunciado y las personas cargados en lote: cuatro consultas por página, no tres por fila. */
+    private List<ReportCard> cards(List<ModerationReport> page) {
+        Map<UUID, Post> postsById = posts
+                .findAllById(page.stream()
+                        .map(ModerationReport::getPostId)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toSet()))
+                .stream()
+                .collect(Collectors.toMap(Post::requireId, Function.identity()));
+        Map<UUID, Comment> commentsById = comments
+                .findAllById(page.stream()
+                        .map(ModerationReport::getCommentId)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toSet()))
+                .stream()
+                .collect(Collectors.toMap(Comment::requireId, Function.identity()));
+        Set<UUID> people = new HashSet<>();
+        page.forEach(report -> people.add(report.getReporterId()));
+        postsById.values().forEach(post -> people.add(post.getAuthorId()));
+        commentsById.values().forEach(comment -> people.add(comment.getAuthorId()));
+        Map<UUID, UserAccount> accountsById = accounts.findAllById(people);
+
+        return page.stream()
+                .map(report -> {
+                    UserAccount reporter = accountsById.get(report.getReporterId());
+                    if (report.getPostId() != null) {
+                        Post post = Objects.requireNonNull(postsById.get(report.getPostId()));
+                        return new ReportCard(
+                                report,
+                                TargetType.POST,
+                                post.requireId(),
+                                excerpt(post.getTitle() + " — " + post.getBody()),
+                                post.isHidden(),
+                                accountsById.get(post.getAuthorId()),
+                                reporter);
+                    }
+                    Comment comment =
+                            Objects.requireNonNull(commentsById.get(Objects.requireNonNull(report.getCommentId())));
+                    return new ReportCard(
+                            report,
+                            TargetType.COMMENT,
+                            comment.requireId(),
+                            excerpt(comment.getBody()),
+                            comment.isHidden(),
+                            accountsById.get(comment.getAuthorId()),
+                            reporter);
+                })
+                .toList();
     }
 
     private static String excerpt(String text) {

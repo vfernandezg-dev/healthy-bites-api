@@ -5,9 +5,7 @@ import com.healthybites.progress.domain.Goal;
 import com.healthybites.progress.domain.GoalStatusChange;
 import com.healthybites.progress.domain.HabitLog;
 import com.healthybites.progress.domain.WeightEntry;
-import jakarta.validation.constraints.DecimalMax;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Digits;
+import com.healthybites.shared.validation.WeightKg;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -28,7 +26,8 @@ final class ProgressDtos {
 
             @Size(max = 500, message = "Máximo 500 caracteres") @Nullable String description,
 
-            @NotNull(message = "Indica el peso objetivo") @DecimalMin(value = "20", message = "El peso mínimo es 20 kg") @DecimalMax(value = "400", message = "El peso máximo es 400 kg") @Digits(integer = 3, fraction = 1, message = "Como mucho un decimal") BigDecimal targetWeightKg) {
+            @NotNull(message = "Indica el peso objetivo") @WeightKg
+            BigDecimal targetWeightKg) {
 
         GoalService.GoalData toData() {
             return new GoalService.GoalData(title, description, targetWeightKg);
@@ -68,7 +67,7 @@ final class ProgressDtos {
     record WeightEntryRequest(
             @NotNull(message = "Indica la fecha") LocalDate measuredOn,
 
-            @NotNull(message = "Indica el peso") @DecimalMin(value = "20", message = "El peso mínimo es 20 kg") @DecimalMax(value = "400", message = "El peso máximo es 400 kg") @Digits(integer = 3, fraction = 1, message = "Como mucho un decimal") BigDecimal weightKg,
+            @NotNull(message = "Indica el peso") @WeightKg BigDecimal weightKg,
 
             @Size(max = 500, message = "Máximo 500 caracteres") @Nullable String notes) {
 

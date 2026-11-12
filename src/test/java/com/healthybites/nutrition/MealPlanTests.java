@@ -13,6 +13,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.healthybites.IntegrationTest;
 import com.healthybites.support.Seed;
 import com.jayway.jsonpath.JsonPath;
+import java.util.List;
+import java.util.Locale;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -33,6 +36,30 @@ class MealPlanTests extends IntegrationTest {
 
     @Autowired
     private MealPlanAccess mealPlanAccess;
+
+    /** El resumen por estados coincide con la lista filtrada: el panel no necesita descargar la lista entera. */
+    @Test
+    void theStatusSummaryMatchesTheFilteredList() throws Exception {
+        String auth = bearer(token(Seed.CARLOS));
+        String summary = mockMvc.perform(
+                        get("/nutritionist/meal-plans/summary").header(HttpHeaders.AUTHORIZATION, auth))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        for (String state : List.of("DRAFT", "PUBLISHED", "ARCHIVED")) {
+            int counted = JsonPath.read(summary, "$." + state.toLowerCase(Locale.ROOT));
+            mockMvc.perform(get("/nutritionist/meal-plans")
+                            .param("status", state)
+                            .param("size", "100")
+                            .header(HttpHeaders.AUTHORIZATION, auth))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.page.totalElements").value(counted))
+                    .andExpect(jsonPath("$.content[*].status", Matchers.everyItem(Matchers.is(state))));
+        }
+        int published = JsonPath.read(summary, "$.published");
+        org.assertj.core.api.Assertions.assertThat(published).isPositive();
+    }
 
     @Test
     void theCatalogMarksWhatEachClientCanOpenAndHidesDrafts() throws Exception {
@@ -139,9 +166,20 @@ class MealPlanTests extends IntegrationTest {
     void nutritionistsSeeTheClientsOfTheirPlansAndClientsCannotUseTheirSpace() throws Exception {
         mockMvc.perform(get("/nutritionist/clients").header(HttpHeaders.AUTHORIZATION, bearer(token(Seed.CARLOS))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].email", hasItem(Seed.JUAN)))
+                .andExpect(jsonPath("$.content[*].email", hasItem(Seed.JUAN)))
                 .andExpect(jsonPath(
-                        "$[?(@.email == '" + Seed.JUAN + "')].plans[0]", contains("Mantenimiento equilibrado")));
+                        "$.content[?(@.email == '" + Seed.JUAN + "')].plans[0]",
+                        contains("Mantenimiento equilibrado")));
+        // Búsqueda en el servidor sin distinguir mayúsculas ni tildes: "PEREZ" encuentra a Juan Pérez.
+        mockMvc.perform(get("/nutritionist/clients")
+                        .param("q", "JUAN PEREZ")
+                        .header(HttpHeaders.AUTHORIZATION, bearer(token(Seed.CARLOS))))
+                .andExpect(jsonPath("$.page.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].email").value(Seed.JUAN));
+        mockMvc.perform(get("/nutritionist/clients")
+                        .param("q", "nadie_se_llama%asi")
+                        .header(HttpHeaders.AUTHORIZATION, bearer(token(Seed.CARLOS))))
+                .andExpect(jsonPath("$.page.totalElements").value(0));
         mockMvc.perform(get("/nutritionist/meal-plans").header(HttpHeaders.AUTHORIZATION, bearer(token(Seed.JUAN))))
                 .andExpect(status().isForbidden());
     }

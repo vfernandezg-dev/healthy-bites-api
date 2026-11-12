@@ -1,21 +1,21 @@
 package com.healthybites.nutrition.app;
 
+import com.healthybites.billing.Access;
 import com.healthybites.identity.UserAccount;
 import com.healthybites.identity.UserAccounts;
 import com.healthybites.nutrition.MealPlanAccess;
-import com.healthybites.nutrition.app.PlanAccessPolicy.Reader;
 import com.healthybites.nutrition.domain.MealPlan;
 import com.healthybites.nutrition.domain.MealPlanEnrollment;
 import com.healthybites.nutrition.domain.MealPlanEnrollmentRepository;
 import com.healthybites.nutrition.domain.MealPlanRepository;
 import com.healthybites.nutrition.domain.NutritionEnums.EnrollmentSource;
 import com.healthybites.nutrition.domain.NutritionEnums.MealPlanGoal;
-import com.healthybites.nutrition.domain.NutritionEnums.MealPlanStatus;
+import com.healthybites.shared.domain.PublicationStatus;
 import com.healthybites.shared.web.ApiException;
 import java.time.Clock;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
@@ -61,20 +61,20 @@ public class MealPlanService implements MealPlanAccess {
     @Transactional(readOnly = true)
     public Page<PlanCard> catalog(UUID userId, boolean staff, @Nullable MealPlanGoal goal, Pageable pageable) {
         Page<MealPlan> page = goal == null
-                ? plans.findByStatus(MealPlanStatus.PUBLISHED, pageable)
-                : plans.findByStatusAndGoal(MealPlanStatus.PUBLISHED, goal, pageable);
-        Reader reader = access.reader(userId, staff);
+                ? plans.findByStatus(PublicationStatus.PUBLISHED, pageable)
+                : plans.findByStatusAndGoal(PublicationStatus.PUBLISHED, goal, pageable);
+        Access reader = access.reader(userId, staff);
         Map<UUID, UserAccount> authors = accounts.findAllById(
                 page.getContent().stream().map(MealPlan::getAuthorId).distinct().toList());
-        return page.map(plan -> PlanCard.of(plan, authors.get(plan.getAuthorId()), !reader.canOpen(plan)));
+        return page.map(
+                plan -> PlanCard.of(plan, authors.get(plan.getAuthorId()), !PlanAccessPolicy.canOpen(reader, plan)));
     }
 
     /** Detalle con comidas: 403 {@code subscription-required} (con {@code requiredTier}) si no se puede abrir. */
     @Transactional(readOnly = true)
     public PlanCard open(UUID planId, UUID userId, boolean staff) {
         MealPlan plan = plans.findById(planId)
-                .filter(candidate -> candidate.isPublished()
-                        || (staff && candidate.getAuthorId().equals(userId)))
+                .filter(candidate -> candidate.isVisibleTo(userId, staff))
                 .orElseThrow(MealPlanService::notFound);
         access.requireOpen(plan, userId, staff);
         return PlanCard.of(plan, accounts.findById(plan.getAuthorId()).orElse(null), false);
@@ -92,13 +92,15 @@ public class MealPlanService implements MealPlanAccess {
                         .collect(Collectors.toMap(MealPlan::requireId, plan -> plan));
         Map<UUID, UserAccount> authors = accounts.findAllById(
                 byId.values().stream().map(MealPlan::getAuthorId).distinct().toList());
-        Reader reader = access.reader(clientId, false);
+        Access reader = access.reader(clientId, false);
         return mine.stream()
                 .filter(enrollment -> byId.containsKey(enrollment.getMealPlanId()))
                 .map(enrollment -> {
                     MealPlan plan = byId.get(enrollment.getMealPlanId());
                     return new Enrollment(
-                            enrollment, PlanCard.of(plan, authors.get(plan.getAuthorId()), !reader.canOpen(plan)));
+                            enrollment,
+                            PlanCard.of(
+                                    plan, authors.get(plan.getAuthorId()), !PlanAccessPolicy.canOpen(reader, plan)));
                 })
                 .toList();
     }
@@ -145,8 +147,9 @@ public class MealPlanService implements MealPlanAccess {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<String> titleOf(UUID mealPlanId) {
-        return plans.findById(mealPlanId).map(MealPlan::getTitle);
+    public Map<UUID, String> titlesOf(Collection<UUID> mealPlanIds) {
+        return plans.findAllById(mealPlanIds).stream()
+                .collect(Collectors.toMap(MealPlan::requireId, MealPlan::getTitle));
     }
 
     static ApiException notFound() {

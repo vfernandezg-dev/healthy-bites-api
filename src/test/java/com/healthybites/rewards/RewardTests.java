@@ -85,7 +85,7 @@ class RewardTests extends IntegrationTest {
     void clientsSeeActiveRewardsWithTheirProgressAndDeactivatedOnesDisappear() throws Exception {
         mockMvc.perform(get("/rewards").header(HttpHeaders.AUTHORIZATION, bearer(token(Seed.JUAN))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[?(@.title == 'Constancia de 7 días')].streak.currentDays", hasItem(2)));
+                .andExpect(jsonPath("$.content[?(@.title == 'Constancia de 7 días')].streak.currentDays", hasItem(2)));
 
         String carlos = bearer(token(Seed.CARLOS));
         String id = JsonPath.read(
@@ -97,7 +97,12 @@ class RewardTests extends IntegrationTest {
         mockMvc.perform(delete("/nutritionist/rewards/" + id).header(HttpHeaders.AUTHORIZATION, carlos))
                 .andExpect(status().isNoContent());
         mockMvc.perform(get("/rewards").header(HttpHeaders.AUTHORIZATION, bearer(token(Seed.JUAN))))
-                .andExpect(jsonPath("$[*].id", org.hamcrest.Matchers.not(hasItem(id))));
+                .andExpect(jsonPath("$.content[*].id", org.hamcrest.Matchers.not(hasItem(id))));
+        // El nutricionista filtra sus recompensas retiradas.
+        mockMvc.perform(get("/nutritionist/rewards").param("active", "false").header(HttpHeaders.AUTHORIZATION, carlos))
+                .andExpect(jsonPath("$.content[*].id", hasItem(id)))
+                .andExpect(jsonPath(
+                        "$.content[*].active", org.hamcrest.Matchers.everyItem(org.hamcrest.Matchers.is(false))));
         mockMvc.perform(delete("/nutritionist/rewards/" + id)
                         .header(HttpHeaders.AUTHORIZATION, bearer(token(Seed.ELENA))))
                 .andExpect(status().isNotFound());

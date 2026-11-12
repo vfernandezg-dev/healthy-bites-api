@@ -9,6 +9,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.jspecify.annotations.Nullable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -109,6 +110,7 @@ public class RefreshTokenService {
 
     /** Limpieza diaria de sesiones caducadas hace más de un día. */
     @Scheduled(cron = "0 30 4 * * *")
+    @SchedulerLock(name = "refresh-token-cleanup", lockAtMostFor = "PT10M")
     @Transactional
     public void purgeExpired() {
         int deleted = repository.deleteExpiredBefore(clock.instant().minus(Duration.ofDays(1)));

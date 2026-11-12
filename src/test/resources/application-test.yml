@@ -5,6 +5,10 @@ spring:
   # Mismos datos de demostración que en desarrollo: los tests usan sus usuarios.
   flyway:
     locations: classpath:db/migration,classpath:db/seed-dev
+  # Estadísticas de Hibernate: los tests cuentan las sentencias de una petición para detectar consultas N+1.
+  jpa:
+    properties:
+      "[hibernate.generate_statistics]": true
   mail:
     username: test@healthybites.local
     password: test
@@ -23,6 +27,11 @@ healthybites:
       # Todas las peticiones de los tests llegan desde 127.0.0.1; el límite por cuenta se prueba igual.
       password-reset-per-ip: 1000
       registrations-per-ip: 1000
+
+# Sin el resumen de métricas de Hibernate de cada sesión (sale al activar las estadísticas).
+logging:
+  level:
+    org.hibernate.engine.internal.StatisticalLoggingSessionEventListener: warn
 
 # OpenApiExportTests genera docs/openapi.yaml desde /v3/api-docs.yaml.
 springdoc:

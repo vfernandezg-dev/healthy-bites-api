@@ -1,7 +1,6 @@
 package com.healthybites.identity.app;
 
 import com.healthybites.identity.Registrations;
-import com.healthybites.identity.Role;
 import com.healthybites.identity.UserAccount;
 import com.healthybites.identity.domain.NutritionistInvitation;
 import com.healthybites.identity.domain.NutritionistInvitationRepository;
@@ -9,6 +8,7 @@ import com.healthybites.identity.domain.User;
 import com.healthybites.identity.domain.UserRepository;
 import com.healthybites.identity.events.UserRegistered;
 import com.healthybites.shared.security.OpaqueTokens;
+import com.healthybites.shared.security.Role;
 import com.healthybites.shared.web.ApiException;
 import java.time.Clock;
 import java.time.Instant;

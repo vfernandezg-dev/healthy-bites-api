@@ -1,7 +1,7 @@
 package com.healthybites.notifications.app;
 
-import com.healthybites.identity.Role;
 import com.healthybites.shared.config.AppProperties;
+import com.healthybites.shared.security.Role;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 

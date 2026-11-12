@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -44,10 +45,11 @@ class ContentController {
             @RequestParam(required = false) @Nullable ContentType type,
             @RequestParam(required = false) @Nullable ContentCategory category,
             @RequestParam(required = false) @Nullable String q,
-            @PageableDefault(sort = "publishedAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 20, sort = "publishedAt", direction = Sort.Direction.DESC)
+                    Pageable pageable) {
         return new PagedModel<>(contents.catalog(
                         CurrentUser.id(),
-                        isStaff(),
+                        CurrentUser.isStaff(),
                         new Filter(type, category, q),
                         Sorting.restrict(pageable, SORTABLE))
                 .map(ContentSummaryResponse::of));
@@ -56,13 +58,13 @@ class ContentController {
     @Operation(summary = "Detalle con el cuerpo (403 subscription-required, con requiredTier, si está bloqueado)")
     @GetMapping("/content-items/{slug}")
     ContentDetailResponse detail(@PathVariable String slug) {
-        return ContentDetailResponse.of(contents.open(slug, CurrentUser.id(), isStaff()));
+        return ContentDetailResponse.of(contents.open(slug, CurrentUser.id(), CurrentUser.isStaff()));
     }
 
     @Operation(summary = "Enlace firmado y temporal al fichero del contenido (vídeo, PDF...)")
     @GetMapping("/content-items/{id}/file")
     ResponseEntity<FileLinkResponse> file(@PathVariable UUID id) {
-        String path = contents.fileLink(id, CurrentUser.id(), isStaff());
+        String path = contents.fileLink(id, CurrentUser.id(), CurrentUser.isStaff());
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noStore())
                 .body(new FileLinkResponse(path, ContentService.FILE_LINK_TTL.toSeconds()));
@@ -74,9 +76,5 @@ class ContentController {
         return contents.unlockedBy(CurrentUser.id()).stream()
                 .map(ContentSummaryResponse::of)
                 .toList();
-    }
-
-    private static boolean isStaff() {
-        return CurrentUser.hasRole("NUTRITIONIST") || CurrentUser.hasRole("ADMIN");
     }
 }

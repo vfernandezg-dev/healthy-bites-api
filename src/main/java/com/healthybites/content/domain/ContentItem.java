@@ -2,15 +2,13 @@ package com.healthybites.content.domain;
 
 import com.healthybites.billing.Tier;
 import com.healthybites.content.domain.ContentEnums.ContentCategory;
-import com.healthybites.content.domain.ContentEnums.ContentStatus;
 import com.healthybites.content.domain.ContentEnums.ContentType;
-import com.healthybites.shared.domain.BaseEntity;
+import com.healthybites.shared.domain.PublishableEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
-import java.time.Instant;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -25,7 +23,7 @@ import org.jspecify.annotations.Nullable;
 @Table(name = "content_items")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ContentItem extends BaseEntity {
+public class ContentItem extends PublishableEntity {
 
     @Column(name = "author_id", nullable = false)
     private UUID authorId;
@@ -60,13 +58,6 @@ public class ContentItem extends BaseEntity {
     @Column(name = "file_media_id")
     private @Nullable UUID fileMediaId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private ContentStatus status;
-
-    @Column(name = "published_at")
-    private @Nullable Instant publishedAt;
-
     public record Data(
             String title,
             String summary,
@@ -81,7 +72,6 @@ public class ContentItem extends BaseEntity {
         ContentItem item = new ContentItem();
         item.authorId = authorId;
         item.slug = slug;
-        item.status = ContentStatus.DRAFT;
         item.update(data);
         return item;
     }
@@ -97,24 +87,5 @@ public class ContentItem extends BaseEntity {
         this.requiredTier = data.requiredTier();
         this.coverMediaId = data.coverMediaId();
         this.fileMediaId = data.fileMediaId();
-    }
-
-    public void publish(Instant now) {
-        this.status = ContentStatus.PUBLISHED;
-        if (publishedAt == null) {
-            this.publishedAt = now;
-        }
-    }
-
-    public void archive() {
-        this.status = ContentStatus.ARCHIVED;
-    }
-
-    public boolean isPublished() {
-        return status == ContentStatus.PUBLISHED;
-    }
-
-    public boolean isDraft() {
-        return status == ContentStatus.DRAFT;
     }
 }

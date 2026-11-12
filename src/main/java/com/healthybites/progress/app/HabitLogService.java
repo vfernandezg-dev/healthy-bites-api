@@ -4,6 +4,7 @@ import com.healthybites.progress.domain.HabitLog;
 import com.healthybites.progress.domain.HabitLogRepository;
 import com.healthybites.progress.events.HabitLogged;
 import com.healthybites.shared.web.ApiException;
+import com.healthybites.shared.web.DateRanges;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
@@ -34,6 +35,7 @@ public class HabitLogService {
     public List<HabitLog> list(UUID clientId, @Nullable LocalDate from, @Nullable LocalDate to) {
         LocalDate end = to == null ? today() : to;
         LocalDate start = from == null ? end.minusDays(30) : from;
+        DateRanges.check(start, end);
         return logs.findByClientIdAndLoggedOnBetweenOrderByLoggedOnDesc(clientId, start, end);
     }
 

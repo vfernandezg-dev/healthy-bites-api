@@ -1,6 +1,6 @@
 # ADR 0005 · Eventos persistidos entre módulos
 
-- **Estado:** aceptada
+- **Estado:** aceptada; el reenvío al arrancar lo sustituye el [ADR 0010](0010-varias-instancias.md)
 - **Fecha:** 2026-11-11
 
 ## Contexto

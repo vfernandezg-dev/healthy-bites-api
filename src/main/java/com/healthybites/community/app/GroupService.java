@@ -7,9 +7,9 @@ import com.healthybites.community.domain.GroupMembershipRepository;
 import com.healthybites.community.events.MembershipRequested;
 import com.healthybites.identity.UserAccount;
 import com.healthybites.identity.UserAccounts;
+import com.healthybites.shared.persistence.TextSearch;
 import com.healthybites.shared.web.ApiException;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
@@ -56,12 +56,7 @@ public class GroupService {
 
     @Transactional(readOnly = true)
     public Page<GroupCard> directory(UUID userId, @Nullable String query, Pageable pageable) {
-        Specification<CommunityGroup> spec = Specification.unrestricted();
-        if (query != null && !query.isBlank()) {
-            String like = "%"
-                    + query.trim().toLowerCase(Locale.ROOT).replace("%", "\\%").replace("_", "\\_") + "%";
-            spec = spec.and((root, q, cb) -> cb.like(cb.lower(root.get("name")), like, '\\'));
-        }
+        Specification<CommunityGroup> spec = TextSearch.anyContains(query, "name");
         Page<CommunityGroup> page = groups.findAll(spec, pageable);
         List<UUID> ids =
                 page.getContent().stream().map(CommunityGroup::requireId).toList();
@@ -131,16 +126,16 @@ public class GroupService {
 
     /** Miembros activos (para los miembros) y también las solicitudes pendientes (para el creador). */
     @Transactional(readOnly = true)
-    public List<Member> members(UUID groupId, UUID userId) {
+    /** Miembros activos; el creador ve también las solicitudes pendientes. */
+    public Page<Member> members(UUID groupId, UUID userId, Pageable pageable) {
         CommunityGroup group = find(groupId);
         requireActiveMember(group, userId);
-        boolean owner = group.isOwnedBy(userId);
-        List<GroupMembership> list = memberships.findByGroupIdOrderByCreatedAtAsc(groupId).stream()
-                .filter(m -> owner || m.isActive())
-                .toList();
+        Page<GroupMembership> page = group.isOwnedBy(userId)
+                ? memberships.findByGroupId(groupId, pageable)
+                : memberships.findByGroupIdAndStatus(groupId, GroupMembership.Status.ACTIVE, pageable);
         Map<UUID, UserAccount> people = accounts.findAllById(
-                list.stream().map(GroupMembership::getUserId).toList());
-        return list.stream().map(m -> new Member(m, people.get(m.getUserId()))).toList();
+                page.getContent().stream().map(GroupMembership::getUserId).toList());
+        return page.map(m -> new Member(m, people.get(m.getUserId())));
     }
 
     @Transactional
