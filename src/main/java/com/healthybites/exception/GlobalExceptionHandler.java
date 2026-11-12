@@ -69,8 +69,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(TooManyRequestsException.class)
-    ProblemDetail handleTooManyRequests(TooManyRequestsException ex) {
-        return problem(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage());
+    ResponseEntity<ProblemDetail> handleTooManyRequests(TooManyRequestsException ex) {
+        ResponseEntity.BodyBuilder response = ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS);
+        // Segundos de espera, redondeados hacia arriba (RFC 9110, Retry-After).
+        ex.getRetryAfter().ifPresent(wait -> response.header(HttpHeaders.RETRY_AFTER,
+                String.valueOf(Math.max(1, (wait.toMillis() + 999) / 1000))));
+        return response.body(problem(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage()));
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)

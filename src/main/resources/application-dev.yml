@@ -45,3 +45,12 @@ healthybites:
   app:
     frontend-url: ${APP_FRONTEND_URL:http://localhost:4210}
     api-public-url: ${API_PUBLIC_URL:http://localhost:8090/api/v1}
+  security:
+    refresh:
+      # En http://localhost la cookie no puede ser Secure (ni llevar el prefijo __Secure-).
+      cookie-name: hb_rt
+      cookie-secure: false
+  cors:
+    # Web-app (ng serve) y landing (astro dev).
+    app-origins: ${CORS_APP_ORIGINS:http://localhost:4210}
+    landing-origins: ${CORS_LANDING_ORIGINS:http://localhost:4321}

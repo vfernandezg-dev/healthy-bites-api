@@ -61,7 +61,7 @@ public abstract class IntegrationTest {
                         .content(loginBody(email, DEMO_PASSWORD)))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        return JsonPath.read(response, "$.token");
+        return JsonPath.read(response, "$.accessToken");
     }
 
     protected static String bearer(String token) {

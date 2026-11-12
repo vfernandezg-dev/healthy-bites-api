@@ -1,5 +1,6 @@
 package com.healthybites.service.impl;
 
+import com.healthybites.security.CurrentUser;
 import com.healthybites.config.properties.AppProperties;
 import com.healthybites.dto.PaymentCaptureResponse;
 import com.healthybites.dto.PaymentOrderResponse;
@@ -14,8 +15,6 @@ import com.healthybites.service.SuscripcionService;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -68,8 +67,8 @@ public class CheckoutServiceImpl implements CheckoutService {
 
     private void sendPurchaseConfirmationEmail(SuscripcionDetailsDTO suscripcionDetailsDTO) throws MessagingException {
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String userEmail = authentication.getName();
+        // El nombre del principal ahora es el id del usuario; el correo viaja en el access token.
+        String userEmail = CurrentUser.email();
 
 
         Map<String, Object> model = new HashMap<>();

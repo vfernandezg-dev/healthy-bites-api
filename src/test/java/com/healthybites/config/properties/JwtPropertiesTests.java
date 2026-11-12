@@ -20,7 +20,9 @@ class JwtPropertiesTests {
 
     private final ApplicationContextRunner runner = new ApplicationContextRunner()
             .withUserConfiguration(Config.class)
-            .withPropertyValues("healthybites.security.jwt.validity=P1D");
+            .withPropertyValues("healthybites.security.jwt.access-token-ttl=PT15M",
+                    "healthybites.security.jwt.issuer=healthy-bites-api",
+                    "healthybites.security.jwt.audience=healthy-bites-web");
 
     private static String randomBase64(int bytes) {
         byte[] key = new byte[bytes];
