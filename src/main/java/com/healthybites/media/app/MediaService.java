@@ -59,7 +59,10 @@ public class MediaService implements MediaFiles {
     /** Un fichero registrado y su contenido. */
     public record StoredMedia(MediaFile file, Resource resource) {}
 
-    @Transactional
+    /**
+     * Sin transacción propia: el fichero (hasta 100 MB) se escribe sin retener una conexión de la base de datos, y
+     * solo el registro final abre una transacción corta ({@code save}). Si el registro falla, se borra el fichero.
+     */
     public MediaFile upload(MultipartFile upload, MediaPurpose purpose, UUID ownerId, Role role) {
         if (purpose != MediaPurpose.POST_IMAGE && !STAFF.contains(role)) {
             throw ApiException.forbidden("media-purpose-forbidden", "No puedes subir ficheros de este tipo");

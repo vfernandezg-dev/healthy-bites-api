@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.healthybites.billing.app.PaymentGateway;
+import com.healthybites.media.infra.FileStorage;
 import com.healthybites.support.Seed;
 import com.jayway.jsonpath.JsonPath;
 import jakarta.mail.Session;
@@ -25,6 +26,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
@@ -60,6 +62,10 @@ public abstract class IntegrationTest {
     // La pasarela de pago (PayPal) nunca se llama de verdad: cada test simula sus respuestas.
     @MockitoBean
     protected PaymentGateway payPal;
+
+    // Almacenamiento real envuelto en un espía: permite comprobar cuándo y cómo se escriben los ficheros.
+    @MockitoSpyBean
+    protected FileStorage storage;
 
     @BeforeEach
     void setUpMail() {

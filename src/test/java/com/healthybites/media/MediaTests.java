@@ -1,7 +1,11 @@
 package com.healthybites.media;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.startsWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -14,13 +18,16 @@ import com.healthybites.support.Seed;
 import com.jayway.jsonpath.JsonPath;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * Ficheros: tipo por los bytes, nombre del servidor, públicos por id y protegidos solo con URL firmada; siempre con
@@ -55,6 +62,22 @@ class MediaTests extends IntegrationTest {
                 .andExpect(header().string("Content-Security-Policy", containsString("sandbox")))
                 .andExpect(header().string(HttpHeaders.CACHE_CONTROL, containsString("immutable")))
                 .andExpect(content().bytes(PNG));
+    }
+
+    /** Escribir hasta 100 MB puede tardar: no debe hacerse con una conexión de la base de datos retenida. */
+    @Test
+    void theFileIsWrittenOutsideAnyDatabaseTransaction() throws Exception {
+        List<Boolean> insideTransaction = new ArrayList<>();
+        doAnswer(invocation -> {
+                    insideTransaction.add(TransactionSynchronizationManager.isActualTransactionActive());
+                    return invocation.callRealMethod();
+                })
+                .when(storage)
+                .store(any(), anyString());
+
+        upload(Seed.JUAN, "POST_IMAGE", "foto.png", "image/png", PNG).andExpect(status().isCreated());
+
+        assertThat(insideTransaction).containsExactly(false);
     }
 
     @Test
