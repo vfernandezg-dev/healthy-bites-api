@@ -188,3 +188,25 @@ values ('00000000-0000-7000-8000-000000001301', '00000000-0000-7000-8000-0000000
        ('00000000-0000-7000-8000-000000001303', '00000000-0000-7000-8000-000000000005', current_date - 2, 6, 8, 7, 9, null),
        ('00000000-0000-7000-8000-000000001304', '00000000-0000-7000-8000-000000000006', current_date - 2, 9, 9, 8, 7, 'Entreno de pierna')
 on conflict do nothing;
+
+-- ---------- rewards ----------
+insert into rewards (id, author_id, title, description, required_streak_days, content_item_id, meal_plan_id)
+values ('00000000-0000-7000-8000-000000002001', '00000000-0000-7000-8000-000000000002', 'Constancia de 7 días',
+        'Registra tus hábitos 7 días seguidos y desbloquea el artículo sobre composición corporal.', 7,
+        '00000000-0000-7000-8000-0000000a0002', null),
+       ('00000000-0000-7000-8000-000000002002', '00000000-0000-7000-8000-000000000003', 'Dos semanas saludables',
+        'Mantén tu racha 14 días y accede al plan de masa muscular.', 14, null,
+        '00000000-0000-7000-8000-0000000d0002'),
+       ('00000000-0000-7000-8000-000000002003', '00000000-0000-7000-8000-000000000002', 'Mes de hábitos',
+        'Un mes completo registrando hábitos: recetas altas en proteína.', 30,
+        '00000000-0000-7000-8000-0000000a0006', null)
+on conflict do nothing;
+
+insert into reward_streaks (id, reward_id, client_id, current_days, last_counted_on, completed_at)
+values ('00000000-0000-7000-8000-000000002101', '00000000-0000-7000-8000-000000002001',
+        '00000000-0000-7000-8000-000000000004', 2, current_date - 2, null),
+       ('00000000-0000-7000-8000-000000002102', '00000000-0000-7000-8000-000000002002',
+        '00000000-0000-7000-8000-000000000005', 10, current_date - 2, null),
+       ('00000000-0000-7000-8000-000000002103', '00000000-0000-7000-8000-000000002003',
+        '00000000-0000-7000-8000-000000000006', 2, current_date - 2, null)
+on conflict do nothing;

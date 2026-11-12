@@ -26,6 +26,8 @@ tags:
   name: Progreso
 - description: Formulario de contacto de la landing
   name: Contacto
+- description: Rachas de los clientes y recompensas de los nutricionistas
+  name: Recompensas
 - description: Subida de imágenes y ficheros de contenido
   name: Ficheros
 - description: "Búsqueda, resumen y activación de cuentas (solo ADMIN)"
@@ -284,7 +286,7 @@ paths:
       - Admin · Cuentas
   /admin/users/{id}/deactivate:
     post:
-      operationId: deactivate
+      operationId: deactivate_1
       parameters:
       - in: path
         name: id
@@ -465,7 +467,7 @@ paths:
       - Contacto
   /content-items:
     get:
-      operationId: catalog_1
+      operationId: catalog_2
       parameters:
       - in: query
         name: type
@@ -1037,7 +1039,7 @@ paths:
       - Suscripción
   /me/profile:
     put:
-      operationId: update_2
+      operationId: update_3
       requestBody:
         content:
           application/json:
@@ -1054,6 +1056,53 @@ paths:
       summary: Actualiza el nombre y los datos del perfil
       tags:
       - Mi cuenta
+  /me/streaks:
+    get:
+      operationId: streaks
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RewardResponse"
+          description: OK
+      tags:
+      - Recompensas
+    post:
+      operationId: start
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StartStreakRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RewardResponse"
+          description: OK
+      summary: "Empieza una racha: cuenta cada día que registres tus hábitos"
+      tags:
+      - Recompensas
+  /me/streaks/{id}:
+    delete:
+      operationId: abandon_1
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+      tags:
+      - Recompensas
   /me/subscription:
     get:
       operationId: current
@@ -1122,7 +1171,7 @@ paths:
       - Suscripción
   /meal-plans:
     get:
-      operationId: catalog
+      operationId: catalog_1
       parameters:
       - in: query
         name: goal
@@ -1263,7 +1312,7 @@ paths:
       - Nutricionista · Planes
   /nutritionist/content-items:
     get:
-      operationId: mine_1
+      operationId: mine_2
       parameters:
       - in: query
         name: pageable
@@ -1281,7 +1330,7 @@ paths:
       tags:
       - Nutricionista · Contenido
     post:
-      operationId: create_1
+      operationId: create_2
       requestBody:
         content:
           application/json:
@@ -1333,7 +1382,7 @@ paths:
       tags:
       - Nutricionista · Contenido
     put:
-      operationId: update_1
+      operationId: update_2
       parameters:
       - in: path
         name: id
@@ -1396,7 +1445,7 @@ paths:
       - Nutricionista · Contenido
   /nutritionist/meal-plans:
     get:
-      operationId: mine
+      operationId: mine_1
       parameters:
       - in: query
         name: pageable
@@ -1414,7 +1463,7 @@ paths:
       tags:
       - Nutricionista · Planes
     post:
-      operationId: create
+      operationId: create_1
       requestBody:
         content:
           application/json:
@@ -1466,7 +1515,7 @@ paths:
       tags:
       - Nutricionista · Planes
     put:
-      operationId: update
+      operationId: update_1
       parameters:
       - in: path
         name: id
@@ -1605,6 +1654,95 @@ paths:
       summary: Publica el plan (necesita al menos una comida)
       tags:
       - Nutricionista · Planes
+  /nutritionist/rewards:
+    get:
+      operationId: mine
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RewardResponse"
+          description: OK
+      tags:
+      - Recompensas
+    post:
+      operationId: create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RewardRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RewardResponse"
+          description: OK
+      summary: Crea una recompensa que desbloquea un contenido o un plan propio y
+        publicado
+      tags:
+      - Recompensas
+  /nutritionist/rewards/{id}:
+    delete:
+      operationId: deactivate
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+      summary: Deja de ofrecer la recompensa (las rachas completadas conservan su
+        premio)
+      tags:
+      - Recompensas
+    put:
+      operationId: update
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RewardRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RewardResponse"
+          description: OK
+      tags:
+      - Recompensas
+  /rewards:
+    get:
+      operationId: catalog
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RewardResponse"
+          description: OK
+      summary: Recompensas activas con mi racha hacia cada una
+      tags:
+      - Recompensas
   /subscription-plans:
     get:
       operationId: plans
@@ -2646,6 +2784,50 @@ components:
       required:
       - password
       - token
+    RewardRequest:
+      type: object
+      properties:
+        contentItemId:
+          type: string
+          format: uuid
+        description:
+          type: string
+          maxLength: 500
+          minLength: 0
+        mealPlanId:
+          type: string
+          format: uuid
+        requiredStreakDays:
+          type: integer
+          format: int32
+          maximum: 365
+          minimum: 1
+        title:
+          type: string
+          maxLength: 120
+          minLength: 0
+      required:
+      - description
+      - title
+    RewardResponse:
+      type: object
+      properties:
+        active:
+          type: boolean
+        description:
+          type: string
+        id:
+          type: string
+          format: uuid
+        requiredStreakDays:
+          type: integer
+          format: int32
+        streak:
+          $ref: "#/components/schemas/StreakResponse"
+        target:
+          $ref: "#/components/schemas/TargetResponse"
+        title:
+          type: string
     SessionResponse:
       type: object
       properties:
@@ -2676,6 +2858,14 @@ components:
           - ADMIN
           - CLIENT
           - NUTRITIONIST
+    StartStreakRequest:
+      type: object
+      properties:
+        rewardId:
+          type: string
+          format: uuid
+      required:
+      - rewardId
     StatusChangeResponse:
       type: object
       properties:
@@ -2694,6 +2884,36 @@ components:
           - ACTIVE
           - COMPLETED
           - ABANDONED
+    StreakResponse:
+      type: object
+      properties:
+        completed:
+          type: boolean
+        completedAt:
+          type: string
+          format: date-time
+        currentDays:
+          type: integer
+          format: int32
+        id:
+          type: string
+          format: uuid
+        lastCountedOn:
+          type: string
+          format: date
+    TargetResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        type:
+          type: string
+          enum:
+          - CONTENT
+          - MEAL_PLAN
     UpdateProfileRequest:
       type: object
       properties:
