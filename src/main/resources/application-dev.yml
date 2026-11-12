@@ -2,7 +2,7 @@
 #
 # - Carga los secretos de .env (ignorado por git; copia .env.example).
 # - spring-boot-docker-compose levanta PostgreSQL y Mailpit (docker-compose.yml) y conecta la BD sola.
-# - Solo escucha en 127.0.0.1 y carga los datos de demostración.
+# - Solo escucha en 127.0.0.1 y carga los datos de demostración (db/seed-dev, sin datos personales reales).
 
 spring:
   config:
@@ -13,9 +13,8 @@ spring:
       # Deja los contenedores en marcha al parar la aplicación (arranques más rápidos).
       lifecycle-management: start-only
 
-  sql:
-    init:
-      mode: always
+  flyway:
+    locations: classpath:db/migration,classpath:db/seed-dev
 
   # Mailpit (http://localhost:8025) recibe todos los correos: nada sale a Internet. Para probar con un SMTP
   # real, define MAIL_HOST, MAIL_PORT, MAIL_SMTP_AUTH y MAIL_STARTTLS en .env.

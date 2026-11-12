@@ -1,0 +1,119 @@
+package com.healthybites.nutrition.web;
+
+import com.healthybites.nutrition.app.MealPlanService.PlanCard;
+import com.healthybites.nutrition.app.NutritionistPlanService;
+import com.healthybites.nutrition.domain.Meal;
+import com.healthybites.nutrition.web.NutritionDtos.MealPlanDetailResponse;
+import com.healthybites.nutrition.web.NutritionDtos.MealPlanRequest;
+import com.healthybites.nutrition.web.NutritionDtos.MealPlanSummaryResponse;
+import com.healthybites.nutrition.web.NutritionDtos.MealRequest;
+import com.healthybites.nutrition.web.NutritionDtos.MealResponse;
+import com.healthybites.nutrition.web.NutritionDtos.NutritionistClientResponse;
+import com.healthybites.shared.security.CurrentUser;
+import com.healthybites.shared.web.Sorting;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import java.net.URI;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedModel;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/nutritionist")
+@Tag(name = "Nutricionista · Planes", description = "Planes de alimentación propios, sus comidas y sus clientes")
+class NutritionistMealPlanController {
+
+    private static final Set<String> SORTABLE = Set.of("createdAt", "updatedAt", "title", "status");
+
+    private final NutritionistPlanService plans;
+
+    NutritionistMealPlanController(NutritionistPlanService plans) {
+        this.plans = plans;
+    }
+
+    @Operation(summary = "Mis planes (todos los estados)")
+    @GetMapping("/meal-plans")
+    PagedModel<MealPlanSummaryResponse> mine(
+            @PageableDefault(sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return new PagedModel<>(plans.mine(CurrentUser.id(), Sorting.restrict(pageable, SORTABLE))
+                .map(MealPlanSummaryResponse::of));
+    }
+
+    @Operation(summary = "Crea un plan en borrador")
+    @PostMapping("/meal-plans")
+    ResponseEntity<MealPlanDetailResponse> create(@Valid @RequestBody MealPlanRequest body) {
+        PlanCard plan = plans.create(CurrentUser.id(), body.toData());
+        return ResponseEntity.created(
+                        URI.create("/nutritionist/meal-plans/" + plan.plan().requireId()))
+                .body(MealPlanDetailResponse.of(plan));
+    }
+
+    @GetMapping("/meal-plans/{id}")
+    MealPlanDetailResponse get(@PathVariable UUID id) {
+        return MealPlanDetailResponse.of(plans.get(id, CurrentUser.id()));
+    }
+
+    @PutMapping("/meal-plans/{id}")
+    MealPlanDetailResponse update(@PathVariable UUID id, @Valid @RequestBody MealPlanRequest body) {
+        return MealPlanDetailResponse.of(plans.update(id, CurrentUser.id(), body.toData()));
+    }
+
+    @Operation(summary = "Borra un borrador (un plan publicado se archiva)")
+    @DeleteMapping("/meal-plans/{id}")
+    ResponseEntity<Void> delete(@PathVariable UUID id) {
+        plans.delete(id, CurrentUser.id());
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Publica el plan (necesita al menos una comida)")
+    @PostMapping("/meal-plans/{id}/publish")
+    MealPlanDetailResponse publish(@PathVariable UUID id) {
+        return MealPlanDetailResponse.of(plans.publish(id, CurrentUser.id()));
+    }
+
+    @Operation(summary = "Retira el plan del catálogo (los clientes inscritos lo conservan)")
+    @PostMapping("/meal-plans/{id}/archive")
+    MealPlanDetailResponse archive(@PathVariable UUID id) {
+        return MealPlanDetailResponse.of(plans.archive(id, CurrentUser.id()));
+    }
+
+    @PostMapping("/meal-plans/{id}/meals")
+    ResponseEntity<MealResponse> addMeal(@PathVariable UUID id, @Valid @RequestBody MealRequest body) {
+        Meal meal = plans.addMeal(id, CurrentUser.id(), body.toData());
+        return ResponseEntity.created(URI.create("/nutritionist/meal-plans/" + id + "/meals/" + meal.requireId()))
+                .body(MealResponse.of(meal));
+    }
+
+    @PutMapping("/meal-plans/{id}/meals/{mealId}")
+    MealResponse updateMeal(@PathVariable UUID id, @PathVariable UUID mealId, @Valid @RequestBody MealRequest body) {
+        return MealResponse.of(plans.updateMeal(id, mealId, CurrentUser.id(), body.toData()));
+    }
+
+    @DeleteMapping("/meal-plans/{id}/meals/{mealId}")
+    ResponseEntity<Void> removeMeal(@PathVariable UUID id, @PathVariable UUID mealId) {
+        plans.removeMeal(id, mealId, CurrentUser.id());
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Clientes que siguen alguno de mis planes")
+    @GetMapping("/clients")
+    List<NutritionistClientResponse> clients() {
+        return plans.clients(CurrentUser.id()).stream()
+                .map(NutritionistClientResponse::of)
+                .toList();
+    }
+}

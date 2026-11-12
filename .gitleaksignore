@@ -1,0 +1,5 @@
+# Falsos positivos revisados de gitleaks (huella exacta: commit, fichero, regla y línea).
+# Solo datos de prueba: ningún secreto real. Un secreto real nunca se ignora: se rota y se saca del repositorio.
+
+# Contraseña de una cuenta de prueba que crean los tests de integración de invitaciones (Testcontainers).
+f627b9156126d50e1564fc2e9b0d92d724338884:src/test/java/com/healthybites/identity/InvitationTests.java:generic-api-key:28

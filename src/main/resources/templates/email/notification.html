@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<!--
+  Diseño común de los correos de Healthy Bites (ver EmailContent). Estilos en línea y maquetación con tablas: es lo
+  único que respetan todos los clientes de correo. Paleta de la landing: brand-700 #237047, brand-50 #effaf3,
+  brand-100 #d9f2e2, ink #12261b, muted #4b5d52, surface #fbfdfb.
+  th:text escapa todo el contenido: nada de lo que llega en las variables se interpreta como HTML.
+-->
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="color-scheme" content="light"/>
+    <meta name="supported-color-schemes" content="light"/>
+    <title th:text="${title}">Healthy Bites</title>
+</head>
+<body style="margin:0; padding:0; background-color:#effaf3; color:#12261b; font-family:'Plus Jakarta Sans', 'Segoe UI', Helvetica, Arial, sans-serif; -webkit-font-smoothing:antialiased;">
+<!-- Texto de vista previa de la bandeja de entrada (no se muestra en el correo). -->
+<div style="display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;" th:text="${preheader}">Vista previa</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#effaf3;">
+    <tr>
+        <td align="center" style="padding:32px 12px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                   style="max-width:560px; background-color:#ffffff; border-radius:24px; overflow:hidden; border:1px solid #d9f2e2;">
+                <tr>
+                    <td style="background-color:#237047; padding:22px 32px;">
+                        <span style="color:#ffffff; font-size:18px; font-weight:700; letter-spacing:-0.01em;">Healthy Bites</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:32px 32px 8px;">
+                        <h1 style="margin:0 0 20px; font-size:24px; line-height:1.3; font-weight:700; color:#12261b;"
+                            th:text="${title}">Título</h1>
+                        <p th:if="${greetingName != null}"
+                           style="margin:0 0 16px; font-size:15px; line-height:1.6; color:#12261b;"
+                           th:text="|Hola, ${greetingName}:|">Hola:</p>
+                        <p th:each="paragraph : ${paragraphs}"
+                           style="margin:0 0 16px; font-size:15px; line-height:1.6; color:#4b5d52;"
+                           th:text="${paragraph}">Texto</p>
+                    </td>
+                </tr>
+                <tr th:if="${!details.isEmpty()}">
+                    <td style="padding:0 32px 8px;">
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                               style="background-color:#fbfdfb; border:1px solid #d9f2e2; border-radius:16px;">
+                            <tr th:each="detail, row : ${details}">
+                                <td style="padding:12px 16px; font-size:14px; color:#4b5d52;"
+                                    th:style="${row.last} ? 'padding:12px 16px; font-size:14px; color:#4b5d52;' : 'padding:12px 16px; font-size:14px; color:#4b5d52; border-bottom:1px solid #d9f2e2;'"
+                                    th:text="${detail.label()}">Etiqueta</td>
+                                <td align="right" style="padding:12px 16px; font-size:14px; font-weight:700; color:#12261b;"
+                                    th:style="${row.last} ? 'padding:12px 16px; font-size:14px; font-weight:700; color:#12261b;' : 'padding:12px 16px; font-size:14px; font-weight:700; color:#12261b; border-bottom:1px solid #d9f2e2;'"
+                                    th:text="${detail.value()}">Valor</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr th:if="${action != null}">
+                    <td style="padding:16px 32px 8px;">
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                                <td style="border-radius:999px; background-color:#237047;">
+                                    <a th:href="${action.url()}" th:text="${action.label()}"
+                                       style="display:inline-block; padding:13px 28px; font-size:15px; font-weight:700; color:#ffffff; text-decoration:none; border-radius:999px;">Abrir</a>
+                                </td>
+                            </tr>
+                        </table>
+                        <p style="margin:16px 0 0; font-size:12px; line-height:1.5; color:#4b5d52;">
+                            Si el botón no funciona, copia este enlace en tu navegador:<br/>
+                            <a th:href="${action.url()}" th:text="${action.url()}"
+                               style="color:#237047; word-break:break-all;">https://</a>
+                        </p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:24px 32px 32px;">
+                        <p th:if="${footnote != null}"
+                           style="margin:0 0 16px; font-size:14px; line-height:1.6; color:#4b5d52;"
+                           th:text="${footnote}">Nota</p>
+                        <p style="margin:0; font-size:15px; line-height:1.6; color:#12261b;">El equipo de Healthy Bites</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:18px 32px; background-color:#fbfdfb; border-top:1px solid #d9f2e2; font-size:12px; line-height:1.5; color:#4b5d52;">
+                        Recibes este correo porque tienes una cuenta en Healthy Bites o alguien la ha pedido con esta dirección.
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>
