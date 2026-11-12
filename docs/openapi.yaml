@@ -22,12 +22,16 @@ tags:
   name: Admin · Cuentas
 - description: "Suscripciones, pagos y resumen de ingresos (solo ADMIN)"
   name: Admin · Facturación
+- description: "Catálogo, detalle e inscripciones de los clientes"
+  name: Planes de alimentación
 - description: "Planes, checkout con PayPal y pagos del usuario"
   name: Suscripción
 - description: Alta de clientes y de nutricionistas invitados
   name: Registro
 - description: Alta de nutricionistas por invitación (solo ADMIN)
   name: Admin · Invitaciones
+- description: "Planes de alimentación propios, sus comidas y sus clientes"
+  name: Nutricionista · Planes
 - description: Formulario de contacto de la landing
   name: Contacto
 paths:
@@ -466,6 +470,51 @@ paths:
       summary: Usuario actual con el perfil de su rol
       tags:
       - Mi cuenta
+  /me/meal-plan-enrollments:
+    get:
+      operationId: enrollments
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EnrollmentResponse"
+          description: OK
+      summary: Planes que sigo
+      tags:
+      - Planes de alimentación
+    post:
+      operationId: enroll
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EnrollRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+      summary: Empiezo a seguir un plan (hay que poder abrirlo)
+      tags:
+      - Planes de alimentación
+  /me/meal-plan-enrollments/{mealPlanId}:
+    delete:
+      operationId: unenroll
+      parameters:
+      - in: path
+        name: mealPlanId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+      summary: Dejo de seguir un plan (los desbloqueados con una recompensa se conservan)
+      tags:
+      - Planes de alimentación
   /me/password:
     put:
       description: Cierra todas las sesiones (también en otros dispositivos) y devuelve
@@ -508,7 +557,7 @@ paths:
       - Suscripción
   /me/profile:
     put:
-      operationId: update
+      operationId: update_1
       requestBody:
         content:
           application/json:
@@ -591,6 +640,57 @@ paths:
       summary: Captura el pago aprobado y activa la suscripción (idempotente)
       tags:
       - Suscripción
+  /meal-plans:
+    get:
+      operationId: catalog
+      parameters:
+      - in: query
+        name: goal
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          enum:
+          - WEIGHT_LOSS
+          - MAINTENANCE
+          - MUSCLE_GAIN
+      - in: query
+        name: pageable
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PagedModelMealPlanSummaryResponse"
+          description: OK
+      summary: Planes publicados; locked indica si el usuario no puede abrirlos
+      tags:
+      - Planes de alimentación
+  /meal-plans/{id}:
+    get:
+      operationId: detail
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MealPlanDetailResponse"
+          description: OK
+      summary: "Detalle con comidas (403 subscription-required, con requiredTier,\
+        \ si está bloqueado)"
+      tags:
+      - Planes de alimentación
   /media:
     post:
       description: "El tipo se detecta por su contenido. POST_IMAGE: cualquier usuario,\
@@ -666,6 +766,232 @@ paths:
         \ firmada"
       tags:
       - Ficheros
+  /nutritionist/clients:
+    get:
+      operationId: clients
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NutritionistClientResponse"
+          description: OK
+      summary: Clientes que siguen alguno de mis planes
+      tags:
+      - Nutricionista · Planes
+  /nutritionist/meal-plans:
+    get:
+      operationId: mine
+      parameters:
+      - in: query
+        name: pageable
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PagedModelMealPlanSummaryResponse"
+          description: OK
+      summary: Mis planes (todos los estados)
+      tags:
+      - Nutricionista · Planes
+    post:
+      operationId: create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MealPlanRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MealPlanDetailResponse"
+          description: OK
+      summary: Crea un plan en borrador
+      tags:
+      - Nutricionista · Planes
+  /nutritionist/meal-plans/{id}:
+    delete:
+      operationId: delete
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+      summary: Borra un borrador (un plan publicado se archiva)
+      tags:
+      - Nutricionista · Planes
+    get:
+      operationId: get
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MealPlanDetailResponse"
+          description: OK
+      tags:
+      - Nutricionista · Planes
+    put:
+      operationId: update
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MealPlanRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MealPlanDetailResponse"
+          description: OK
+      tags:
+      - Nutricionista · Planes
+  /nutritionist/meal-plans/{id}/archive:
+    post:
+      operationId: archive
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MealPlanDetailResponse"
+          description: OK
+      summary: Retira el plan del catálogo (los clientes inscritos lo conservan)
+      tags:
+      - Nutricionista · Planes
+  /nutritionist/meal-plans/{id}/meals:
+    post:
+      operationId: addMeal
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MealRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MealResponse"
+          description: OK
+      tags:
+      - Nutricionista · Planes
+  /nutritionist/meal-plans/{id}/meals/{mealId}:
+    delete:
+      operationId: removeMeal
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: mealId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+      tags:
+      - Nutricionista · Planes
+    put:
+      operationId: updateMeal
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: mealId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MealRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MealResponse"
+          description: OK
+      tags:
+      - Nutricionista · Planes
+  /nutritionist/meal-plans/{id}/publish:
+    post:
+      operationId: publish
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MealPlanDetailResponse"
+          description: OK
+      summary: Publica el plan (necesita al menos una comida)
+      tags:
+      - Nutricionista · Planes
   /subscription-plans:
     get:
       operationId: plans
@@ -794,6 +1120,14 @@ components:
           enum:
           - ACTIVE
           - DEACTIVATED
+    AuthorResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
     BillingSummaryResponse:
       type: object
       properties:
@@ -942,6 +1276,30 @@ components:
           - BASIC
           - PREMIUM
           - VIP
+    EnrollRequest:
+      type: object
+      properties:
+        mealPlanId:
+          type: string
+          format: uuid
+      required:
+      - mealPlanId
+    EnrollmentResponse:
+      type: object
+      properties:
+        enrolledAt:
+          type: string
+          format: date-time
+        id:
+          type: string
+          format: uuid
+        plan:
+          $ref: "#/components/schemas/MealPlanSummaryResponse"
+        source:
+          type: string
+          enum:
+          - SELF
+          - REWARD
     ForgotPasswordRequest:
       type: object
       properties:
@@ -1055,6 +1413,150 @@ components:
           - ADMIN
           - CLIENT
           - NUTRITIONIST
+    MealPlanDetailResponse:
+      type: object
+      properties:
+        meals:
+          type: array
+          items:
+            $ref: "#/components/schemas/MealResponse"
+        plan:
+          $ref: "#/components/schemas/MealPlanSummaryResponse"
+        status:
+          type: string
+          enum:
+          - DRAFT
+          - PUBLISHED
+          - ARCHIVED
+    MealPlanRequest:
+      type: object
+      properties:
+        description:
+          type: string
+          maxLength: 2000
+          minLength: 0
+        durationDays:
+          type: integer
+          format: int32
+          maximum: 365
+          minimum: 1
+        goal:
+          type: string
+          enum:
+          - WEIGHT_LOSS
+          - MAINTENANCE
+          - MUSCLE_GAIN
+        requiredTier:
+          type: string
+          enum:
+          - BASIC
+          - PREMIUM
+          - VIP
+        title:
+          type: string
+          maxLength: 120
+          minLength: 0
+      required:
+      - description
+      - goal
+      - requiredTier
+      - title
+    MealPlanSummaryResponse:
+      type: object
+      properties:
+        author:
+          $ref: "#/components/schemas/AuthorResponse"
+        averageDailyCalories:
+          type: integer
+          format: int32
+        description:
+          type: string
+        durationDays:
+          type: integer
+          format: int32
+        goal:
+          type: string
+          enum:
+          - WEIGHT_LOSS
+          - MAINTENANCE
+          - MUSCLE_GAIN
+        id:
+          type: string
+          format: uuid
+        locked:
+          type: boolean
+        publishedAt:
+          type: string
+          format: date-time
+        requiredTier:
+          type: string
+          enum:
+          - BASIC
+          - PREMIUM
+          - VIP
+        title:
+          type: string
+    MealRequest:
+      type: object
+      properties:
+        calories:
+          type: integer
+          format: int32
+          maximum: 10000
+          minimum: 0
+        category:
+          type: string
+          enum:
+          - BREAKFAST
+          - LUNCH
+          - DINNER
+          - SNACK
+        dayNumber:
+          type: integer
+          format: int32
+          minimum: 1
+        description:
+          type: string
+          maxLength: 1000
+          minLength: 0
+        name:
+          type: string
+          maxLength: 120
+          minLength: 0
+        position:
+          type: integer
+          format: int32
+          maximum: 20
+          minimum: 0
+      required:
+      - category
+      - name
+    MealResponse:
+      type: object
+      properties:
+        calories:
+          type: integer
+          format: int32
+        category:
+          type: string
+          enum:
+          - BREAKFAST
+          - LUNCH
+          - DINNER
+          - SNACK
+        dayNumber:
+          type: integer
+          format: int32
+        description:
+          type: string
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        position:
+          type: integer
+          format: int32
     Money:
       type: object
       properties:
@@ -1064,6 +1566,29 @@ components:
           type: string
         zero:
           type: boolean
+    NutritionistClientResponse:
+      type: object
+      properties:
+        email:
+          type: string
+        firstName:
+          type: string
+        heightCm:
+          type: number
+        id:
+          type: string
+          format: uuid
+        lastName:
+          type: string
+        plans:
+          type: array
+          items:
+            type: string
+        since:
+          type: string
+          format: date-time
+        weightKg:
+          type: number
     NutritionistProfileResponse:
       type: object
       properties:
@@ -1147,6 +1672,18 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/InvitationResponse"
+        page:
+          $ref: "#/components/schemas/PageMetadata"
+      required:
+      - content
+      - page
+    PagedModelMealPlanSummaryResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/MealPlanSummaryResponse"
         page:
           $ref: "#/components/schemas/PageMetadata"
       required:

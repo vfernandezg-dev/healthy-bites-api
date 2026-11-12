@@ -60,3 +60,53 @@ values ('00000000-0000-7000-8000-000000000c01', '00000000-0000-7000-8000-0000000
         '00000000-0000-7000-8000-000000000006', 'SEED-ORDER-PEDRO', 'SEED-CAPTURE-PEDRO', 9.99, 'USD', 'CAPTURED',
         now() - interval '5 days')
 on conflict do nothing;
+
+-- ---------- nutrition ----------
+insert into meal_plans (id, author_id, title, description, goal, duration_days, required_tier, status, published_at)
+values ('00000000-0000-7000-8000-0000000d0001', '00000000-0000-7000-8000-000000000002', 'Déficit suave en 4 semanas',
+        'Plan bajo en azúcares y alto en proteína para perder grasa sin pasar hambre.', 'WEIGHT_LOSS', 28, 'PREMIUM',
+        'PUBLISHED', now() - interval '20 days'),
+       ('00000000-0000-7000-8000-0000000d0002', '00000000-0000-7000-8000-000000000003', 'Masa muscular en 8 semanas',
+        'Dieta rica en proteínas y calorías de calidad para acompañar el entrenamiento de fuerza.', 'MUSCLE_GAIN', 56,
+        'VIP', 'PUBLISHED', now() - interval '15 days'),
+       ('00000000-0000-7000-8000-0000000d0003', '00000000-0000-7000-8000-000000000002', 'Mantenimiento equilibrado',
+        'Comidas sencillas y variadas para mantener el peso con energía todo el día.', 'MAINTENANCE', 14, 'BASIC',
+        'PUBLISHED', now() - interval '30 days'),
+       ('00000000-0000-7000-8000-0000000d0004', '00000000-0000-7000-8000-000000000003', 'Semana ligera',
+        'Siete días de platos ligeros con fruta, verdura y legumbres para empezar con buen pie.', 'WEIGHT_LOSS', 7,
+        'BASIC', 'PUBLISHED', now() - interval '10 days'),
+       ('00000000-0000-7000-8000-0000000d0005', '00000000-0000-7000-8000-000000000002', 'Plan vegetariano (borrador)',
+        'Propuesta vegetariana en preparación.', 'MAINTENANCE', 14, 'PREMIUM', 'DRAFT', null)
+on conflict do nothing;
+
+insert into meals (id, meal_plan_id, day_number, position, category, name, description, calories)
+values ('00000000-0000-7000-8000-0000000e0001', '00000000-0000-7000-8000-0000000d0001', 1, 0, 'BREAKFAST',
+        'Tortilla de claras con espinaca', 'Tres claras, espinaca y una tostada integral.', 250),
+       ('00000000-0000-7000-8000-0000000e0002', '00000000-0000-7000-8000-0000000d0001', 1, 1, 'LUNCH',
+        'Pechuga a la plancha con ensalada', null, 420),
+       ('00000000-0000-7000-8000-0000000e0003', '00000000-0000-7000-8000-0000000d0001', 1, 2, 'DINNER',
+        'Salmón al horno con brócoli', null, 380),
+       ('00000000-0000-7000-8000-0000000e0004', '00000000-0000-7000-8000-0000000d0001', 2, 0, 'BREAKFAST',
+        'Yogur griego con nueces', null, 230),
+       ('00000000-0000-7000-8000-0000000e0005', '00000000-0000-7000-8000-0000000d0002', 1, 0, 'BREAKFAST',
+        'Avena con plátano y mantequilla de maní', null, 550),
+       ('00000000-0000-7000-8000-0000000e0006', '00000000-0000-7000-8000-0000000d0002', 1, 1, 'LUNCH',
+        'Arroz integral con carne y frijoles', null, 850),
+       ('00000000-0000-7000-8000-0000000e0007', '00000000-0000-7000-8000-0000000d0003', 1, 0, 'BREAKFAST',
+        'Tostadas integrales con palta', null, 320),
+       ('00000000-0000-7000-8000-0000000e0008', '00000000-0000-7000-8000-0000000d0003', 1, 1, 'LUNCH',
+        'Quinua con verduras salteadas', null, 480),
+       ('00000000-0000-7000-8000-0000000e0009', '00000000-0000-7000-8000-0000000d0004', 1, 0, 'BREAKFAST',
+        'Batido verde de manzana y apio', null, 150),
+       ('00000000-0000-7000-8000-0000000e000a', '00000000-0000-7000-8000-0000000d0004', 1, 1, 'DINNER',
+        'Crema de zapallo', null, 220)
+on conflict do nothing;
+
+insert into meal_plan_enrollments (id, meal_plan_id, client_id, source, enrolled_at)
+values ('00000000-0000-7000-8000-0000000f0001', '00000000-0000-7000-8000-0000000d0003',
+        '00000000-0000-7000-8000-000000000004', 'SELF', now() - interval '12 days'),
+       ('00000000-0000-7000-8000-0000000f0002', '00000000-0000-7000-8000-0000000d0001',
+        '00000000-0000-7000-8000-000000000005', 'SELF', now() - interval '8 days'),
+       ('00000000-0000-7000-8000-0000000f0003', '00000000-0000-7000-8000-0000000d0002',
+        '00000000-0000-7000-8000-000000000006', 'SELF', now() - interval '6 days')
+on conflict do nothing;
