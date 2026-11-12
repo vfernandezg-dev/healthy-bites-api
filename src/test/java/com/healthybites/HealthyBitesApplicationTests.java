@@ -4,7 +4,6 @@ import jakarta.mail.internet.MimeMessage;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -32,14 +31,12 @@ class HealthyBitesApplicationTests extends IntegrationTest {
     }
 
     @Test
-    void loginWithWrongPasswordIsRejected() throws Exception {
-        // Hoy responde 500; la fase de seguridad lo corrige a 401. Aquí solo se exige que no sea un éxito.
-        int status = mockMvc.perform(post("/auth/login")
+    void loginWithWrongPasswordReturns401() throws Exception {
+        mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginBody("maria.lopez@healthybites.com", "contrasena-incorrecta")))
-                .andReturn().getResponse().getStatus();
-
-        assertThat(status).isGreaterThanOrEqualTo(400);
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.detail").value("Correo o contraseña incorrectos"));
     }
 
     @Test

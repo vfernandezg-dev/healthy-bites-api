@@ -36,3 +36,18 @@ jobs:
           name: surefire-reports
           path: target/surefire-reports/
           retention-days: 7
+
+  secrets:
+    name: Secretos (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # gitleaks revisa los commits del PR o del push, no solo el último.
+          fetch-depth: 0
+
+      - uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Sin comentarios en el PR: el job solo tiene permiso de lectura.
+          GITLEAKS_ENABLE_COMMENTS: false

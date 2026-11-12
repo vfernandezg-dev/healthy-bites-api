@@ -1,8 +1,12 @@
-# Base de datos local para Healthy Bites.
+# Servicios locales de Healthy Bites: PostgreSQL y Mailpit.
+#
+# `./mvnw spring-boot:run` los levanta solo (spring-boot-docker-compose) y conecta la BD automáticamente.
+# A mano:
 #   Levantar:  docker compose up -d
 #   Parar:     docker compose down        (conserva los datos)
 #   Resetear:  docker compose down -v     (borra el volumen; el seed se vuelve a cargar al arrancar el backend)
-# Se publica en 5433 porque 5432 suele estar ocupado por un PostgreSQL instalado en Windows.
+#
+# Las variables (DB_PASSWORD) se leen de .env (ver .env.example). Todo se publica solo en 127.0.0.1.
 services:
   db:
     image: postgres:18-alpine
@@ -11,19 +15,28 @@ services:
     environment:
       POSTGRES_DB: healthybites-db
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: adminadmin
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD en .env (ver .env.example)}
     ports:
+      # 5433 porque 5432 suele estar ocupado por un PostgreSQL instalado en Windows.
       - "127.0.0.1:5433:5432"
     volumes:
       # Desde PostgreSQL 18 la imagen guarda los datos en /var/lib/postgresql/<versión>/docker:
-      # el volumen se monta en /var/lib/postgresql. Es un volumen nuevo porque los datos de la 16
-      # no son compatibles con la 18 (el seed los recrea al arrancar el backend).
+      # el volumen se monta en /var/lib/postgresql.
       - healthybites-pgdata-18:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d healthybites-db"]
       interval: 5s
       timeout: 5s
       retries: 10
+
+  # Captura todos los correos del entorno local: interfaz web en http://localhost:8025.
+  mail:
+    image: axllent/mailpit:v1.33
+    container_name: healthybites-mail
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:1025:1025"
+      - "127.0.0.1:8025:8025"
 
 volumes:
   healthybites-pgdata-18:

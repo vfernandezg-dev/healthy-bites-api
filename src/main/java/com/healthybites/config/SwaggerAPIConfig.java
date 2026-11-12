@@ -1,10 +1,10 @@
 package com.healthybites.config;
 
+import com.healthybites.config.properties.AppProperties;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
@@ -14,61 +14,35 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
 
+/**
+ * Documentación OpenAPI. Swagger UI solo se expone en el perfil dev (ver application-dev.yml).
+ */
 @Configuration
 public class SwaggerAPIConfig {
 
-    @Value("${healthybites.openapi.dev-url}")
-    private String devUrl;
-
-    @Value("${healthybites.openapi.prod-url}")
-    private String prodUrl;
-
     @Bean
-    public OpenAPI myOpenAPI() {
-        // Definir el servidor de desarrollo
-        Server devServer = new Server();
-        devServer.setUrl(devUrl);
-        devServer.setDescription("Development server");
+    public OpenAPI healthyBitesOpenAPI(AppProperties app,
+                                       @Value("${healthybites.openapi.contact-email}") String contactEmail) {
+        Contact contact = new Contact()
+                .name("Healthy Bites")
+                .email(contactEmail)
+                .url("https://healthybites.vfernandezg.dev");
 
-        // Definir el servidor de producción
-        Server prodServer = new Server();
-        prodServer.setUrl(prodUrl);
-        prodServer.setDescription("Produccion server");
-
-        // Informacion de contacto
-        Contact contact = new Contact();
-        contact.setEmail("healtybite3@gmail.com");
-        contact.setName("Healthy Bites");
-        contact.setUrl("www.healthybites.com");
-
-        License mitLicense = new License().name("MIT License").url("https://opensource.org/licenses/MIT");
-
-        // Informacion general de la API
         Info info = new Info()
-                .title("API Healthy Bites venta de contenido alimenticio")
+                .title("Healthy Bites API")
                 .version("1.0")
-                .contact(contact)
-                .description("API para el manejo de contenido alimenticio con grupos de interes")
-                .termsOfService("https://www.healthybites.com/terms")
-                .license(mitLicense);
+                .description("API REST de Healthy Bites: nutrición, hábitos, contenido y comunidad.")
+                .contact(contact);
 
-        // Configuración de seguridad JWT
-        SecurityScheme securityScheme = new SecurityScheme()
+        SecurityScheme bearer = new SecurityScheme()
                 .type(SecurityScheme.Type.HTTP)
                 .scheme("bearer")
-                .bearerFormat("JWT")
-                .name("JWT Authentication");
-
-        Components components = new Components()
-                .addSecuritySchemes("bearerAuth", securityScheme);
-
-        // Requerimiento de seguridad para utilizar en las operaciones
-        SecurityRequirement securityRequirement = new SecurityRequirement().addList("bearerAuth");
+                .bearerFormat("JWT");
 
         return new OpenAPI()
                 .info(info)
-                .servers(List.of(devServer, prodServer))
-                .addSecurityItem(securityRequirement)
-                .components(components);
+                .servers(List.of(new Server().url(app.apiPublicUrl())))
+                .components(new Components().addSecuritySchemes("bearerAuth", bearer))
+                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"));
     }
 }

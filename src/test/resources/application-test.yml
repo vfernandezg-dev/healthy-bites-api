@@ -1,0 +1,17 @@
+# Perfil de los tests de integración (IntegrationTest). La BD la aporta Testcontainers y el JWT secret se
+# genera en cada ejecución, así que aquí no hay ningún secreto.
+
+spring:
+  sql:
+    init:
+      mode: always
+  mail:
+    username: test@healthybites.local
+    password: test
+
+healthybites:
+  app:
+    frontend-url: http://localhost:4210
+    api-public-url: http://localhost:8090/api/v1
+  storage:
+    location: target/test-uploads

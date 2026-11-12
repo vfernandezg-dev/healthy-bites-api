@@ -1,5 +1,6 @@
 package com.healthybites.service.impl;
 
+import com.healthybites.config.properties.AppProperties;
 import com.healthybites.exception.ResourceNotFoundException;
 import com.healthybites.integration.notification.email.dto.Mail;
 import com.healthybites.integration.notification.email.service.EmailService;
@@ -26,6 +27,7 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
     private final UsuarioRepository usuarioRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
+    private final AppProperties appProperties;
 
     @Value("${spring.mail.username}")
     private String mailFrom;
@@ -46,7 +48,7 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
         passwordResetTokenRepository.save(passwordResetToken);
 
         Map<String, Object> model = new HashMap<>();
-        String resetUrl = "https://healthy-bites-v1.netlify.app/auth/reset-password/" + passwordResetToken.getToken();
+        String resetUrl = appProperties.frontend("auth/reset-password/" + passwordResetToken.getToken());
         model.put("user", usuario.getCorreo());
         model.put("resetUrl", resetUrl);
 

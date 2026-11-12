@@ -1,12 +1,12 @@
 package com.healthybites.integration.payment.paypal.service;
 
+import com.healthybites.config.properties.PayPalProperties;
 import com.healthybites.integration.payment.paypal.dto.*;
 import com.healthybites.model.entity.Suscripcion;
 import com.healthybites.repository.SuscripcionRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -14,6 +14,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.Objects;
@@ -21,14 +22,8 @@ import java.util.Objects;
 @RequiredArgsConstructor
 @Service
 public class PayPalService {
-    @Value("${paypal.client-id}")
-    private String clientId;
-
-    @Value("${paypal.client-secret}")
-    private String clientSecret;
-
-    @Value("${paypal.api-base}")
-    private String apiBase;
+    // Credenciales desde el entorno (PAYPAL_CLIENT_ID / PAYPAL_CLIENT_SECRET), nunca desde el repositorio.
+    private final PayPalProperties properties;
 
     @NonNull
     private SuscripcionRepository suscripcionRepository;
@@ -38,12 +33,15 @@ public class PayPalService {
     public void init() {
         paypalClient = RestClient
                 .builder()
-                .baseUrl(apiBase)
+                .baseUrl(properties.apiBase())
                 .build();
     }
 
 
     public String getAccessToken(){
+        if (!properties.isConfigured()) {
+            throw new IllegalStateException("PayPal no está configurado: define PAYPAL_CLIENT_ID y PAYPAL_CLIENT_SECRET");
+        }
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "client_credentials");
 
@@ -53,7 +51,7 @@ public class PayPalService {
                                 .uri("/v1/oauth2/token")
                                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                                 .header(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder()
-                                        .encodeToString((clientId + ":" + clientSecret).getBytes()))
+                                        .encodeToString((properties.clientId() + ":" + properties.clientSecret()).getBytes(StandardCharsets.UTF_8)))
                                 .body(body)
                                 .retrieve()
                                 .toEntity(TokenResponse.class)

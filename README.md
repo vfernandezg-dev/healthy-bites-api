@@ -48,8 +48,9 @@ La API tiene tres roles: **CLIENTE**, **NUTRICIONISTA** y **ADMIN**. Todas las r
 | Administración              | Gestión completa de clientes, nutricionistas, planes, contenido, grupos, metas y recompensas      | `/admin/**`                                              |
 | Contacto                    | Formulario público de la landing page                                                             | `/contact`                                               |
 
-La documentación interactiva (OpenAPI) está disponible en
-`http://localhost:8090/api/v1/swagger-ui/index.html` al ejecutar la API en local.
+La documentación interactiva (OpenAPI) está en
+`http://localhost:8090/api/v1/swagger-ui/index.html` al ejecutar la API en local. Por seguridad, solo se
+publica en el perfil de desarrollo.
 
 ## Stack
 
@@ -57,11 +58,11 @@ La documentación interactiva (OpenAPI) está disponible en
 | ------------- | ---------------------------------------------------------------------------- |
 | Lenguaje      | Java 25                                                                      |
 | Framework     | Spring Boot 4.1 (Web MVC, Data JPA, Security, Validation, Mail, Thymeleaf)   |
-| Base de datos | PostgreSQL 18 (Docker en desarrollo)                                         |
-| Seguridad     | Spring Security con JWT (jjwt) y contraseñas con BCrypt                      |
-| Integraciones | PayPal REST API (sandbox), SMTP (Gmail) con plantillas Thymeleaf             |
+| Base de datos | PostgreSQL 18 (Docker Compose en desarrollo)                                 |
+| Seguridad     | Spring Security con JWT y contraseñas con BCrypt; errores RFC 9457           |
+| Integraciones | PayPal REST API (sandbox), SMTP con plantillas Thymeleaf (Mailpit en local)  |
 | Utilidades    | ModelMapper, Lombok, springdoc-openapi (Swagger UI)                          |
-| Pruebas       | JUnit 5, Mockito, MockMvc, Testcontainers (PostgreSQL)                       |
+| Pruebas       | JUnit 6, Mockito, MockMvc, Testcontainers (PostgreSQL)                       |
 | Build         | Maven Wrapper; imagen Docker multi-stage (`Dockerfile`)                      |
 
 ## Ejecución local
@@ -69,24 +70,29 @@ La documentación interactiva (OpenAPI) está disponible en
 ### Requisitos
 
 - **JDK 25** (por ejemplo, Temurin 25).
-- **Docker**, para la base de datos.
+- **Docker**, para PostgreSQL y Mailpit.
 
 ### Pasos
 
 ```bash
-# 1. Base de datos PostgreSQL (se publica en el puerto 5433)
-docker compose up -d
-
-# 2. Variables de entorno (credenciales SMTP, etc.)
+# 1. Variables de entorno: copia la plantilla y rellena JWT_SECRET
+#    (openssl rand -base64 64 | tr -d '\r\n') y, si vas a probar pagos, PayPal sandbox.
 cp .env.example .env
 
-# 3. Arrancar la API en http://localhost:8090/api/v1
-.\run-backend.ps1          # Windows (PowerShell): usa un JDK 25 y carga .env
-./mvnw spring-boot:run      # macOS/Linux, con JAVA_HOME apuntando a JDK 25
+# 2. Arrancar la API en http://localhost:8090/api/v1
+./mvnw spring-boot:run
 ```
 
-Al arrancar se cargan datos de demostración ([`data-test.sql`](src/main/resources/data-test.sql)).
-Todas las cuentas usan la contraseña `healthy123`:
+`spring-boot:run` usa el perfil `dev`, que:
+
+- carga `.env`;
+- levanta PostgreSQL (puerto 5433) y [Mailpit](https://mailpit.axllent.org) con
+  [`docker-compose.yml`](docker-compose.yml) y conecta la base de datos sola;
+- envía todos los correos a Mailpit, que los muestra en `http://localhost:8025` (nada sale a Internet);
+- solo escucha en `127.0.0.1`, publica Swagger UI y carga los datos de demostración
+  ([`data-test.sql`](src/main/resources/data-test.sql)).
+
+Todas las cuentas de demostración usan la contraseña `healthy123`:
 
 | Rol           | Cuenta                                                             |
 | ------------- | ------------------------------------------------------------------ |
@@ -96,7 +102,7 @@ Todas las cuentas usan la contraseña `healthy123`:
 | Cliente       | `maria.lopez@healthybites.com` (plan Premium)                      |
 | Cliente       | `pedro.gomez@healthybites.com` (plan VIP)                          |
 
-Para arrancar sin datos de demostración, usa `DB_SEED_MODE=never`.
+Los datos de demostración nunca se cargan fuera de los perfiles `dev` y `test`.
 
 ### Pruebas
 
@@ -104,27 +110,36 @@ Para arrancar sin datos de demostración, usa `DB_SEED_MODE=never`.
 ./mvnw verify
 ```
 
-Solo necesitas Docker en marcha. `HealthyBitesApplicationTests` levanta la aplicación completa sobre
-un PostgreSQL efímero con [Testcontainers](https://testcontainers.com) y el seed de demo. Comprueba de
-extremo a extremo el login, el registro, un flujo de cliente, uno de nutricionista y el formulario de
-contacto de la landing. El resto son pruebas unitarias y de controlador (Mockito y MockMvc).
+Solo necesitas Docker en marcha. Los tests de integración levantan la aplicación completa sobre un
+PostgreSQL efímero con [Testcontainers](https://testcontainers.com) y el seed de demo:
 
-CI ejecuta lo mismo en cada pull request ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
+- `HealthyBitesApplicationTests`: login, registro, un flujo de cliente, uno de nutricionista y el
+  formulario de contacto de la landing, de extremo a extremo.
+- `CriticalSecurityFixesTests`: regresiones de los agujeros de seguridad cerrados.
+- `ErrorResponsesTests`: formato de los errores.
+
+El resto son pruebas unitarias y de controlador (Mockito y MockMvc).
+
+CI ejecuta lo mismo en cada pull request, además de [gitleaks](https://github.com/gitleaks/gitleaks)
+para detectar secretos ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
 
 ## Configuración
 
-Los secretos no se versionan. Copia [`.env.example`](.env.example) como `.env`; `run-backend.ps1` lo
-carga al arrancar. En producción, define las mismas variables en el proveedor de hosting.
+Ningún secreto se versiona. Toda la configuración llega de variables de entorno: en local, del fichero
+`.env` (plantilla documentada en [`.env.example`](.env.example)); en producción, del proveedor de hosting.
+La aplicación **no arranca** si falta un secreto obligatorio o si `JWT_SECRET` es demasiado corto.
 
-| Variable                               | Por defecto              | Uso                                                      |
-| -------------------------------------- | ------------------------ | -------------------------------------------------------- |
-| `MAIL_USERNAME`                        | `healtybite3@gmail.com`  | Cuenta SMTP (Gmail) que envía los correos                |
-| `MAIL_PASSWORD`                        | _(vacío)_                | Contraseña de aplicación de esa cuenta                   |
-| `CONTACT_RECIPIENT`                    | `MAIL_USERNAME`          | Buzón que recibe los mensajes del formulario de contacto |
-| `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` | Postgres local en `5433` | Conexión a la base de datos                              |
-| `DB_SEED_MODE`                         | `always`                 | `never` para no cargar datos de demostración             |
-| `SERVER_PORT`                          | `8090`                   | Puerto HTTP                                              |
-| `SHOW_SQL`                             | `false`                  | Muestra las consultas SQL en el log                      |
+| Variable                                | Obligatoria       | Uso                                                              |
+| --------------------------------------- | ----------------- | ---------------------------------------------------------------- |
+| `JWT_SECRET`                            | Sí                | Clave HS512 de los JWT (Base64, ≥ 64 bytes)                      |
+| `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`  | Sí (en local, solo `DB_PASSWORD`) | Conexión a PostgreSQL                            |
+| `MAIL_USERNAME`, `MAIL_PASSWORD`        | En producción     | Cuenta SMTP que envía los correos                                |
+| `APP_FRONTEND_URL`, `API_PUBLIC_URL`    | En producción     | URLs públicas del web-app (enlaces de correo, PayPal) y de la API |
+| `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET` | Para pagos     | Credenciales de PayPal (sandbox)                                 |
+| `CONTACT_RECIPIENT`                     | No                | Buzón del formulario de contacto (por defecto, `MAIL_USERNAME`)  |
+| `STORAGE_LOCATION`                      | No                | Carpeta de los ficheros subidos (por defecto `uploads`)          |
+| `PORT`                                  | No                | Puerto HTTP (por defecto `8090`)                                 |
+| `JWT_VALIDITY`, `SHOW_SQL`              | No                | Validez de los tokens (ISO-8601) y log del SQL                   |
 
 ## Formulario de contacto
 

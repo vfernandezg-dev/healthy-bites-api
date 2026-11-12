@@ -1,11 +1,53 @@
+# Configuración base de Healthy Bites API.
+#
+# Sirve tal cual para producción: los secretos llegan siempre de variables de entorno, sin valores por
+# defecto (si falta alguno, la aplicación no arranca). El desarrollo local usa además application-dev.yml,
+# que carga el fichero .env (ver .env.example).
+
 spring:
+  application:
+    name: healthy-bites
+
+  # Jackson 3 (Spring Boot 4) cambia varios valores por defecto (falla con null en tipos primitivos, ordena las
+  # propiedades...). Temporal: mantiene el JSON de Jackson 2 que espera el web-app hasta la fase 3.
+  jackson:
+    use-jackson2-defaults: true
+
+  datasource:
+    url: ${DB_URL:}
+    username: ${DB_USERNAME:}
+    password: ${DB_PASSWORD:}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: ${SHOW_SQL:false}
+    properties:
+      # Entre corchetes para conservar el "_" de la clave al enlazarla al mapa de propiedades de Hibernate.
+      "[hibernate.format_sql]": true
+    # El seed (data-test.sql) se ejecuta después de que Hibernate cree las tablas.
+    defer-datasource-initialization: true
+
+  # Datos de demostración: nunca fuera de los perfiles dev y test.
+  sql:
+    init:
+      mode: never
+      data-locations: classpath:data-test.sql
+      encoding: UTF-8
+
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
   mail:
     default-encoding: UTF-8
-    host: smtp.gmail.com
-    # Credenciales fuera del repositorio: define MAIL_USERNAME y MAIL_PASSWORD (ver .env.example).
-    username: ${MAIL_USERNAME:healtybite3@gmail.com}
-    password: ${MAIL_PASSWORD:}
-    port: 587
+    protocol: smtp
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    test-connection: false
     properties:
       mail:
         # mail.from y mail.smtp.localhost evitan que JavaMail resuelva el hostname de la máquina
@@ -21,5 +63,45 @@ spring:
           starttls:
             enable: true
             required: true
-    protocol: smtp
-    test-connection: false
+
+server:
+  port: ${PORT:8090}
+  servlet:
+    context-path: /api/v1
+  # Detrás de un proxy usa X-Forwarded-For para conocer la IP real del cliente.
+  forward-headers-strategy: framework
+
+# Swagger UI y /v3/api-docs solo en el perfil dev.
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+healthybites:
+  app:
+    frontend-url: ${APP_FRONTEND_URL:}
+    api-public-url: ${API_PUBLIC_URL:}
+  security:
+    jwt:
+      secret: ${JWT_SECRET:}
+      validity: ${JWT_VALIDITY:P30D}
+  paypal:
+    client-id: ${PAYPAL_CLIENT_ID:}
+    client-secret: ${PAYPAL_CLIENT_SECRET:}
+    api-base: ${PAYPAL_API_BASE:https://api-m.sandbox.paypal.com}
+  storage:
+    # Carpeta de los ficheros subidos (fuera del repo; nunca mediafiles/).
+    location: ${STORAGE_LOCATION:uploads}
+  openapi:
+    contact-email: ${OPENAPI_CONTACT_EMAIL:projects@vfernandezg.dev}
+  # Formulario de contacto de la landing page (POST /api/v1/contact)
+  contact:
+    # Buzón que recibe los mensajes; por defecto, la misma cuenta que envía los correos.
+    recipient: ${CONTACT_RECIPIENT:${spring.mail.username}}
+    # Límites antiabuso: por IP y global (el global acota el total aunque se falsifique la IP).
+    rate-limit:
+      per-client: 5
+      per-client-window: PT10M
+      global: 50
+      global-window: PT1H

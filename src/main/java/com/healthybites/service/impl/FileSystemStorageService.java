@@ -10,11 +10,11 @@ import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import com.healthybites.config.properties.StorageProperties;
 import com.healthybites.exception.ResourceNotFoundException;
 import com.healthybites.service.StorageService;
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -23,21 +23,17 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
+@RequiredArgsConstructor
 public class FileSystemStorageService implements StorageService {
 
-    @Value("${storage.location}")
-    private String storageLocation;
+    private final StorageProperties storageProperties;
 
     private Path rootLocation;
 
     @PostConstruct
     @Override
     public void init() {
-        if (storageLocation.trim().isEmpty()) {
-            throw new RuntimeException("File upload location can not be Empty.");
-        }
-
-        rootLocation = Paths.get(storageLocation);
+        rootLocation = Paths.get(storageProperties.location().trim());
 
         try {
             Files.createDirectories(rootLocation);
