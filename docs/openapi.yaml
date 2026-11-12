@@ -3184,6 +3184,12 @@ components:
           - BASIC
           - PREMIUM
           - VIP
+        status:
+          type: string
+          enum:
+          - DRAFT
+          - PUBLISHED
+          - ARCHIVED
         title:
           type: string
       required:
@@ -3194,6 +3200,7 @@ components:
       - id
       - locked
       - requiredTier
+      - status
       - title
     MealRequest:
       type: object

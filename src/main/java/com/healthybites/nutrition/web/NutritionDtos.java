@@ -45,6 +45,7 @@ final class NutritionDtos {
             Tier requiredTier,
             boolean locked,
             int averageDailyCalories,
+            MealPlanStatus status,
             @Nullable AuthorResponse author,
             @Nullable Instant publishedAt) {
 
@@ -59,6 +60,7 @@ final class NutritionDtos {
                     plan.getRequiredTier(),
                     card.locked(),
                     card.averageDailyCalories(),
+                    plan.getStatus(),
                     AuthorResponse.of(card.author()),
                     plan.getPublishedAt());
         }
