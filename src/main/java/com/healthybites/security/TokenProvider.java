@@ -14,7 +14,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -31,15 +31,15 @@ public class TokenProvider {
     @Value("${jwt.validity-in-seconds}")
     private long jwtValidityInSeconds;
 
-    private Key key;
+    private SecretKey key;
     private JwtParser jwtParser;
 
     @PostConstruct
     public void init() {
         key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
         jwtParser = Jwts
-                .parserBuilder()
-                .setSigningKey(key)
+                .parser()
+                .verifyWith(key)
                 .build();
     }
 
@@ -62,17 +62,17 @@ public class TokenProvider {
         // Crear el token JWT con solo el rol y el sujeto
         return Jwts
                 .builder()
-                .setSubject(authentication.getName())  // El sujeto será el email o el nombre de usuario
+                .subject(authentication.getName())  // El sujeto será el email o el nombre de usuario
                 .claim("role", role)  // Solo se incluye el rol como claim
-                .signWith(key, SignatureAlgorithm.HS512)
-                .setExpiration(new Date(System.currentTimeMillis() + jwtValidityInSeconds * 1000))
+                .signWith(key, Jwts.SIG.HS512)
+                .expiration(new Date(System.currentTimeMillis() + jwtValidityInSeconds * 1000))
                 .compact();
     }
 
     // Obtener autenticación
     public Authentication getAuthentication(String token) {
         // Obtener las claims del token
-        Claims claims = jwtParser.parseClaimsJws(token).getBody();
+        Claims claims = jwtParser.parseSignedClaims(token).getPayload();
 
         // Obtener el rol del token
         String role = claims.get("role").toString();
@@ -88,7 +88,7 @@ public class TokenProvider {
     // Validar tokens JWT
     public boolean validateToken(String token) {
         try {
-            jwtParser.parseClaimsJws(token);
+            jwtParser.parseSignedClaims(token);
             return true;
         } catch (JwtException e) {
             return false;
