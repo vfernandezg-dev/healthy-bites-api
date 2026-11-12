@@ -12,6 +12,12 @@ spring:
     url: ${DB_URL:}
     username: ${DB_USERNAME:}
     password: ${DB_PASSWORD:}
+    # Con hilos virtuales no hay tope de peticiones simultáneas: el pool es el límite real. Una petición que no
+    # consigue conexión en 5 s responde 503 (database-unavailable) en vez de esperar 30 s. Con varias instancias,
+    # instancias × DB_POOL_SIZE debe quedar por debajo del límite de conexiones de la base de datos.
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+      connection-timeout: 5000
 
   # El esquema lo crean las migraciones de Flyway (src/main/resources/db/migration); Hibernate solo comprueba que
   # las entidades coinciden con él.
@@ -24,6 +30,14 @@ spring:
       # Entre corchetes para conservar el "_" de la clave al enlazarla al mapa de propiedades de Hibernate.
       "[hibernate.format_sql]": true
       "[hibernate.jdbc.time_zone]": UTC
+      # Escrituras agrupadas (los ids UUIDv7 los genera la aplicación, así que los INSERT también se agrupan) y
+      # colecciones perezosas cargadas por lotes en lugar de una consulta por entidad.
+      "[hibernate.jdbc.batch_size]": 50
+      "[hibernate.order_inserts]": true
+      "[hibernate.order_updates]": true
+      "[hibernate.default_batch_fetch_size]": 50
+      # Paginar sobre un fetch join de una colección paginaría en memoria: mejor un error en los tests.
+      "[hibernate.query.fail_on_pagination_over_collection_fetch]": true
 
   flyway:
     locations: classpath:db/migration

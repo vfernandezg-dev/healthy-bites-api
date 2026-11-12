@@ -8,6 +8,7 @@ import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.MessageSourceResolvable;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpHeaders;
@@ -18,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.transaction.CannotCreateTransactionException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -38,6 +40,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     public static final String CODE = "code";
+
+    private static final Duration DATABASE_RETRY_AFTER = Duration.ofSeconds(5);
 
     public static ProblemDetail problem(HttpStatusCode status, String code, String detail) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, detail);
@@ -79,6 +83,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 "Conflicto de integridad de datos: {}",
                 ex.getMostSpecificCause().getMessage());
         return problem(HttpStatus.CONFLICT, "conflict", "La operación entra en conflicto con datos existentes");
+    }
+
+    /**
+     * Sin conexión libre en el pool a tiempo (o con la base de datos caída): 503 con {@code Retry-After}, para que el
+     * cliente reintente en lugar de recibir un 500 genérico.
+     */
+    @ExceptionHandler({CannotCreateTransactionException.class, DataAccessResourceFailureException.class})
+    ResponseEntity<ProblemDetail> handleDatabaseUnavailable(Exception ex) {
+        log.warn("Base de datos no disponible: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .header(HttpHeaders.RETRY_AFTER, retryAfterSeconds(DATABASE_RETRY_AFTER))
+                .body(problem(
+                        HttpStatus.SERVICE_UNAVAILABLE,
+                        "database-unavailable",
+                        "El servicio está saturado en este momento. Inténtalo de nuevo en unos segundos."));
     }
 
     @ExceptionHandler(MailException.class)
