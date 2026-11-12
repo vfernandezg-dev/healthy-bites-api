@@ -1,0 +1,21 @@
+# Solo se envía al daemon de Docker lo que necesita el build.
+
+# Datos y secretos locales: nunca deben acabar en el contexto de build ni en una imagen.
+mediafiles/
+.env
+.env.*
+
+# Artefactos y herramientas
+target/
+.git/
+.github/
+.idea/
+.vscode/
+*.iml
+
+# Documentación y material que no forma parte de la app
+*.md
+*.png
+*.postman_collection.json
+run-backend.ps1
+docker-compose.yml

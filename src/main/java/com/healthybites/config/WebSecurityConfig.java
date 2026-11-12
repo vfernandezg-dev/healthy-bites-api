@@ -22,7 +22,6 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
 @RequiredArgsConstructor
 @Configuration
@@ -42,14 +41,14 @@ public class WebSecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable) // Deshabilitar CSRF en APIs REST
                 .authorizeHttpRequests(authorize -> authorize
                         // Permitir acceso a los endpoints de registro y login sin autenticación
-                        .requestMatchers(antMatcher("/auth/login")).permitAll()
-                        .requestMatchers(antMatcher("/auth/register/**")).permitAll()
-                        .requestMatchers(antMatcher("/auth/forgot-password")).permitAll()
-                        .requestMatchers(antMatcher("/auth/reset-password")).permitAll()
-                        .requestMatchers(antMatcher("/media/**")).permitAll()
-                        .requestMatchers(antMatcher("/mail/**")).permitAll()
+                        .requestMatchers("/auth/login").permitAll()
+                        .requestMatchers("/auth/register/**").permitAll()
+                        .requestMatchers("/auth/forgot-password").permitAll()
+                        .requestMatchers("/auth/reset-password").permitAll()
+                        .requestMatchers("/media/**").permitAll()
+                        .requestMatchers("/mail/**").permitAll()
                         // Formulario de contacto público de la landing page
-                        .requestMatchers(antMatcher(HttpMethod.POST, "/contact")).permitAll()
+                        .requestMatchers(HttpMethod.POST, "/contact").permitAll()
                         .requestMatchers("/api/v1/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/webjars/**").permitAll()
                         // Cualquier otra solicitud requiere autenticación
                         .anyRequest().authenticated()

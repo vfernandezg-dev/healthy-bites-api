@@ -5,7 +5,7 @@
 # Se publica en 5433 porque 5432 suele estar ocupado por un PostgreSQL instalado en Windows.
 services:
   db:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     container_name: healthybites-db
     restart: unless-stopped
     environment:
@@ -15,7 +15,10 @@ services:
     ports:
       - "127.0.0.1:5433:5432"
     volumes:
-      - healthybites-pgdata:/var/lib/postgresql/data
+      # Desde PostgreSQL 18 la imagen guarda los datos en /var/lib/postgresql/<versión>/docker:
+      # el volumen se monta en /var/lib/postgresql. Es un volumen nuevo porque los datos de la 16
+      # no son compatibles con la 18 (el seed los recrea al arrancar el backend).
+      - healthybites-pgdata-18:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d healthybites-db"]
       interval: 5s
@@ -23,4 +26,4 @@ services:
       retries: 10
 
 volumes:
-  healthybites-pgdata:
+  healthybites-pgdata-18:

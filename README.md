@@ -4,9 +4,9 @@
 
 <p><strong>Backend de la plataforma de nutrición, hábitos y comunidad Healthy Bites.</strong></p>
 
-![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.3-6DB33F?logo=springboot&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
+![Java](https://img.shields.io/badge/Java-25-ED8B00?logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5-6DB33F?logo=springboot&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-4169E1?logo=postgresql&logoColor=white)
 ![JWT](https://img.shields.io/badge/Auth-JWT-000000?logo=jsonwebtokens&logoColor=white)
 ![PayPal](https://img.shields.io/badge/Pagos-PayPal-003087?logo=paypal&logoColor=white)
 
@@ -55,20 +55,20 @@ La documentación interactiva (OpenAPI) está disponible en
 
 | Área          | Tecnología                                                                   |
 | ------------- | ---------------------------------------------------------------------------- |
-| Lenguaje      | Java 21                                                                      |
-| Framework     | Spring Boot 3.3 (Web, Data JPA, Security, Validation, Mail, Thymeleaf)       |
-| Base de datos | PostgreSQL 16 (Docker en desarrollo)                                         |
+| Lenguaje      | Java 25                                                                      |
+| Framework     | Spring Boot 3.5 (Web, Data JPA, Security, Validation, Mail, Thymeleaf)       |
+| Base de datos | PostgreSQL 18 (Docker en desarrollo)                                         |
 | Seguridad     | Spring Security con JWT (jjwt) y contraseñas con BCrypt                      |
 | Integraciones | PayPal REST API (sandbox), SMTP (Gmail) con plantillas Thymeleaf             |
 | Utilidades    | ModelMapper, Lombok, springdoc-openapi (Swagger UI)                          |
-| Pruebas       | JUnit 5, Mockito, MockMvc                                                    |
-| Build         | Maven Wrapper; imagen Docker (`Dockerfile`)                                  |
+| Pruebas       | JUnit 5, Mockito, MockMvc, Testcontainers (PostgreSQL)                       |
+| Build         | Maven Wrapper; imagen Docker multi-stage (`Dockerfile`)                      |
 
 ## Ejecución local
 
 ### Requisitos
 
-- **JDK 21.** Spring Boot 3.3 con Lombok no compila con JDK 25.
+- **JDK 25** (por ejemplo, Temurin 25).
 - **Docker**, para la base de datos.
 
 ### Pasos
@@ -81,8 +81,8 @@ docker compose up -d
 cp .env.example .env
 
 # 3. Arrancar la API en http://localhost:8090/api/v1
-.\run-backend.ps1          # Windows (PowerShell): fija JDK 21 y carga .env
-./mvnw spring-boot:run      # macOS/Linux, con JAVA_HOME apuntando a JDK 21
+.\run-backend.ps1          # Windows (PowerShell): usa un JDK 25 y carga .env
+./mvnw spring-boot:run      # macOS/Linux, con JAVA_HOME apuntando a JDK 25
 ```
 
 Al arrancar se cargan datos de demostración ([`data-test.sql`](src/main/resources/data-test.sql)).
