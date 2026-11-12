@@ -43,14 +43,20 @@ spring:
     locations: classpath:db/migration
 
   # Eventos entre módulos: se guardan en event_publication (lo crea la migración V1) hasta que su listener
-  # termina; los que quedan a medias se reintentan al arrancar.
+  # termina. Los que se quedan a medias (una instancia que se cae) pasan a fallidos a los 15 minutos y los reintenta
+  # FailedEventRetryJob en una sola instancia. No se reenvían al arrancar: con varias réplicas se duplicarían
+  # eventos que otra instancia está procesando.
   modulith:
     events:
       jdbc:
         schema-initialization:
           enabled: false
       completion-mode: delete
-      republish-outstanding-events-on-restart: true
+      republish-outstanding-events-on-restart: false
+      staleness:
+        published: PT15M
+        processing: PT15M
+        resubmitted: PT15M
 
   threads:
     virtual:

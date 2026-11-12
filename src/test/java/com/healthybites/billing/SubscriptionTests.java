@@ -233,6 +233,28 @@ class SubscriptionTests extends IntegrationTest {
                 .anyMatch(event -> event.userId().equals(buyer.id()));
     }
 
+    /** Con varias instancias: mientras otra tiene el bloqueo del job, esta no lo ejecuta. */
+    @Test
+    void theLifecycleJobDoesNotRunWhileAnotherInstanceHoldsItsLock() throws Exception {
+        NewUser buyer = newClient("bloqueo");
+        buy(buyer, "PREMIUM", "5.99");
+        jdbc.update(
+                "update subscriptions set current_period_end = now() - interval '1 minute' where user_id = ?",
+                buyer.id());
+
+        holdLockFromAnotherInstance("subscription-lifecycle");
+        try {
+            lifecycle.run();
+            assertThat(subscriptionStatus(buyer)).isEqualTo("ACTIVE");
+        } finally {
+            jdbc.update(
+                    "update shedlock set lock_until = timezone('utc', now()) where name = 'subscription-lifecycle'");
+        }
+
+        lifecycle.run();
+        assertThat(subscriptionStatus(buyer)).isEqualTo("EXPIRED");
+    }
+
     @Test
     void adminsSeeSubscriptionsPaymentsAndTheSummary() throws Exception {
         String admin = bearer(token(Seed.ADMIN));
@@ -268,6 +290,18 @@ class SubscriptionTests extends IntegrationTest {
                 .when(payPal)
                 .createOrder(anyString(), anyString(), any(), anyString(), anyString());
         return orderId;
+    }
+
+    /** ShedLock compara con la hora UTC de la base de datos. */
+    private void holdLockFromAnotherInstance(String job) {
+        jdbc.update("""
+                insert into shedlock (name, lock_until, locked_at, locked_by)
+                values (?, timezone('utc', now()) + interval '5 minutes', timezone('utc', now()), 'otra-instancia')
+                on conflict (name) do update set lock_until = excluded.lock_until, locked_by = excluded.locked_by""", job);
+    }
+
+    private String subscriptionStatus(NewUser user) {
+        return jdbc.queryForObject("select status from subscriptions where user_id = ?", String.class, user.id());
     }
 
     private String paymentStatus(String orderId) {

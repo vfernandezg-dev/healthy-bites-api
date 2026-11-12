@@ -102,6 +102,7 @@ class ArchitectureTests {
                         "org..",
                         "io.swagger..",
                         "lombok..",
+                        "net.javacrumbs.shedlock..",
                         "tools.jackson..",
                         "com.fasterxml.jackson..")
                 .check(CLASSES);

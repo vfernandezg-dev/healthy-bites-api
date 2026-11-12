@@ -2,6 +2,7 @@ package com.healthybites.shared.events;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.modulith.events.EventPublication;
 import org.springframework.modulith.events.FailedEventPublications;
 import org.springframework.modulith.events.ResubmissionOptions;
@@ -11,8 +12,12 @@ import org.springframework.stereotype.Component;
 /**
  * Reintenta los eventos persistidos cuyo listener falló, por ejemplo un correo con el SMTP caído. Spring Modulith
  * los guarda como fallidos en {@code event_publication}; cada 15 minutos se vuelven a entregar los que tienen al
- * menos {@link #MIN_AGE} y les quedan intentos. Al arrancar, además, se reintentan todos los pendientes
- * ({@code spring.modulith.events.republish-outstanding-events-on-restart}).
+ * menos {@link #MIN_AGE} y les quedan intentos.
+ *
+ * <p>Con varias instancias corre en una sola a la vez ({@code @SchedulerLock}). Las publicaciones que se quedan a
+ * medias (una instancia que se cae mientras procesa un evento) las marca como fallidas el monitor de Spring Modulith
+ * ({@code spring.modulith.events.staleness.*}) y este job las reintenta. Por eso no se reenvían todas al arrancar:
+ * con varias réplicas se duplicarían eventos que otra instancia está procesando.
  */
 @Component
 public class FailedEventRetryJob {
@@ -30,6 +35,7 @@ public class FailedEventRetryJob {
     }
 
     @Scheduled(initialDelay = 5, fixedDelay = 15, timeUnit = TimeUnit.MINUTES)
+    @SchedulerLock(name = "failed-event-retry", lockAtMostFor = "PT14M")
     public void resubmit() {
         failed.resubmit(
                 ResubmissionOptions.defaults().withMinAge(MIN_AGE).withFilter(FailedEventRetryJob::hasAttemptsLeft));

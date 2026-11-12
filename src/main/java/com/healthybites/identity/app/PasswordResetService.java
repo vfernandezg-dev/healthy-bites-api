@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -99,6 +100,7 @@ public class PasswordResetService {
     }
 
     @Scheduled(cron = "0 45 4 * * *")
+    @SchedulerLock(name = "password-reset-cleanup", lockAtMostFor = "PT10M")
     @Transactional
     public void purgeExpired() {
         int purged = tokens.deleteExpiredBefore(clock.instant());
