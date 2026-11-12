@@ -14,10 +14,12 @@ import com.healthybites.shared.web.ApiException;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionOperations;
 
 /**
  * Registro de clientes, alta de nutricionistas por invitación y el perfil del usuario actual. La cuenta (identity)
@@ -31,6 +33,7 @@ public class ProfileService {
     private final ClientProfileRepository clients;
     private final NutritionistProfileRepository nutritionists;
     private final RegistrationRateLimiter rateLimiter;
+    private final TransactionOperations transactions;
     private final Clock clock;
 
     public ProfileService(
@@ -39,12 +42,14 @@ public class ProfileService {
             ClientProfileRepository clients,
             NutritionistProfileRepository nutritionists,
             RegistrationRateLimiter rateLimiter,
+            TransactionOperations transactions,
             Clock clock) {
         this.registrations = registrations;
         this.accounts = accounts;
         this.clients = clients;
         this.nutritionists = nutritionists;
         this.rateLimiter = rateLimiter;
+        this.transactions = transactions;
         this.clock = clock;
     }
 
@@ -61,14 +66,16 @@ public class ProfileService {
             @Nullable BigDecimal heightCm,
             @Nullable BigDecimal weightKg) {}
 
-    @Transactional
+    /** El límite se comprueba antes de abrir la transacción (ver {@code RateLimiter}); cuenta y perfil van juntos. */
     public Me registerClient(
             String email, String password, String firstName, String lastName, ClientData data, String clientIp) {
         rateLimiter.check(clientIp);
-        UserAccount account = registrations.registerClient(email, password, firstName, lastName);
-        ClientProfile profile = clients.save(
-                ClientProfile.create(account.id(), data.sex(), data.birthDate(), data.heightCm(), data.weightKg()));
-        return new Me(account, profile, null, today());
+        return Objects.requireNonNull(transactions.execute(status -> {
+            UserAccount account = registrations.registerClient(email, password, firstName, lastName);
+            ClientProfile profile = clients.save(
+                    ClientProfile.create(account.id(), data.sex(), data.birthDate(), data.heightCm(), data.weightKg()));
+            return new Me(account, profile, null, today());
+        }));
     }
 
     @Transactional(readOnly = true)

@@ -142,6 +142,10 @@ healthybites:
     # Zona horaria de las fechas que leen las personas (correos). La API trabaja siempre en UTC.
     time-zone: ${APP_TIME_ZONE:America/Lima}
   security:
+    # Dónde se cuentan los límites de peticiones (login, registro, contacto...): jdbc (PostgreSQL, compartido por
+    # todas las instancias) o memory (cada instancia por su cuenta; solo con una instancia).
+    rate-limit:
+      store: ${RATE_LIMIT_STORE:jdbc}
     jwt:
       secret: ${JWT_SECRET:}
       access-token-ttl: ${JWT_ACCESS_TOKEN_TTL:PT15M}

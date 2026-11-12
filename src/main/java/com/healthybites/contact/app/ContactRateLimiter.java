@@ -1,7 +1,7 @@
 package com.healthybites.contact.app;
 
-import com.healthybites.shared.security.ratelimit.SlidingWindowRateLimiter;
-import java.time.Clock;
+import com.healthybites.shared.security.ratelimit.RateLimiter;
+import com.healthybites.shared.security.ratelimit.RateLimiters;
 import java.time.Duration;
 import java.util.Optional;
 import org.jspecify.annotations.Nullable;
@@ -18,17 +18,17 @@ public class ContactRateLimiter {
     private static final String UNKNOWN_CLIENT = "desconocido";
     private static final String GLOBAL = "*";
 
-    private final SlidingWindowRateLimiter perClient;
-    private final SlidingWindowRateLimiter global;
+    private final RateLimiter perClient;
+    private final RateLimiter global;
 
     public ContactRateLimiter(
             @Value("${healthybites.contact.rate-limit.per-client:5}") int maxPerClient,
             @Value("${healthybites.contact.rate-limit.per-client-window:PT10M}") Duration clientWindow,
             @Value("${healthybites.contact.rate-limit.global:50}") int maxGlobal,
             @Value("${healthybites.contact.rate-limit.global-window:PT1H}") Duration globalWindow,
-            Clock clock) {
-        this.perClient = new SlidingWindowRateLimiter(maxPerClient, clientWindow, clock);
-        this.global = new SlidingWindowRateLimiter(maxGlobal, globalWindow, clock);
+            RateLimiters rateLimiters) {
+        this.perClient = rateLimiters.create("contact-client", maxPerClient, clientWindow);
+        this.global = rateLimiters.create("contact-global", maxGlobal, globalWindow);
     }
 
     /**

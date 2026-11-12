@@ -10,10 +10,10 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Limitador en memoria con ventana deslizante: como mucho {@code maxEvents} eventos por clave en {@code window}.
- * Suficiente para una sola instancia; con varias réplicas habría que moverlo a un almacén compartido (Redis).
+ * Limitador en memoria con ventana deslizante. Cada instancia cuenta sus propios eventos, así que solo sirve con una
+ * instancia ({@code healthybites.security.rate-limit.store=memory}); con varias se usa {@link JdbcRateLimiter}.
  */
-public final class SlidingWindowRateLimiter {
+final class InMemoryRateLimiter implements RateLimiter {
 
     private static final int SWEEP_THRESHOLD = 1_000;
 
@@ -22,7 +22,7 @@ public final class SlidingWindowRateLimiter {
     private final Clock clock;
     private final Map<String, Deque<Instant>> events = new HashMap<>();
 
-    public SlidingWindowRateLimiter(int maxEvents, Duration window, Clock clock) {
+    InMemoryRateLimiter(int maxEvents, Duration window, Clock clock) {
         if (maxEvents < 1) {
             throw new IllegalArgumentException("maxEvents debe ser al menos 1");
         }
@@ -31,7 +31,7 @@ public final class SlidingWindowRateLimiter {
         this.clock = clock;
     }
 
-    /** Registra un evento si la clave no alcanzó el límite. */
+    @Override
     public synchronized boolean tryAcquire(String key) {
         if (retryAfter(key).isPresent()) {
             return false;
@@ -40,7 +40,7 @@ public final class SlidingWindowRateLimiter {
         return true;
     }
 
-    /** Tiempo hasta que la clave vuelva a tener margen, o vacío si no está limitada. No registra nada. */
+    @Override
     public synchronized Optional<Duration> retryAfter(String key) {
         Instant now = clock.instant();
         Deque<Instant> hits = events.get(key);
@@ -48,14 +48,17 @@ public final class SlidingWindowRateLimiter {
             return Optional.empty();
         }
         prune(hits, now);
-        Instant oldest = hits.peekFirst();
-        if (hits.size() < maxEvents || oldest == null) {
+        if (hits.size() < maxEvents) {
             return Optional.empty();
         }
-        Duration wait = Duration.between(now, oldest.plus(window));
+        // Hay margen cuando sale de la ventana el evento número maxEvents contando desde el más reciente.
+        Instant blocking =
+                hits.stream().skip(hits.size() - maxEvents).findFirst().orElseThrow();
+        Duration wait = Duration.between(now, blocking.plus(window));
         return Optional.of(wait.isNegative() ? Duration.ZERO : wait);
     }
 
+    @Override
     public synchronized void record(String key) {
         Instant now = clock.instant();
         Deque<Instant> hits = events.computeIfAbsent(key, k -> new ArrayDeque<>());
@@ -69,6 +72,7 @@ public final class SlidingWindowRateLimiter {
         }
     }
 
+    @Override
     public synchronized void reset(String key) {
         events.remove(key);
     }
