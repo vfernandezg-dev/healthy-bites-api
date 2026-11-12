@@ -70,6 +70,12 @@ public class SessionService {
         return open(next.user(), next);
     }
 
+    /** Sesión nueva para una cuenta ya autenticada (por ejemplo, tras cambiar la contraseña). */
+    @Transactional
+    public Session openFor(User user) {
+        return open(user, refreshTokens.issue(user));
+    }
+
     @Transactional
     public void logout(@Nullable String refreshToken) {
         refreshTokens.revokeSession(refreshToken);

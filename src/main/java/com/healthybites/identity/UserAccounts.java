@@ -12,4 +12,7 @@ public interface UserAccounts {
 
     /** Varias cuentas de una vez (evita N consultas al pintar listados). Los ids que no existen no aparecen. */
     Map<UUID, UserAccount> findAllById(Collection<UUID> ids);
+
+    /** Cambia el nombre que se muestra (lo edita el usuario desde su perfil). */
+    UserAccount rename(UUID id, String firstName, String lastName);
 }

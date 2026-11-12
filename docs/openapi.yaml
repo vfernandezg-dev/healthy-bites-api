@@ -16,9 +16,189 @@ security:
 tags:
 - description: "Login, renovación, logout y restablecimiento de contraseña"
   name: Sesión
+- description: "Búsqueda, resumen y activación de cuentas (solo ADMIN)"
+  name: Admin · Cuentas
+- description: Alta de clientes y de nutricionistas invitados
+  name: Registro
+- description: Alta de nutricionistas por invitación (solo ADMIN)
+  name: Admin · Invitaciones
 - description: Formulario de contacto de la landing
   name: Contacto
 paths:
+  /admin/nutritionist-invitations:
+    get:
+      operationId: list
+      parameters:
+      - in: query
+        name: pageable
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PagedModelInvitationResponse"
+          description: OK
+      summary: Lista las invitaciones con su estado
+      tags:
+      - Admin · Invitaciones
+    post:
+      operationId: invite
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InviteNutritionistRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/InvitationResponse"
+          description: OK
+      summary: "Invita a un nutricionista: recibe un enlace por correo para crear\
+        \ su cuenta"
+      tags:
+      - Admin · Invitaciones
+  /admin/nutritionist-invitations/{id}:
+    delete:
+      operationId: revoke
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+      summary: Revoca una invitación pendiente
+      tags:
+      - Admin · Invitaciones
+  /admin/nutritionist-invitations/{id}/resend:
+    post:
+      operationId: resend
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/InvitationResponse"
+          description: OK
+      summary: Reenvía la invitación con un enlace nuevo (el anterior deja de valer)
+      tags:
+      - Admin · Invitaciones
+  /admin/users:
+    get:
+      operationId: search
+      parameters:
+      - in: query
+        name: role
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          enum:
+          - ADMIN
+          - CLIENT
+          - NUTRITIONIST
+      - in: query
+        name: status
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          enum:
+          - ACTIVE
+          - DEACTIVATED
+      - in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+      - in: query
+        name: pageable
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PagedModelAdminUserResponse"
+          description: OK
+      summary: "Busca cuentas por rol, estado y texto (nombre o correo)"
+      tags:
+      - Admin · Cuentas
+  /admin/users/summary:
+    get:
+      operationId: summary
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserSummaryResponse"
+          description: OK
+      summary: Totales por rol y estado y altas de los últimos 30 días
+      tags:
+      - Admin · Cuentas
+  /admin/users/{id}/activate:
+    post:
+      operationId: activate
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AdminUserResponse"
+          description: OK
+      summary: Reactiva una cuenta
+      tags:
+      - Admin · Cuentas
+  /admin/users/{id}/deactivate:
+    post:
+      operationId: deactivate
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AdminUserResponse"
+          description: OK
+      summary: Desactiva una cuenta y cierra sus sesiones
+      tags:
+      - Admin · Cuentas
   /auth/forgot-password:
     post:
       description: "Siempre 202, exista o no la cuenta: la respuesta no revela qué\
@@ -37,6 +217,48 @@ paths:
       summary: Pide un enlace para restablecer la contraseña
       tags:
       - Sesión
+  /auth/invitations/accept:
+    post:
+      operationId: acceptInvitation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AcceptInvitationRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MeResponse"
+          description: OK
+      security: []
+      summary: "Acepta la invitación: crea la cuenta de nutricionista con su contraseñ\
+        a"
+      tags:
+      - Registro
+  /auth/invitations/preview:
+    post:
+      operationId: previewInvitation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvitationPreviewRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/InvitationPreviewResponse"
+          description: OK
+      security: []
+      summary: Datos de una invitación de nutricionista (para mostrarlos antes de
+        aceptar)
+      tags:
+      - Registro
   /auth/login:
     post:
       operationId: login
@@ -83,6 +305,28 @@ paths:
         \ cada uso"
       tags:
       - Sesión
+  /auth/register:
+    post:
+      description: "Crea la cuenta y su perfil. Para entrar, el web-app inicia sesió\
+        n con las mismas credenciales."
+      operationId: register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MeResponse"
+          description: OK
+      security: []
+      summary: Registro público de clientes
+      tags:
+      - Registro
   /auth/reset-password:
     post:
       operationId: resetPassword
@@ -116,8 +360,161 @@ paths:
       summary: "Envía un mensaje al equipo (204, 422, 429 o 503)"
       tags:
       - Contacto
+  /me:
+    get:
+      operationId: me
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MeResponse"
+          description: OK
+      summary: Usuario actual con el perfil de su rol
+      tags:
+      - Mi cuenta
+  /me/password:
+    put:
+      description: Cierra todas las sesiones (también en otros dispositivos) y devuelve
+        una nueva.
+      operationId: changePassword
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SessionResponse"
+          description: OK
+      summary: Cambia la contraseña
+      tags:
+      - Mi cuenta
+  /me/profile:
+    put:
+      operationId: update
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProfileRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/MeResponse"
+          description: OK
+      summary: Actualiza el nombre y los datos del perfil
+      tags:
+      - Mi cuenta
 components:
   schemas:
+    AcceptInvitationRequest:
+      type: object
+      properties:
+        bio:
+          type: string
+          maxLength: 2000
+          minLength: 0
+        password:
+          type: string
+          maxLength: 64
+          minLength: 10
+        token:
+          type: string
+          maxLength: 128
+          minLength: 0
+      required:
+      - password
+      - token
+    AdminUserResponse:
+      type: object
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+        email:
+          type: string
+        firstName:
+          type: string
+        id:
+          type: string
+          format: uuid
+        lastLoginAt:
+          type: string
+          format: date-time
+        lastName:
+          type: string
+        role:
+          type: string
+          enum:
+          - ADMIN
+          - CLIENT
+          - NUTRITIONIST
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - DEACTIVATED
+    ChangePasswordRequest:
+      type: object
+      properties:
+        currentPassword:
+          type: string
+          maxLength: 128
+          minLength: 0
+        newPassword:
+          type: string
+          maxLength: 64
+          minLength: 10
+      required:
+      - currentPassword
+      - newPassword
+    ClientData:
+      type: object
+      properties:
+        birthDate:
+          type: string
+          format: date
+        heightCm:
+          type: number
+          maximum: 260
+          minimum: 50
+        sex:
+          type: string
+          enum:
+          - FEMALE
+          - MALE
+          - OTHER
+        weightKg:
+          type: number
+          maximum: 400
+          minimum: 20
+    ClientProfileResponse:
+      type: object
+      properties:
+        age:
+          type: integer
+          format: int32
+        birthDate:
+          type: string
+          format: date
+        heightCm:
+          type: number
+        sex:
+          type: string
+          enum:
+          - FEMALE
+          - MALE
+          - OTHER
+        weightKg:
+          type: number
     ContactMessage:
       type: object
       properties:
@@ -155,6 +552,72 @@ components:
           minLength: 0
       required:
       - email
+    InvitationPreviewRequest:
+      type: object
+      properties:
+        token:
+          type: string
+          maxLength: 128
+          minLength: 0
+      required:
+      - token
+    InvitationPreviewResponse:
+      type: object
+      properties:
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+    InvitationResponse:
+      type: object
+      properties:
+        acceptedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        email:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        firstName:
+          type: string
+        id:
+          type: string
+          format: uuid
+        lastName:
+          type: string
+        status:
+          type: string
+          enum:
+          - PENDING
+          - ACCEPTED
+          - EXPIRED
+          - REVOKED
+    InviteNutritionistRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+          minLength: 0
+        firstName:
+          type: string
+          maxLength: 60
+          minLength: 0
+        lastName:
+          type: string
+          maxLength: 60
+          minLength: 0
+      required:
+      - email
+      - firstName
+      - lastName
     LoginRequest:
       type: object
       properties:
@@ -169,6 +632,119 @@ components:
           minLength: 0
       required:
       - email
+      - password
+    MeResponse:
+      type: object
+      properties:
+        client:
+          $ref: "#/components/schemas/ClientProfileResponse"
+        email:
+          type: string
+        firstName:
+          type: string
+        id:
+          type: string
+          format: uuid
+        lastName:
+          type: string
+        nutritionist:
+          $ref: "#/components/schemas/NutritionistProfileResponse"
+        role:
+          type: string
+          enum:
+          - ADMIN
+          - CLIENT
+          - NUTRITIONIST
+    NutritionistProfileResponse:
+      type: object
+      properties:
+        bio:
+          type: string
+    PageMetadata:
+      type: object
+      properties:
+        number:
+          type: integer
+          format: int64
+        size:
+          type: integer
+          format: int64
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int64
+      required:
+      - number
+      - size
+      - totalElements
+      - totalPages
+    Pageable:
+      type: object
+      properties:
+        page:
+          type: integer
+          format: int32
+          minimum: 0
+        size:
+          type: integer
+          format: int32
+          minimum: 1
+        sort:
+          type: array
+          items:
+            type: string
+    PagedModelAdminUserResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminUserResponse"
+        page:
+          $ref: "#/components/schemas/PageMetadata"
+      required:
+      - content
+      - page
+    PagedModelInvitationResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/InvitationResponse"
+        page:
+          $ref: "#/components/schemas/PageMetadata"
+      required:
+      - content
+      - page
+    RegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+          minLength: 0
+        firstName:
+          type: string
+          maxLength: 60
+          minLength: 0
+        lastName:
+          type: string
+          maxLength: 60
+          minLength: 0
+        password:
+          type: string
+          maxLength: 64
+          minLength: 10
+        profile:
+          $ref: "#/components/schemas/ClientData"
+      required:
+      - email
+      - firstName
+      - lastName
       - password
     ResetPasswordRequest:
       type: object
@@ -214,6 +790,46 @@ components:
           - ADMIN
           - CLIENT
           - NUTRITIONIST
+    UpdateProfileRequest:
+      type: object
+      properties:
+        bio:
+          type: string
+          maxLength: 2000
+          minLength: 0
+        client:
+          $ref: "#/components/schemas/ClientData"
+        firstName:
+          type: string
+          maxLength: 60
+          minLength: 0
+        lastName:
+          type: string
+          maxLength: 60
+          minLength: 0
+      required:
+      - firstName
+      - lastName
+    UserSummaryResponse:
+      type: object
+      properties:
+        active:
+          type: integer
+          format: int64
+        byRole:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+        deactivated:
+          type: integer
+          format: int64
+        newLast30Days:
+          type: integer
+          format: int64
+        total:
+          type: integer
+          format: int64
   securitySchemes:
     bearer:
       bearerFormat: JWT

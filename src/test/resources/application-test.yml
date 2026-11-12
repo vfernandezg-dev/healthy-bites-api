@@ -22,6 +22,7 @@ healthybites:
     rate-limit:
       # Todas las peticiones de los tests llegan desde 127.0.0.1; el límite por cuenta se prueba igual.
       password-reset-per-ip: 1000
+      registrations-per-ip: 1000
 
 # OpenApiExportTests genera docs/openapi.yaml desde /v3/api-docs.yaml.
 springdoc:

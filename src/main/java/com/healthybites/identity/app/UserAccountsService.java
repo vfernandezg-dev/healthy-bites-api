@@ -4,6 +4,7 @@ import com.healthybites.identity.UserAccount;
 import com.healthybites.identity.UserAccounts;
 import com.healthybites.identity.domain.User;
 import com.healthybites.identity.domain.UserRepository;
+import com.healthybites.shared.web.ApiException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
@@ -35,5 +36,14 @@ class UserAccountsService implements UserAccounts {
         return users.findAllById(ids).stream()
                 .map(User::toAccount)
                 .collect(Collectors.toUnmodifiableMap(UserAccount::id, account -> account));
+    }
+
+    @Override
+    @Transactional
+    public UserAccount rename(UUID id, String firstName, String lastName) {
+        User user =
+                users.findById(id).orElseThrow(() -> ApiException.notFound("user-not-found", "La cuenta no existe"));
+        user.rename(firstName, lastName);
+        return user.toAccount();
     }
 }
