@@ -185,7 +185,7 @@ healthybites:
     client-id: ${PAYPAL_CLIENT_ID:}
     client-secret: ${PAYPAL_CLIENT_SECRET:}
     api-base: ${PAYPAL_API_BASE:https://api-m.sandbox.paypal.com}
-  # Ficheros subidos: local (una carpeta; solo con una instancia y disco persistente) o s3 (R2, S3, MinIO...;
+  # Ficheros subidos: local (una carpeta; solo con una instancia y disco persistente) o s3 (Cloudflare R2, AWS S3...;
   # compartido por todas las instancias). Con s3, el navegador los lee con URLs prefirmadas, sin pasar por la API.
   storage:
     type: ${STORAGE_TYPE:local}

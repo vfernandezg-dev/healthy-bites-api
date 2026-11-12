@@ -110,7 +110,7 @@
             <artifactId>shedlock-provider-jdbc-template</artifactId>
             <version>${shedlock.version}</version>
         </dependency>
-        <!-- Almacenamiento de objetos S3-compatible (R2, S3, MinIO) con el cliente HTTP del JDK -->
+        <!-- Almacenamiento de objetos S3-compatible (Cloudflare R2, AWS S3) con el cliente HTTP del JDK -->
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>

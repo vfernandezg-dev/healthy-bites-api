@@ -217,7 +217,7 @@ Ningún secreto se versiona. Toda la configuración llega de variables de entorn
 | `CORS_APP_ORIGINS`, `CORS_LANDING_ORIGINS` | En producción                      | Orígenes del web-app (toda la API, con credenciales) y de la landing (`/contact`) |
 | `CONTACT_RECIPIENT`                        | No                                 | Buzón del formulario de contacto (por defecto, `MAIL_USERNAME`)                   |
 | `APP_TIME_ZONE`                            | No                                 | Zona horaria de las fechas de los correos (por defecto, `America/Lima`)           |
-| `STORAGE_TYPE`                             | Con varias instancias              | `local` (carpeta, por defecto) o `s3` (R2, S3, MinIO) para los ficheros subidos   |
+| `STORAGE_TYPE`                             | Con varias instancias              | `local` (carpeta, por defecto) o `s3` (Cloudflare R2, AWS S3) para los ficheros   |
 | `STORAGE_LOCATION`                         | No                                 | Carpeta de los ficheros con `STORAGE_TYPE=local` (por defecto, `uploads`)         |
 | `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY`, `S3_SECRET_KEY` | Con `STORAGE_TYPE=s3` | Almacenamiento de objetos (`S3_REGION` y `S3_PATH_STYLE`: `auto` y `true`) |
 | `DB_POOL_SIZE`                             | No                                 | Conexiones del pool por instancia (por defecto, 10)                               |

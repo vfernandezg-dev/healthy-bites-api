@@ -17,7 +17,7 @@ instancias:
 
 - `FileStorage` es un puerto de `media.app` con dos adaptadores en `media.infra`, elegidos con `STORAGE_TYPE`:
   - `local`: la carpeta de siempre, para desarrollo o una sola instancia con disco persistente;
-  - `s3`: `S3FileStorage` con AWS SDK v2, que sirve para Cloudflare R2, AWS S3 o MinIO (`S3_ENDPOINT`, `S3_BUCKET`,
+  - `s3`: `S3FileStorage` con AWS SDK v2, que sirve para Cloudflare R2 o AWS S3 (`S3_ENDPOINT`, `S3_BUCKET`,
     `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_REGION`, `S3_PATH_STYLE`).
 - Con `s3`, `GET /media/{id}` comprueba el acceso como antes (público, o URL firmada de la API) y responde **302 a
   una URL prefirmada** del almacenamiento, firmada con el tipo, la disposición y la caché que antes ponía la API:

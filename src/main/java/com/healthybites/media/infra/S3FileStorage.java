@@ -28,7 +28,7 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
 /**
- * Almacenamiento de objetos S3-compatible (Cloudflare R2, AWS S3, MinIO): lo comparten todas las instancias y no se
+ * Almacenamiento de objetos S3-compatible (Cloudflare R2, AWS S3): lo comparten todas las instancias y no se
  * pierde al reiniciar un contenedor.
  *
  * <ul>
