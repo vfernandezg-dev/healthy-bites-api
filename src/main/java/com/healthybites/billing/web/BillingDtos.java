@@ -8,6 +8,7 @@ import com.healthybites.billing.domain.PaymentStatus;
 import com.healthybites.billing.domain.Subscription;
 import com.healthybites.billing.domain.SubscriptionPlan;
 import com.healthybites.billing.domain.SubscriptionStatus;
+import com.healthybites.identity.UserAccount;
 import com.healthybites.shared.domain.Money;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -83,9 +84,21 @@ final class BillingDtos {
         }
     }
 
+    /** Titular de una suscripción o un pago; {@code null} si la cuenta ya no existe. */
+    record CustomerResponse(UUID id, String name, String email) {
+
+        static @Nullable CustomerResponse of(@Nullable UserAccount account) {
+            return account == null
+                    ? null
+                    : new CustomerResponse(
+                            account.id(), account.firstName() + " " + account.lastName(), account.email());
+        }
+    }
+
     record AdminSubscriptionResponse(
             UUID id,
             UUID userId,
+            @Nullable CustomerResponse customer,
             Tier tier,
             SubscriptionStatus status,
             @Nullable Instant currentPeriodStart,
@@ -93,10 +106,11 @@ final class BillingDtos {
             @Nullable Instant canceledAt,
             @Nullable Instant createdAt) {
 
-        static AdminSubscriptionResponse of(Subscription subscription) {
+        static AdminSubscriptionResponse of(Subscription subscription, Map<UUID, UserAccount> people) {
             return new AdminSubscriptionResponse(
                     subscription.requireId(),
                     subscription.getUserId(),
+                    CustomerResponse.of(people.get(subscription.getUserId())),
                     subscription.getTier(),
                     subscription.getStatus(),
                     subscription.getCurrentPeriodStart(),
@@ -109,6 +123,7 @@ final class BillingDtos {
     record AdminPaymentResponse(
             UUID id,
             UUID userId,
+            @Nullable CustomerResponse customer,
             UUID subscriptionId,
             String providerOrderId,
             Money amount,
@@ -116,10 +131,11 @@ final class BillingDtos {
             @Nullable Instant createdAt,
             @Nullable Instant capturedAt) {
 
-        static AdminPaymentResponse of(Payment payment) {
+        static AdminPaymentResponse of(Payment payment, Map<UUID, UserAccount> people) {
             return new AdminPaymentResponse(
                     payment.requireId(),
                     payment.getUserId(),
+                    CustomerResponse.of(people.get(payment.getUserId())),
                     payment.getSubscriptionId(),
                     payment.getProviderOrderId(),
                     payment.getAmount(),

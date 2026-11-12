@@ -2262,6 +2262,10 @@ components:
           - string
           - "null"
           format: date-time
+        customer:
+          oneOf:
+          - $ref: "#/components/schemas/CustomerResponse"
+          - type: "null"
         id:
           type: string
           format: uuid
@@ -2310,6 +2314,10 @@ components:
           - string
           - "null"
           format: date-time
+        customer:
+          oneOf:
+          - $ref: "#/components/schemas/CustomerResponse"
+          - type: "null"
         id:
           type: string
           format: uuid
@@ -2727,6 +2735,20 @@ components:
       required:
       - renews
       - tier
+    CustomerResponse:
+      type: object
+      properties:
+        email:
+          type: string
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+      required:
+      - email
+      - id
+      - name
     EditableContentResponse:
       type: object
       properties:

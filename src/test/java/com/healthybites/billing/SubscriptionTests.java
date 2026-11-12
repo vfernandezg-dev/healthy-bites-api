@@ -171,9 +171,12 @@ class SubscriptionTests extends IntegrationTest {
                 .andExpect(jsonPath("$.activeByTier.VIP", Matchers.greaterThanOrEqualTo(1)))
                 .andExpect(jsonPath("$.monthlyRecurringRevenue[0].currency").value("USD"));
         mockMvc.perform(get("/admin/subscriptions").param("tier", "VIP").header(HttpHeaders.AUTHORIZATION, admin))
-                .andExpect(jsonPath("$.content[*].tier", Matchers.everyItem(Matchers.is("VIP"))));
+                .andExpect(jsonPath("$.content[*].tier", Matchers.everyItem(Matchers.is("VIP"))))
+                .andExpect(jsonPath("$.content[0].customer.email").isNotEmpty())
+                .andExpect(jsonPath("$.content[0].customer.name").isNotEmpty());
         mockMvc.perform(get("/admin/payments").param("status", "CAPTURED").header(HttpHeaders.AUTHORIZATION, admin))
-                .andExpect(jsonPath("$.content[*].status", Matchers.everyItem(Matchers.is("CAPTURED"))));
+                .andExpect(jsonPath("$.content[*].status", Matchers.everyItem(Matchers.is("CAPTURED"))))
+                .andExpect(jsonPath("$.content[0].customer.email").isNotEmpty());
         mockMvc.perform(get("/admin/billing/summary").header(HttpHeaders.AUTHORIZATION, bearer(token(Seed.MARIA))))
                 .andExpect(status().isForbidden());
     }

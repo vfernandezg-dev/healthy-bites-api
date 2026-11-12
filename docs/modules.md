@@ -20,6 +20,7 @@ flowchart LR
     profiles["Profiles"]
     progress["Progress"]
     rewards["Rewards"]
+    billing --> identity
     community --> identity
     community --> media
     content --> billing
@@ -46,7 +47,7 @@ flowchart LR
 
 | Módulo | Paquete | Usa | Publica | Escucha |
 |---|---|---|---|---|
-| Billing | `com.healthybites.billing` | shared | SubscriptionActivated, SubscriptionExpired | — |
+| Billing | `com.healthybites.billing` | identity, shared | SubscriptionActivated, SubscriptionExpired | — |
 | Community | `com.healthybites.community` | identity, media, shared | MembershipRequested | — |
 | Contact | `com.healthybites.contact` | shared | — | — |
 | Content | `com.healthybites.content` | billing, identity, media, shared | — | — |
