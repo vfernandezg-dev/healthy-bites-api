@@ -7,6 +7,7 @@ import com.healthybites.billing.app.PaymentGateway;
 import com.healthybites.shared.domain.Money;
 import com.healthybites.shared.web.ApiException;
 import java.net.URI;
+import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Duration;
@@ -22,7 +23,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -178,10 +179,13 @@ public class PayPalClient implements PaymentGateway {
         return body;
     }
 
-    /** Sin timeouts, un PayPal lento dejaría la petición del usuario colgada. */
-    private static SimpleClientHttpRequestFactory withTimeouts() {
-        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(Duration.ofSeconds(5));
+    /**
+     * Cliente HTTP del JDK ({@code java.net.http}: HTTP/2, pensado para hilos virtuales) con timeouts cortos: sin
+     * ellos, un PayPal lento dejaría la petición del usuario colgada.
+     */
+    private static JdkClientHttpRequestFactory withTimeouts() {
+        JdkClientHttpRequestFactory factory = new JdkClientHttpRequestFactory(
+                HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build());
         factory.setReadTimeout(Duration.ofSeconds(20));
         return factory;
     }
