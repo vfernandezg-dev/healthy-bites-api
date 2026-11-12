@@ -9,6 +9,11 @@ import com.healthybites.rewards.domain.RewardStreak;
 import com.healthybites.rewards.domain.RewardStreakRepository;
 import com.healthybites.rewards.events.RewardEarned;
 import java.time.Clock;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.modulith.events.ApplicationModuleListener;
@@ -46,8 +51,13 @@ class StreakListener {
 
     @ApplicationModuleListener
     void on(HabitLogged event) {
-        for (RewardStreak streak : streaks.findByClientIdAndCompletedAtIsNull(event.clientId())) {
-            Reward reward = rewards.findById(streak.getRewardId()).orElse(null);
+        List<RewardStreak> open = streaks.findByClientIdAndCompletedAtIsNull(event.clientId());
+        Map<UUID, Reward> byId = rewards
+                .findAllById(open.stream().map(RewardStreak::getRewardId).toList())
+                .stream()
+                .collect(Collectors.toMap(Reward::requireId, Function.identity()));
+        for (RewardStreak streak : open) {
+            Reward reward = byId.get(streak.getRewardId());
             if (reward == null) {
                 continue;
             }

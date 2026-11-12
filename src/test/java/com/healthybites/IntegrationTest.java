@@ -10,11 +10,14 @@ import com.healthybites.support.Seed;
 import com.jayway.jsonpath.JsonPath;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.persistence.EntityManagerFactory;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import org.hibernate.SessionFactory;
+import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -67,6 +70,9 @@ public abstract class IntegrationTest {
     @MockitoSpyBean
     protected FileStorage storage;
 
+    @Autowired
+    private EntityManagerFactory entityManagerFactory;
+
     @BeforeEach
     void setUpMail() {
         // Un mensaje nuevo por correo: un test puede enviar varios y revisarlos todos al final.
@@ -112,6 +118,20 @@ public abstract class IntegrationTest {
     }
 
     protected record NewUser(UUID id, String email, String token) {}
+
+    /** Sentencias SQL que ejecuta Hibernate durante la acción: sirve para comprobar que no hay consultas N+1. */
+    protected long statementsDuring(Action action) throws Exception {
+        Statistics statistics =
+                entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+        statistics.clear();
+        action.run();
+        return statistics.getPrepareStatementCount();
+    }
+
+    @FunctionalInterface
+    protected interface Action {
+        void run() throws Exception;
+    }
 
     protected static String bearer(String token) {
         return "Bearer " + token;

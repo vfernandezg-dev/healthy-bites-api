@@ -17,10 +17,10 @@ import com.healthybites.media.MediaFiles;
 import com.healthybites.shared.web.ApiException;
 import java.time.Clock;
 import java.time.Duration;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -166,8 +166,9 @@ public class ContentService implements ContentAccess {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<String> titleOf(UUID contentItemId) {
-        return items.findById(contentItemId).map(ContentItem::getTitle);
+    public Map<UUID, String> titlesOf(Collection<UUID> contentItemIds) {
+        return items.findAllById(contentItemIds).stream()
+                .collect(Collectors.toMap(ContentItem::requireId, ContentItem::getTitle));
     }
 
     ContentCard card(ContentItem item, @Nullable UserAccount author, boolean locked) {

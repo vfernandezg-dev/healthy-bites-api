@@ -13,9 +13,9 @@ import com.healthybites.nutrition.domain.NutritionEnums.MealPlanGoal;
 import com.healthybites.nutrition.domain.NutritionEnums.MealPlanStatus;
 import com.healthybites.shared.web.ApiException;
 import java.time.Clock;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
@@ -145,8 +145,9 @@ public class MealPlanService implements MealPlanAccess {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<String> titleOf(UUID mealPlanId) {
-        return plans.findById(mealPlanId).map(MealPlan::getTitle);
+    public Map<UUID, String> titlesOf(Collection<UUID> mealPlanIds) {
+        return plans.findAllById(mealPlanIds).stream()
+                .collect(Collectors.toMap(MealPlan::requireId, MealPlan::getTitle));
     }
 
     static ApiException notFound() {

@@ -145,6 +145,32 @@ class CommunityTests extends IntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
+    /** La lista de denuncias hace las mismas consultas tenga las filas que tenga: ninguna consulta por fila. */
+    @Test
+    void theReportListRunsTheSameQueriesWhateverItsSize() throws Exception {
+        String admin = bearer(token(Seed.ADMIN));
+        NewUser author = newClient("autora");
+        join(bearer(author.token()), G1).andExpect(status().isOk());
+        String postId = JsonPath.read(
+                publish(bearer(author.token()), G1)
+                        .andExpect(status().isCreated())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString(),
+                "$.id");
+        report(bearer(newClient("testigo").token()), postId).andExpect(status().isAccepted());
+        Action listReports = () -> mockMvc.perform(
+                        get("/admin/moderation/reports").param("size", "100").header(HttpHeaders.AUTHORIZATION, admin))
+                .andExpect(status().isOk());
+        long before = statementsDuring(listReports);
+
+        for (int reporter = 0; reporter < 3; reporter++) {
+            report(bearer(newClient("testigo").token()), postId).andExpect(status().isAccepted());
+        }
+
+        assertThat(statementsDuring(listReports)).isEqualTo(before);
+    }
+
     private ResultActions posts(String group, String accessToken) throws Exception {
         return mockMvc.perform(
                 get("/groups/" + group + "/posts").header(HttpHeaders.AUTHORIZATION, bearer(accessToken)));
