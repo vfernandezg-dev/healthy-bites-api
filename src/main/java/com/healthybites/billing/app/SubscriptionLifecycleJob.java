@@ -1,14 +1,12 @@
 package com.healthybites.billing.app;
 
-import com.healthybites.billing.domain.Payment;
-import com.healthybites.billing.domain.PaymentRepository;
-import com.healthybites.billing.domain.PaymentStatus;
 import com.healthybites.billing.domain.Subscription;
 import com.healthybites.billing.domain.SubscriptionRepository;
 import com.healthybites.billing.events.SubscriptionExpired;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.context.ApplicationEventPublisher;
@@ -27,17 +25,14 @@ public class SubscriptionLifecycleJob {
     private static final Duration ABANDONED_AFTER = Duration.ofHours(24);
 
     private final SubscriptionRepository subscriptions;
-    private final PaymentRepository payments;
+    private final PaymentLedger ledger;
     private final ApplicationEventPublisher events;
     private final Clock clock;
 
     public SubscriptionLifecycleJob(
-            SubscriptionRepository subscriptions,
-            PaymentRepository payments,
-            ApplicationEventPublisher events,
-            Clock clock) {
+            SubscriptionRepository subscriptions, PaymentLedger ledger, ApplicationEventPublisher events, Clock clock) {
         this.subscriptions = subscriptions;
-        this.payments = payments;
+        this.ledger = ledger;
         this.events = events;
         this.clock = clock;
     }
@@ -54,13 +49,9 @@ public class SubscriptionLifecycleJob {
                     subscription.requireId(), subscription.getUserId(), subscription.getTier()));
             expired++;
         }
-        int abandoned = 0;
-        for (Subscription pending : subscriptions.findAbandoned(now.minus(ABANDONED_AFTER))) {
-            pending.expire();
-            payments.findBySubscriptionIdAndStatus(pending.requireId(), PaymentStatus.CREATED)
-                    .forEach(Payment::cancel);
-            abandoned++;
-        }
+        List<Subscription> pending = subscriptions.findAbandoned(now.minus(ABANDONED_AFTER));
+        ledger.abandon(pending);
+        int abandoned = pending.size();
         if (expired + abandoned > 0) {
             log.info("Suscripciones vencidas: {}; checkouts abandonados cerrados: {}", expired, abandoned);
         }

@@ -15,6 +15,7 @@ import com.healthybites.shared.domain.Money;
 import com.healthybites.shared.web.ApiException;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -95,9 +96,7 @@ class PaymentLedger {
                 .orElseThrow(() -> ApiException.notFound("plan-not-found", "Ese plan no está disponible"));
 
         // Un checkout anterior que no se terminó deja de valer.
-        subscriptions
-                .findByUserIdAndStatusIn(userId, List.of(SubscriptionStatus.PENDING_PAYMENT))
-                .forEach(this::abandon);
+        abandon(subscriptions.findByUserIdAndStatusIn(userId, List.of(SubscriptionStatus.PENDING_PAYMENT)));
 
         Subscription subscription = subscriptions.save(Subscription.pending(userId, plan));
         return new OpenCheckout(
@@ -180,9 +179,17 @@ class PaymentLedger {
         return new CaptureOutcome.Captured();
     }
 
-    private void abandon(Subscription pending) {
-        pending.expire();
-        payments.findBySubscriptionIdAndStatus(pending.requireId(), PaymentStatus.CREATED)
+    /**
+     * Cierra checkouts sin terminar: las suscripciones caducan y sus pedidos abiertos se cancelan, con una sola consulta
+     * de pagos. Va en la transacción de quien llama (el checkout nuevo o {@link SubscriptionLifecycleJob}).
+     */
+    void abandon(Collection<Subscription> pending) {
+        if (pending.isEmpty()) {
+            return;
+        }
+        pending.forEach(Subscription::expire);
+        payments.findBySubscriptionIdInAndStatus(
+                        pending.stream().map(Subscription::requireId).toList(), PaymentStatus.CREATED)
                 .forEach(Payment::cancel);
     }
 

@@ -262,7 +262,10 @@ class SubscriptionTests extends IntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.activeByTier.PREMIUM", Matchers.greaterThanOrEqualTo(1)))
                 .andExpect(jsonPath("$.activeByTier.VIP", Matchers.greaterThanOrEqualTo(1)))
-                .andExpect(jsonPath("$.monthlyRecurringRevenue[0].currency").value("USD"));
+                .andExpect(jsonPath("$.monthlyRecurringRevenue[0].currency").value("USD"))
+                // Calculado en SQL: un importe positivo con dos decimales.
+                .andExpect(
+                        jsonPath("$.monthlyRecurringRevenue[0].amount", Matchers.matchesPattern("[1-9]\\d*\\.\\d{2}")));
         mockMvc.perform(get("/admin/subscriptions").param("tier", "VIP").header(HttpHeaders.AUTHORIZATION, admin))
                 .andExpect(jsonPath("$.content[*].tier", Matchers.everyItem(Matchers.is("VIP"))))
                 .andExpect(jsonPath("$.content[0].customer.email").isNotEmpty())

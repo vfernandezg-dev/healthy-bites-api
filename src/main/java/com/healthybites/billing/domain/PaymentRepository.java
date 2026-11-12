@@ -3,6 +3,7 @@ package com.healthybites.billing.domain;
 import jakarta.persistence.LockModeType;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,7 +30,7 @@ public interface PaymentRepository extends JpaRepository<Payment, UUID>, JpaSpec
 
     Page<Payment> findByUserId(UUID userId, Pageable pageable);
 
-    List<Payment> findBySubscriptionIdAndStatus(UUID subscriptionId, PaymentStatus status);
+    List<Payment> findBySubscriptionIdInAndStatus(Collection<UUID> subscriptionIds, PaymentStatus status);
 
     /** Ingresos capturados desde una fecha, por moneda. */
     @Query("""
