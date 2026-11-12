@@ -1,9 +1,11 @@
 package com.healthybites.integration.payment.paypal.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Builder
 @Data
 public class ApplicationContext {

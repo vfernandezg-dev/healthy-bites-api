@@ -69,7 +69,6 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/auth/register/cliente").permitAll()
                         .requestMatchers("/auth/register/nutricionista").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/auth/forgot-password", "/auth/reset-password").permitAll()
-                        .requestMatchers("/mail/**").permitAll()
                         // Las imágenes se leen sin token (<img>); subir ficheros exige sesión.
                         .requestMatchers(HttpMethod.GET, "/media/**").permitAll()
                         // Formulario de contacto público de la landing page

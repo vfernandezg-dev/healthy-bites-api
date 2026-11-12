@@ -30,6 +30,10 @@ public class Suscripcion {
     @Column(name = "fecha_creacion", nullable = false)
     private LocalDateTime fechaCreacion;
 
+    /** Pedido de PayPal en curso: liga la captura a esta suscripción (y por tanto a su dueño y a su importe). */
+    @Column(name = "paypal_order_id", unique = true, length = 64)
+    private String paypalOrderId;
+
     @OneToOne
     @JoinColumn(name = "id_usuario", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "FK_suscripcion_usuario"))
@@ -39,6 +43,15 @@ public class Suscripcion {
     public boolean isPremiumActiva() {
         return estadoPago == EstadoPago.PAGADO
                 && (tipoSuscripcion == TipoSuscripcion.PREMIUM || tipoSuscripcion == TipoSuscripcion.VIP);
+    }
+
+    /** Precio de cada plan; lo decide siempre el servidor. */
+    public static double precioDe(TipoSuscripcion tipo) {
+        return switch (tipo) {
+            case BASICO -> 0.00;
+            case PREMIUM -> 5.99;
+            case VIP -> 9.99;
+        };
     }
 
     /** Null-safe: sin suscripción no hay acceso premium. */

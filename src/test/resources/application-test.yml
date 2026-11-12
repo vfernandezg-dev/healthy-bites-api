@@ -18,3 +18,7 @@ healthybites:
   cors:
     app-origins: http://localhost:4210
     landing-origins: http://localhost:4321
+  security:
+    rate-limit:
+      # Todas las peticiones de los tests llegan desde 127.0.0.1; el límite por cuenta se prueba igual.
+      password-reset-per-ip: 1000

@@ -131,7 +131,7 @@ class CriticalSecurityFixesTests extends IntegrationTest {
     @Test
     void uploadingMediaRequiresASession() throws Exception {
         MockMultipartFile image = new MockMultipartFile(
-                "file", "foto.png", "image/png", new byte[] {(byte) 0x89, 'P', 'N', 'G'});
+                "file", "foto.png", "image/png", new byte[] {(byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 13});
 
         mockMvc.perform(multipart("/media/upload").file(image))
                 .andExpect(status().isUnauthorized());

@@ -1,18 +1,20 @@
 package com.healthybites.service;
 
 import org.springframework.core.io.Resource;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.Path;
+import java.io.InputStream;
+import java.util.Optional;
 
+/** Almacenamiento de ficheros subidos. Los nombres los genera siempre el servidor. */
 public interface StorageService {
+
     void init();
 
-    String store(MultipartFile file);
+    /** Guarda el contenido con ese nombre, dentro del directorio de almacenamiento. */
+    void store(InputStream content, String filename);
 
-    Path load(String filename);
-
-    Resource loadAsResource(String filename);
+    /** El fichero, si existe y se puede leer. */
+    Optional<Resource> loadAsResource(String filename);
 
     void delete(String filename);
 }

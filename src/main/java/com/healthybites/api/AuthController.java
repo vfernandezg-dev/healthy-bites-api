@@ -6,12 +6,12 @@ import com.healthybites.dto.PasswordResetRequestDTO;
 import com.healthybites.dto.ResetPasswordDTO;
 import com.healthybites.dto.UserProfileDTO;
 import com.healthybites.dto.UserRegistrationDTO;
+import com.healthybites.security.password.PasswordResetService;
 import com.healthybites.security.session.CookieRequestGuard;
 import com.healthybites.security.session.RefreshTokenCookies;
 import com.healthybites.security.session.SessionService;
 import com.healthybites.security.session.SessionService.Session;
 import com.healthybites.security.token.InvalidRefreshTokenException;
-import com.healthybites.service.AuthService;
 import com.healthybites.service.UsuarioService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -32,7 +32,7 @@ public class AuthController {
     private static final String SESSION_EXPIRED = "Tu sesión ha caducado. Vuelve a iniciar sesión.";
 
     private final UsuarioService usuarioService;
-    private final AuthService authService;
+    private final PasswordResetService passwordResetService;
     private final SessionService sessionService;
     private final RefreshTokenCookies refreshCookies;
     private final CookieRequestGuard cookieRequestGuard;
@@ -83,16 +83,22 @@ public class AuthController {
         return ResponseEntity.noContent().header(HttpHeaders.SET_COOKIE, refreshCookies.clear()).build();
     }
 
+    /**
+     * Pide un enlace para restablecer la contraseña. Siempre 202, exista o no la cuenta: la respuesta no revela qué
+     * correos están registrados (el correo, si procede, sale en segundo plano).
+     */
     @PostMapping("/forgot-password")
-    public ResponseEntity<Void> forgotPassword(@Valid @RequestBody PasswordResetRequestDTO requestDTO) throws Exception {
-        authService.sendPasswordResetToken(requestDTO);
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<Void> forgotPassword(@Valid @RequestBody PasswordResetRequestDTO requestDTO,
+                                               HttpServletRequest request) {
+        passwordResetService.requestReset(requestDTO.getCorreo(), request.getRemoteAddr());
+        return ResponseEntity.accepted().header(HttpHeaders.CACHE_CONTROL, "no-store").build();
     }
 
+    /** Cambia la contraseña con el token del enlace y cierra todas las sesiones abiertas del usuario. */
     @PostMapping("/reset-password")
     public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordDTO resetPasswordDTO) {
-        authService.resetPassword(resetPasswordDTO);
-        return new ResponseEntity<>(HttpStatus.OK);
+        passwordResetService.resetPassword(resetPasswordDTO.getToken(), resetPasswordDTO.getContrasena());
+        return ResponseEntity.noContent().header(HttpHeaders.CACHE_CONTROL, "no-store").build();
     }
 
     private ResponseEntity<AuthResponseDTO> withSession(Session session) {

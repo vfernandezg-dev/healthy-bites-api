@@ -117,6 +117,8 @@ PostgreSQL efímero con [Testcontainers](https://testcontainers.com) y el seed d
   formulario de contacto de la landing, de extremo a extremo.
 - `CriticalSecurityFixesTests`: regresiones de los agujeros de seguridad cerrados.
 - `AuthorizationTests`: matriz de accesos cruzados entre usuarios, acceso premium, grupos privados y rachas.
+- `PasswordResetTests`, `CheckoutTests` y `MediaTests`: restablecimiento de contraseña, pagos con PayPal (simulado)
+  y ficheros subidos.
 - `ErrorResponsesTests`: formato de los errores.
 
 El resto son pruebas unitarias y de controlador (Mockito y MockMvc).
@@ -162,6 +164,16 @@ La aplicación **no arranca** si falta un secreto obligatorio o si `JWT_SECRET` 
 - **Acceso premium en el servidor.** Un contenido o plan de pago solo se abre con suscripción Premium/VIP **pagada**
   o desbloqueándolo con una recompensa; el catálogo no entrega el fichero de lo que está bloqueado.
 - **Comunidad.** Los grupos privados (y sus publicaciones y comentarios) solo los ven su creador y sus miembros.
+- **Restablecer la contraseña** (`POST /auth/forgot-password` y `POST /auth/reset-password`). La solicitud responde
+  siempre 202, exista o no la cuenta, y tiene límite por cuenta e IP. El enlace lleva el token en el fragmento
+  (`/auth/reset-password#token=…`), así que no queda en logs ni en el `Referer`. Del token solo se guarda el hash;
+  caduca a los 30 minutos y sirve una vez. Cambiar la contraseña cierra todas las sesiones.
+- **Pagos con PayPal.** Las URLs de vuelta las construye el servidor con `APP_FRONTEND_URL`. La captura solo acepta
+  pedidos de una suscripción del usuario, comprueba el importe y la moneda cobrados y es idempotente. Si PayPal falla
+  o no está configurado, la API responde 502 con un mensaje claro.
+- **Ficheros subidos.** El tipo se detecta por los bytes (JPG, PNG, WebP, GIF; PDF y MP4 solo para nutricionistas y
+  ADMIN), con límite de tamaño por tipo. SVG y HTML se rechazan. El nombre en disco lo genera el servidor, y solo se
+  sirven ficheros registrados en `media_files`, con `nosniff`, CSP `sandbox` y `attachment` si no son imagen ni vídeo.
 - CORS por listas blancas, cabeceras de seguridad (CSP, `nosniff`, `Referrer-Policy`, `X-Frame-Options`) y Actuator
   limitado a `/actuator/health` (liveness y readiness).
 

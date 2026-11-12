@@ -77,6 +77,23 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return response.body(problem(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage()));
     }
 
+    @ExceptionHandler(ConflictException.class)
+    ProblemDetail handleBusinessConflict(ConflictException ex) {
+        return problem(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    // PayPal caído o con una respuesta que no cuadra: el detalle técnico se queda en el log.
+    @ExceptionHandler(PaymentProviderException.class)
+    ProblemDetail handlePaymentProvider(PaymentProviderException ex) {
+        log.warn("Fallo del proveedor de pagos: {}", ex.getCause() == null ? ex.getMessage() : ex.getCause().getMessage());
+        return problem(HttpStatus.BAD_GATEWAY, ex.getMessage());
+    }
+
+    @ExceptionHandler(FileRejectedException.class)
+    ProblemDetail handleFileRejected(FileRejectedException ex) {
+        return problem(ex.getStatus(), ex.getMessage());
+    }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     ProblemDetail handleConflict(DataIntegrityViolationException ex) {
         log.warn("Conflicto de integridad de datos: {}", ex.getMostSpecificCause().getMessage());

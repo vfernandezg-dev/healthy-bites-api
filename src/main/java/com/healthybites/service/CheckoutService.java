@@ -2,11 +2,12 @@ package com.healthybites.service;
 
 import com.healthybites.dto.PaymentCaptureResponse;
 import com.healthybites.dto.PaymentOrderResponse;
-import jakarta.mail.MessagingException;
 
 public interface CheckoutService {
 
-    PaymentOrderResponse createPayment(Integer purchasesId, String returnUrl, String cancelUrl) throws MessagingException;
+    /** Crea el pedido en PayPal para una suscripción pendiente del usuario y devuelve la URL de aprobación. */
+    PaymentOrderResponse createPayment(Integer suscripcionId);
 
-    PaymentCaptureResponse capturePayment(String orderId) throws MessagingException;
+    /** Captura un pedido del usuario actual y activa la suscripción. Repetirlo no cobra ni activa dos veces. */
+    PaymentCaptureResponse capturePayment(String orderId);
 }

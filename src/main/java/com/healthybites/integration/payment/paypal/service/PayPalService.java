@@ -1,107 +1,143 @@
 package com.healthybites.integration.payment.paypal.service;
 
 import com.healthybites.config.properties.PayPalProperties;
-import com.healthybites.integration.payment.paypal.dto.*;
+import com.healthybites.exception.PaymentProviderException;
+import com.healthybites.integration.payment.paypal.dto.Amount;
+import com.healthybites.integration.payment.paypal.dto.ApplicationContext;
+import com.healthybites.integration.payment.paypal.dto.OrderCaptureResponse;
+import com.healthybites.integration.payment.paypal.dto.OrderRequest;
+import com.healthybites.integration.payment.paypal.dto.OrderResponse;
+import com.healthybites.integration.payment.paypal.dto.PurchaseUnit;
+import com.healthybites.integration.payment.paypal.dto.TokenResponse;
 import com.healthybites.model.entity.Suscripcion;
-import com.healthybites.repository.SuscripcionRepository;
-import jakarta.annotation.PostConstruct;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Base64;
-import java.util.Collections;
-import java.util.Objects;
+import java.util.List;
+import java.util.function.Supplier;
 
-@RequiredArgsConstructor
+/**
+ * Cliente de la API REST de PayPal (Orders v2). Los importes y las URLs de vuelta los decide el servidor; cualquier
+ * fallo de PayPal (caído, lento, credenciales, pedido inválido) llega como {@link PaymentProviderException} (502).
+ */
 @Service
 public class PayPalService {
-    // Credenciales desde el entorno (PAYPAL_CLIENT_ID / PAYPAL_CLIENT_SECRET), nunca desde el repositorio.
+
+    public static final String CURRENCY = "USD";
+    private static final String UNAVAILABLE = "No se pudo completar la operación con PayPal. Inténtalo más tarde.";
+
     private final PayPalProperties properties;
+    private final RestClient paypalClient;
 
-    @NonNull
-    private SuscripcionRepository suscripcionRepository;
-    private RestClient paypalClient;
-
-    @PostConstruct
-    public void init() {
-        paypalClient = RestClient
-                .builder()
+    @Autowired
+    public PayPalService(PayPalProperties properties) {
+        this(properties, RestClient.builder()
                 .baseUrl(properties.apiBase())
-                .build();
+                .requestFactory(withTimeouts())
+                .build());
     }
 
+    PayPalService(PayPalProperties properties, RestClient paypalClient) {
+        this.properties = properties;
+        this.paypalClient = paypalClient;
+    }
 
-    public String getAccessToken(){
+    /** Sin timeouts, un PayPal lento dejaba hilos (y la petición del usuario) colgados indefinidamente. */
+    private static SimpleClientHttpRequestFactory withTimeouts() {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(Duration.ofSeconds(5));
+        factory.setReadTimeout(Duration.ofSeconds(20));
+        return factory;
+    }
+
+    String getAccessToken() {
         if (!properties.isConfigured()) {
-            throw new IllegalStateException("PayPal no está configurado: define PAYPAL_CLIENT_ID y PAYPAL_CLIENT_SECRET");
+            throw new PaymentProviderException("Los pagos con PayPal no están disponibles en este momento.");
         }
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "client_credentials");
-
-        //Realización de Solicitudes:enviando una solicitud POST a la API de PayPal para obtener un token de acceso:
-        return Objects.requireNonNull(
-                        paypalClient.post()
-                                .uri("/v1/oauth2/token")
-                                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                                .header(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder()
-                                        .encodeToString((properties.clientId() + ":" + properties.clientSecret()).getBytes(StandardCharsets.UTF_8)))
-                                .body(body)
-                                .retrieve()
-                                .toEntity(TokenResponse.class)
-                                .getBody())
-                .getAccessToken();
+        String credentials = Base64.getEncoder().encodeToString(
+                (properties.clientId() + ":" + properties.clientSecret()).getBytes(StandardCharsets.UTF_8));
+        return call(() -> paypalClient.post()
+                .uri("/v1/oauth2/token")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .header(HttpHeaders.AUTHORIZATION, "Basic " + credentials)
+                .body(body)
+                .retrieve()
+                .body(TokenResponse.class)).getAccessToken();
     }
 
-    public OrderResponse createOrder(Integer suscripcionId, String returnUrl, String cancelUrl) {
-        Suscripcion suscripcion = suscripcionRepository.findById(suscripcionId)
-                .orElseThrow(() -> new RuntimeException("Suscripcion con id " + suscripcionId + " no encontrado"));
-
-        //Construccion de la solicitud de Pedido de Pago
-        OrderRequest orderRequest = new OrderRequest();
-        orderRequest.setIntent("CAPTURE");
-
+    /** Crea el pedido por el precio de la suscripción, con su id como referencia y las URLs de vuelta del web-app. */
+    public OrderResponse createOrder(Suscripcion suscripcion, String returnUrl, String cancelUrl) {
         Amount amount = new Amount();
-        amount.setCurrencyCode("USD");
-        amount.setValue(String.valueOf(suscripcion.getPrecio()));
+        amount.setCurrencyCode(CURRENCY);
+        amount.setValue(formatAmount(suscripcion.getPrecio()));
 
         PurchaseUnit purchaseUnit = new PurchaseUnit();
         purchaseUnit.setReferenceId(suscripcion.getId().toString());
         purchaseUnit.setAmount(amount);
 
-        orderRequest.setPurchaseUnits(Collections.singletonList(purchaseUnit));
-
-        ApplicationContext applicationContext = ApplicationContext.builder()
+        OrderRequest orderRequest = new OrderRequest();
+        orderRequest.setIntent("CAPTURE");
+        orderRequest.setPurchaseUnits(List.of(purchaseUnit));
+        orderRequest.setApplicationContext(ApplicationContext.builder()
                 .brandName("HealthyBites")
                 .returnURL(returnUrl)
                 .cancelURL(cancelUrl)
-                .build();
+                .build());
 
-        orderRequest.setApplicationContext(applicationContext);
-
-        return paypalClient.post()
+        String accessToken = getAccessToken();
+        return call(() -> paypalClient.post()
                 .uri("/v2/checkout/orders")
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + getAccessToken())
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                 .body(orderRequest)
                 .retrieve()
-                .toEntity(OrderResponse.class)
-                .getBody();
+                .body(OrderResponse.class));
     }
 
+    /**
+     * Captura el pedido. Con {@code PayPal-Request-Id} la operación es idempotente en PayPal: si se repite (reintento,
+     * doble clic), devuelve el resultado de la primera captura en vez de un error.
+     */
     public OrderCaptureResponse captureOrder(String orderId) {
-        return paypalClient.post()
+        String accessToken = getAccessToken();
+        return call(() -> paypalClient.post()
                 .uri("/v2/checkout/orders/{order_id}/capture", orderId)
                 .contentType(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + getAccessToken())
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                .header("PayPal-Request-Id", "capture-" + orderId)
                 .retrieve()
-                .toEntity(OrderCaptureResponse.class)
-                .getBody();
+                .body(OrderCaptureResponse.class));
+    }
+
+    /** Importe con dos decimales, como lo espera PayPal ({@code 9.9} se envía como {@code 9.90}). */
+    public static String formatAmount(double value) {
+        return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP).toPlainString();
+    }
+
+    private static <T> T call(Supplier<T> request) {
+        T body;
+        try {
+            body = request.get();
+        } catch (RestClientException e) {
+            throw new PaymentProviderException(UNAVAILABLE, e);
+        }
+        if (body == null) {
+            throw new PaymentProviderException(UNAVAILABLE);
+        }
+        return body;
     }
 }
