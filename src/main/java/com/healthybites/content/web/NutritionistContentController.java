@@ -85,7 +85,9 @@ class NutritionistContentController {
         return EditableContentResponse.of(contents.update(id, CurrentUser.id(), body.toData()));
     }
 
-    @Operation(summary = "Borra un borrador (lo publicado se archiva)")
+    @Operation(
+            summary = "Borra un borrador",
+            description = "Lo publicado no se borra (409): se retira con POST /{id}/archive.")
     @DeleteMapping("/{id}")
     ResponseEntity<Void> delete(@PathVariable UUID id) {
         contents.delete(id, CurrentUser.id());

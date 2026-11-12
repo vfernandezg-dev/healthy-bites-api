@@ -46,8 +46,4 @@ public class SubscriptionPlan extends BaseEntity {
     public Duration period() {
         return Duration.ofDays(periodDays);
     }
-
-    public boolean isPaid() {
-        return !price.isZero();
-    }
 }

@@ -9,7 +9,6 @@ import com.healthybites.profiles.domain.ClientProfile;
 import com.healthybites.profiles.domain.ClientProfileRepository;
 import com.healthybites.profiles.domain.NutritionistProfile;
 import com.healthybites.profiles.domain.NutritionistProfileRepository;
-import com.healthybites.shared.security.Role;
 import com.healthybites.shared.web.ApiException;
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -106,15 +105,19 @@ public class ProfileService {
     @Transactional
     public Me update(UUID userId, String firstName, String lastName, ClientData data, @Nullable String bio) {
         UserAccount account = accounts.rename(userId, firstName, lastName);
-        if (account.role() == Role.CLIENT) {
-            ClientProfile profile = clients.findById(userId)
-                    .orElseGet(() -> clients.save(ClientProfile.create(userId, null, null, null, null)));
-            profile.update(data.sex(), data.birthDate(), data.heightCm(), data.weightKg());
-        } else if (account.role() == Role.NUTRITIONIST) {
-            nutritionists
-                    .findById(userId)
-                    .orElseGet(() -> nutritionists.save(NutritionistProfile.create(userId, null)))
-                    .updateBio(bio);
+        switch (account.role()) {
+            case CLIENT ->
+                clients.findById(userId)
+                        .orElseGet(() -> clients.save(ClientProfile.create(userId, null, null, null, null)))
+                        .update(data.sex(), data.birthDate(), data.heightCm(), data.weightKg());
+            case NUTRITIONIST ->
+                nutritionists
+                        .findById(userId)
+                        .orElseGet(() -> nutritionists.save(NutritionistProfile.create(userId, null)))
+                        .updateBio(bio);
+            case ADMIN -> {
+                // Sin perfil propio: solo cambia el nombre.
+            }
         }
         return me(userId);
     }

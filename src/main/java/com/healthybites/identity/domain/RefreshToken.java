@@ -66,10 +66,6 @@ public class RefreshToken {
         return token;
     }
 
-    public boolean isRevoked() {
-        return revokedAt != null;
-    }
-
     public boolean isExpiredAt(Instant instant) {
         return !instant.isBefore(expiresAt);
     }

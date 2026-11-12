@@ -90,7 +90,9 @@ class NutritionistMealPlanController {
         return MealPlanDetailResponse.of(plans.update(id, CurrentUser.id(), body.toData()));
     }
 
-    @Operation(summary = "Borra un borrador (un plan publicado se archiva)")
+    @Operation(
+            summary = "Borra un borrador",
+            description = "Un plan publicado no se borra (409 plan-not-draft): se retira con POST /{id}/archive.")
     @DeleteMapping("/meal-plans/{id}")
     ResponseEntity<Void> delete(@PathVariable UUID id) {
         plans.delete(id, CurrentUser.id());

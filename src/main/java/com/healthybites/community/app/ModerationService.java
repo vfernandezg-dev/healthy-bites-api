@@ -84,10 +84,15 @@ public class ModerationService {
             throw ApiException.conflict("report-closed", "La denuncia ya está resuelta");
         }
         Instant now = clock.instant();
-        if (action == Action.DISMISS) {
-            report.close(ModerationReport.Status.DISMISSED, moderatorId, now);
-            return card(report);
+        switch (action) {
+            case DISMISS -> report.close(ModerationReport.Status.DISMISSED, moderatorId, now);
+            case HIDE -> hideTarget(report, moderatorId, note, now);
         }
+        return card(report);
+    }
+
+    /** Oculta lo denunciado y cierra todas las denuncias abiertas sobre ello. */
+    private void hideTarget(ModerationReport report, UUID moderatorId, String note, Instant now) {
         if (report.getPostId() != null) {
             posts.findById(report.getPostId()).ifPresent(post -> post.hide(moderatorId, note, now));
             reports.findByPostIdAndStatus(report.getPostId(), ModerationReport.Status.OPEN)
@@ -97,7 +102,6 @@ public class ModerationService {
             reports.findByCommentIdAndStatus(report.getCommentId(), ModerationReport.Status.OPEN)
                     .forEach(r -> r.close(ModerationReport.Status.RESOLVED, moderatorId, now));
         }
-        return card(report);
     }
 
     private ReportCard card(ModerationReport report) {

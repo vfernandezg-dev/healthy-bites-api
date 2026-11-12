@@ -6,7 +6,5 @@ public final class TokenClaims {
     /** Roles del usuario, sin el prefijo {@code ROLE_} ({@code ["CLIENT"]}). */
     public static final String ROLES = "roles";
 
-    public static final String EMAIL = "email";
-
     private TokenClaims() {}
 }

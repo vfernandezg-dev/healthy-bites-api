@@ -55,7 +55,7 @@ class RefreshTokenServiceTests {
 
         assertThat(next.value()).isNotBlank().isNotEqualTo("valor-actual");
         assertThat(next.expiresAt()).isEqualTo(clock.instant().plus(Duration.ofDays(7)));
-        assertThat(current.isRevoked()).isTrue();
+        assertThat(current.getRevokedAt()).isNotNull();
         assertThat(current.getReplacedById()).isEqualTo(NEXT_ID);
     }
 

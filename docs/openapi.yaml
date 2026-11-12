@@ -2017,6 +2017,7 @@ paths:
       - Nutricionista · Contenido
   /nutritionist/content-items/{id}:
     delete:
+      description: "Lo publicado no se borra (409): se retira con POST /{id}/archive."
       operationId: delete_1
       parameters:
       - in: path
@@ -2028,7 +2029,7 @@ paths:
       responses:
         "200":
           description: OK
-      summary: Borra un borrador (lo publicado se archiva)
+      summary: Borra un borrador
       tags:
       - Nutricionista · Contenido
     get:
@@ -2196,6 +2197,8 @@ paths:
       - Nutricionista · Planes
   /nutritionist/meal-plans/{id}:
     delete:
+      description: "Un plan publicado no se borra (409 plan-not-draft): se retira\
+        \ con POST /{id}/archive."
       operationId: delete
       parameters:
       - in: path
@@ -2207,7 +2210,7 @@ paths:
       responses:
         "200":
           description: OK
-      summary: Borra un borrador (un plan publicado se archiva)
+      summary: Borra un borrador
       tags:
       - Nutricionista · Planes
     get:

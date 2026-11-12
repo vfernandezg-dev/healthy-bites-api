@@ -23,10 +23,6 @@ public final class CurrentUser {
         return UUID.fromString(jwt().getSubject());
     }
 
-    public static String email() {
-        return jwt().getClaimAsString(TokenClaims.EMAIL);
-    }
-
     /** Rol de la cuenta (cada cuenta tiene exactamente uno). */
     public static Role role() {
         return authentication().getAuthorities().stream()

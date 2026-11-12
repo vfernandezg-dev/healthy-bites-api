@@ -123,9 +123,8 @@ public class GoalService {
 
     @Transactional(readOnly = true)
     public List<GoalStatusChange> history(UUID goalId, UUID clientId) {
-        List<GoalStatusChange> history = owned(goalId, clientId).getHistory();
-        history.size();
-        return history;
+        // Copia dentro de la transacción: carga la colección perezosa y devuelve una lista que no depende de la sesión.
+        return List.copyOf(owned(goalId, clientId).getHistory());
     }
 
     /** Todos los pesajes de la meta en el rango (para el gráfico), del más antiguo al más reciente. */

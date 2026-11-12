@@ -18,6 +18,8 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AccountStatusException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.transaction.CannotCreateTransactionException;
 import org.springframework.validation.FieldError;
@@ -58,10 +60,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return response.body(problem);
     }
 
-    // Mismo mensaje exista o no la cuenta (o esté desactivada): no revela qué correos están registrados.
+    // Login fallido: mismo mensaje exista o no la cuenta (o esté desactivada), para no revelar qué correos existen.
+    @ExceptionHandler({BadCredentialsException.class, AccountStatusException.class})
+    ProblemDetail handleBadCredentials(AuthenticationException ex) {
+        return problem(HttpStatus.UNAUTHORIZED, "bad-credentials", "Correo o contraseña incorrectos");
+    }
+
+    // Cualquier otro fallo de autenticación en un controlador (por ejemplo, sin sesión): el mismo 401 que el filtro.
     @ExceptionHandler(AuthenticationException.class)
     ProblemDetail handleAuthentication(AuthenticationException ex) {
-        return problem(HttpStatus.UNAUTHORIZED, "bad-credentials", "Correo o contraseña incorrectos");
+        return problem(
+                HttpStatus.UNAUTHORIZED, "unauthenticated", "Necesitas iniciar sesión para acceder a este recurso");
     }
 
     @ExceptionHandler(AccessDeniedException.class)
