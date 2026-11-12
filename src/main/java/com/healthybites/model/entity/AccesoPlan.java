@@ -10,11 +10,18 @@ import java.time.LocalDateTime;
 @Table(name = "acceso_plan")
 @IdClass(AccesoPlanPK.class)
 public class AccesoPlan {
+    // Mismo patrón que AccesoContenido: Hibernate 7 exige que el @Id derivado sea la entidad, no su id.
     @Id
-    private Integer cliente;
+    @ManyToOne
+    @JoinColumn(name = "cliente_id", referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "FK_accesoplan_cliente"))
+    private Cliente cliente;
 
     @Id
-    private Integer planAlimenticio;
+    @ManyToOne
+    @JoinColumn(name = "plan_alimenticio_id", referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "FK_accesoplan_alimenticio"))
+    private PlanAlimenticio planAlimenticio;
 
     @Column(name = "fecha_creacion", nullable = false)
     private LocalDateTime fechaCreacion;

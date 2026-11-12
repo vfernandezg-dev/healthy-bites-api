@@ -74,7 +74,7 @@ class ContactControllerTest {
                         .content("""
                                 {"nombre": "A", "apellido": "", "correo": "no-es-correo", "mensaje": "corto"}
                                 """))
-                .andExpect(status().isUnprocessableEntity());
+                .andExpect(status().isUnprocessableContent());
 
         verifyNoInteractions(contactService);
     }

@@ -83,6 +83,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .collect(Collectors.joining(", "));
 
         CustomErrorResponse err = new CustomErrorResponse(LocalDateTime.now(), msg, request.getDescription(false));
-        return new ResponseEntity<>(err, HttpStatus.UNPROCESSABLE_ENTITY);
+        return new ResponseEntity<>(err, HttpStatus.UNPROCESSABLE_CONTENT);
     }
 }
