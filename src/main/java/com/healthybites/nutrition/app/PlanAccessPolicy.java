@@ -1,12 +1,10 @@
 package com.healthybites.nutrition.app;
 
+import com.healthybites.billing.Access;
 import com.healthybites.billing.Entitlements;
-import com.healthybites.billing.Tier;
 import com.healthybites.nutrition.domain.MealPlan;
 import com.healthybites.nutrition.domain.MealPlanEnrollmentRepository;
 import com.healthybites.nutrition.domain.NutritionEnums.EnrollmentSource;
-import com.healthybites.shared.web.ApiException;
-import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
@@ -25,19 +23,15 @@ class PlanAccessPolicy {
         this.enrollments = enrollments;
     }
 
-    /** Contexto del lector para decidir sobre muchos planes con dos consultas. */
-    record Reader(UUID userId, boolean staff, Tier tier, Set<UUID> rewardUnlocked) {
-
-        boolean canOpen(MealPlan plan) {
-            return staff || tier.includes(plan.getRequiredTier()) || rewardUnlocked.contains(plan.requireId());
-        }
+    /** Lo que puede abrir el lector, para decidir sobre muchos planes con dos consultas. */
+    Access reader(UUID userId, boolean staff) {
+        return staff
+                ? Access.forStaff()
+                : new Access(false, entitlements.tierOf(userId), enrollments.rewardUnlockedPlanIds(userId));
     }
 
-    Reader reader(UUID userId, boolean staff) {
-        if (staff) {
-            return new Reader(userId, true, Tier.VIP, Set.of());
-        }
-        return new Reader(userId, false, entitlements.tierOf(userId), enrollments.rewardUnlockedPlanIds(userId));
+    static boolean canOpen(Access access, MealPlan plan) {
+        return access.canOpen(plan.getRequiredTier(), plan.requireId());
     }
 
     void requireOpen(MealPlan plan, UUID userId, boolean staff) {
@@ -48,11 +42,10 @@ class PlanAccessPolicy {
                 || enrollments.existsByMealPlanIdAndClientIdAndSource(
                         plan.requireId(), userId, EnrollmentSource.REWARD);
         if (!open) {
-            throw ApiException.forbidden(
-                            "subscription-required",
-                            "Este plan requiere una suscripción " + plan.getRequiredTier()
-                                    + " o desbloquearlo con una recompensa")
-                    .with("requiredTier", plan.getRequiredTier());
+            throw Access.subscriptionRequired(
+                    plan.getRequiredTier(),
+                    "Este plan requiere una suscripción " + plan.getRequiredTier()
+                            + " o desbloquearlo con una recompensa");
         }
     }
 }

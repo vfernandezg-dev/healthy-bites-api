@@ -1,12 +1,12 @@
 package com.healthybites.content.app;
 
 import com.healthybites.content.app.ContentService.ContentCard;
-import com.healthybites.content.domain.ContentEnums.ContentStatus;
 import com.healthybites.content.domain.ContentItem;
 import com.healthybites.content.domain.ContentItemRepository;
 import com.healthybites.content.domain.Slugs;
 import com.healthybites.media.MediaFiles;
 import com.healthybites.media.MediaPurpose;
+import com.healthybites.shared.domain.PublicationStatus;
 import com.healthybites.shared.web.ApiException;
 import java.time.Clock;
 import java.util.EnumMap;
@@ -39,7 +39,7 @@ public class NutritionistContentService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ContentCard> mine(UUID authorId, @Nullable ContentStatus status, Pageable pageable) {
+    public Page<ContentCard> mine(UUID authorId, @Nullable PublicationStatus status, Pageable pageable) {
         Page<ContentItem> page = status == null
                 ? items.findByAuthorId(authorId, pageable)
                 : items.findByAuthorIdAndStatus(authorId, status, pageable);
@@ -48,9 +48,9 @@ public class NutritionistContentService {
 
     /** Cuántos contenidos tiene en cada estado (todos los estados, con cero si no hay). */
     @Transactional(readOnly = true)
-    public Map<ContentStatus, Long> countByStatus(UUID authorId) {
-        Map<ContentStatus, Long> counts = new EnumMap<>(ContentStatus.class);
-        for (ContentStatus status : ContentStatus.values()) {
+    public Map<PublicationStatus, Long> countByStatus(UUID authorId) {
+        Map<PublicationStatus, Long> counts = new EnumMap<>(PublicationStatus.class);
+        for (PublicationStatus status : PublicationStatus.values()) {
             counts.put(status, 0L);
         }
         items.countByStatus(authorId).forEach(row -> counts.put(row.getStatus(), row.getTotal()));

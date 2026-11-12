@@ -2,7 +2,7 @@ package com.healthybites.identity.web;
 
 import com.healthybites.identity.app.PasswordChangeService;
 import com.healthybites.identity.app.SessionService.Session;
-import com.healthybites.identity.web.AdminDtos.ChangePasswordRequest;
+import com.healthybites.identity.web.AccountDtos.ChangePasswordRequest;
 import com.healthybites.identity.web.AuthDtos.SessionResponse;
 import com.healthybites.shared.security.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;

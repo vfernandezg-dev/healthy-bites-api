@@ -3,10 +3,10 @@ package com.healthybites.content.web;
 import com.healthybites.billing.Tier;
 import com.healthybites.content.app.ContentService.ContentCard;
 import com.healthybites.content.domain.ContentEnums.ContentCategory;
-import com.healthybites.content.domain.ContentEnums.ContentStatus;
 import com.healthybites.content.domain.ContentEnums.ContentType;
 import com.healthybites.content.domain.ContentItem;
-import com.healthybites.identity.UserAccount;
+import com.healthybites.identity.PersonResponse;
+import com.healthybites.shared.domain.PublicationStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -17,13 +17,6 @@ import org.jspecify.annotations.Nullable;
 final class ContentDtos {
 
     private ContentDtos() {}
-
-    record AuthorResponse(UUID id, String name) {
-
-        static @Nullable AuthorResponse of(@Nullable UserAccount account) {
-            return account == null ? null : new AuthorResponse(account.id(), account.fullName());
-        }
-    }
 
     /** Ficha del catálogo, sin cuerpo ni fichero. {@code locked}: el lector no puede abrirlo. */
     record ContentSummaryResponse(
@@ -37,8 +30,8 @@ final class ContentDtos {
             boolean locked,
             @Nullable String coverPath,
             boolean hasFile,
-            ContentStatus status,
-            @Nullable AuthorResponse author,
+            PublicationStatus status,
+            @Nullable PersonResponse author,
             @Nullable Instant publishedAt) {
 
         static ContentSummaryResponse of(ContentCard card) {
@@ -55,7 +48,7 @@ final class ContentDtos {
                     card.coverPath(),
                     item.getFileMediaId() != null,
                     item.getStatus(),
-                    AuthorResponse.of(card.author()),
+                    PersonResponse.of(card.author()),
                     item.getPublishedAt());
         }
     }

@@ -2843,17 +2843,6 @@ components:
       - lastName
       - role
       - status
-    AuthorResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-      required:
-      - id
-      - name
     BillingSummaryResponse:
       type: object
       properties:
@@ -3103,7 +3092,7 @@ components:
       properties:
         author:
           oneOf:
-          - $ref: "#/components/schemas/AuthorResponse"
+          - $ref: "#/components/schemas/PersonResponse"
           - type: "null"
         category:
           type: string
@@ -3656,7 +3645,7 @@ components:
       properties:
         author:
           oneOf:
-          - $ref: "#/components/schemas/AuthorResponse"
+          - $ref: "#/components/schemas/PersonResponse"
           - type: "null"
         averageDailyCalories:
           type: integer

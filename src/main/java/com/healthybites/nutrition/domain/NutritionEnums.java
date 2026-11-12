@@ -11,12 +11,6 @@ public final class NutritionEnums {
         MUSCLE_GAIN
     }
 
-    public enum MealPlanStatus {
-        DRAFT,
-        PUBLISHED,
-        ARCHIVED
-    }
-
     public enum MealCategory {
         BREAKFAST,
         LUNCH,

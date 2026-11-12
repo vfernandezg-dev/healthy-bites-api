@@ -7,10 +7,8 @@ import com.healthybites.identity.domain.User;
 import com.healthybites.identity.domain.UserStatus;
 import com.healthybites.shared.security.Role;
 import com.healthybites.shared.validation.EmailAddress;
-import com.healthybites.shared.validation.Password;
 import com.healthybites.shared.validation.PersonName;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
@@ -88,10 +86,4 @@ final class AdminDtos {
                     invitation.getCreatedAt());
         }
     }
-
-    record ChangePasswordRequest(
-            @NotBlank(message = "La contraseña actual es obligatoria") @Size(max = 128) String currentPassword,
-
-            @NotBlank(message = "La nueva contraseña es obligatoria") @Password
-            String newPassword) {}
 }

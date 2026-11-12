@@ -3,13 +3,13 @@ package com.healthybites.nutrition.web;
 import com.healthybites.nutrition.app.MealPlanService.PlanCard;
 import com.healthybites.nutrition.app.NutritionistPlanService;
 import com.healthybites.nutrition.domain.Meal;
-import com.healthybites.nutrition.domain.NutritionEnums.MealPlanStatus;
 import com.healthybites.nutrition.web.NutritionDtos.MealPlanDetailResponse;
 import com.healthybites.nutrition.web.NutritionDtos.MealPlanRequest;
 import com.healthybites.nutrition.web.NutritionDtos.MealPlanSummaryResponse;
 import com.healthybites.nutrition.web.NutritionDtos.MealRequest;
 import com.healthybites.nutrition.web.NutritionDtos.MealResponse;
 import com.healthybites.nutrition.web.NutritionDtos.NutritionistClientResponse;
+import com.healthybites.shared.domain.PublicationStatus;
 import com.healthybites.shared.security.CurrentUser;
 import com.healthybites.shared.web.Locations;
 import com.healthybites.shared.web.PublicationSummaryResponse;
@@ -54,7 +54,7 @@ class NutritionistMealPlanController {
     @Operation(summary = "Mis planes (todos los estados, o solo uno con ?status=)")
     @GetMapping("/meal-plans")
     PagedModel<MealPlanSummaryResponse> mine(
-            @RequestParam(required = false) @Nullable MealPlanStatus status,
+            @RequestParam(required = false) @Nullable PublicationStatus status,
             @ParameterObject @PageableDefault(size = 20, sort = "updatedAt", direction = Sort.Direction.DESC)
                     Pageable pageable) {
         return new PagedModel<>(plans.mine(CurrentUser.id(), status, Sorting.restrict(pageable, SORTABLE))
@@ -64,11 +64,11 @@ class NutritionistMealPlanController {
     @Operation(summary = "Cuántos planes tengo en cada estado")
     @GetMapping("/meal-plans/summary")
     PublicationSummaryResponse summary() {
-        Map<MealPlanStatus, Long> counts = plans.countByStatus(CurrentUser.id());
+        Map<PublicationStatus, Long> counts = plans.countByStatus(CurrentUser.id());
         return new PublicationSummaryResponse(
-                counts.get(MealPlanStatus.DRAFT),
-                counts.get(MealPlanStatus.PUBLISHED),
-                counts.get(MealPlanStatus.ARCHIVED));
+                counts.get(PublicationStatus.DRAFT),
+                counts.get(PublicationStatus.PUBLISHED),
+                counts.get(PublicationStatus.ARCHIVED));
     }
 
     @Operation(summary = "Crea un plan en borrador")

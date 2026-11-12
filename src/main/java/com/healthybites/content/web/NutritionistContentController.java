@@ -2,10 +2,10 @@ package com.healthybites.content.web;
 
 import com.healthybites.content.app.ContentService.ContentCard;
 import com.healthybites.content.app.NutritionistContentService;
-import com.healthybites.content.domain.ContentEnums.ContentStatus;
 import com.healthybites.content.web.ContentDtos.ContentRequest;
 import com.healthybites.content.web.ContentDtos.ContentSummaryResponse;
 import com.healthybites.content.web.ContentDtos.EditableContentResponse;
+import com.healthybites.shared.domain.PublicationStatus;
 import com.healthybites.shared.security.CurrentUser;
 import com.healthybites.shared.web.Locations;
 import com.healthybites.shared.web.PublicationSummaryResponse;
@@ -49,7 +49,7 @@ class NutritionistContentController {
     @Operation(summary = "Mi contenido (todos los estados, o solo uno con ?status=)")
     @GetMapping
     PagedModel<ContentSummaryResponse> mine(
-            @RequestParam(required = false) @Nullable ContentStatus status,
+            @RequestParam(required = false) @Nullable PublicationStatus status,
             @ParameterObject @PageableDefault(size = 20, sort = "updatedAt", direction = Sort.Direction.DESC)
                     Pageable pageable) {
         return new PagedModel<>(contents.mine(CurrentUser.id(), status, Sorting.restrict(pageable, SORTABLE))
@@ -59,11 +59,11 @@ class NutritionistContentController {
     @Operation(summary = "Cuántos contenidos tengo en cada estado")
     @GetMapping("/summary")
     PublicationSummaryResponse summary() {
-        Map<ContentStatus, Long> counts = contents.countByStatus(CurrentUser.id());
+        Map<PublicationStatus, Long> counts = contents.countByStatus(CurrentUser.id());
         return new PublicationSummaryResponse(
-                counts.get(ContentStatus.DRAFT),
-                counts.get(ContentStatus.PUBLISHED),
-                counts.get(ContentStatus.ARCHIVED));
+                counts.get(PublicationStatus.DRAFT),
+                counts.get(PublicationStatus.PUBLISHED),
+                counts.get(PublicationStatus.ARCHIVED));
     }
 
     @Operation(summary = "Crea un borrador (portada y fichero: ids subidos antes con POST /media)")

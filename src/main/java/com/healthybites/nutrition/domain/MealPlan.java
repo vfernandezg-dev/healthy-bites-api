@@ -3,8 +3,7 @@ package com.healthybites.nutrition.domain;
 import com.healthybites.billing.Tier;
 import com.healthybites.nutrition.domain.NutritionEnums.MealCategory;
 import com.healthybites.nutrition.domain.NutritionEnums.MealPlanGoal;
-import com.healthybites.nutrition.domain.NutritionEnums.MealPlanStatus;
-import com.healthybites.shared.domain.BaseEntity;
+import com.healthybites.shared.domain.PublishableEntity;
 import com.healthybites.shared.web.ApiException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -34,7 +33,7 @@ import org.jspecify.annotations.Nullable;
 @Table(name = "meal_plans")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class MealPlan extends BaseEntity {
+public class MealPlan extends PublishableEntity {
 
     @Column(name = "author_id", nullable = false)
     private UUID authorId;
@@ -56,13 +55,6 @@ public class MealPlan extends BaseEntity {
     @Column(name = "required_tier", nullable = false, length = 10)
     private Tier requiredTier;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private MealPlanStatus status;
-
-    @Column(name = "published_at")
-    private @Nullable Instant publishedAt;
-
     // Por lotes: al pintar un catálogo, las comidas de toda la página se cargan con una o dos consultas.
     @OneToMany(mappedBy = "mealPlan", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("dayNumber asc, position asc")
@@ -73,7 +65,6 @@ public class MealPlan extends BaseEntity {
             UUID authorId, String title, String description, MealPlanGoal goal, int durationDays, Tier requiredTier) {
         MealPlan plan = new MealPlan();
         plan.authorId = authorId;
-        plan.status = MealPlanStatus.DRAFT;
         plan.update(title, description, goal, durationDays, requiredTier);
         return plan;
     }
@@ -127,26 +118,12 @@ public class MealPlan extends BaseEntity {
         meals.remove(meal(mealId));
     }
 
+    @Override
     public void publish(Instant now) {
         if (meals.isEmpty()) {
             throw ApiException.conflict("plan-without-meals", "Añade al menos una comida antes de publicar el plan");
         }
-        this.status = MealPlanStatus.PUBLISHED;
-        if (publishedAt == null) {
-            this.publishedAt = now;
-        }
-    }
-
-    public void archive() {
-        this.status = MealPlanStatus.ARCHIVED;
-    }
-
-    public boolean isPublished() {
-        return status == MealPlanStatus.PUBLISHED;
-    }
-
-    public boolean isDraft() {
-        return status == MealPlanStatus.DRAFT;
+        super.publish(now);
     }
 
     /** Calorías medias por día, sobre los días que tienen alguna comida. */
