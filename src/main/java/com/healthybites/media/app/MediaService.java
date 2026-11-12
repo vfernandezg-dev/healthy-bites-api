@@ -6,11 +6,11 @@ import com.healthybites.media.MediaPurpose;
 import com.healthybites.media.domain.FileType;
 import com.healthybites.media.domain.MediaFile;
 import com.healthybites.media.domain.MediaFileRepository;
-import com.healthybites.media.infra.FileStorage;
 import com.healthybites.shared.web.ApiException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.net.URI;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -56,8 +56,22 @@ public class MediaService implements MediaFiles {
         this.clock = clock;
     }
 
-    /** Un fichero registrado y su contenido. */
-    public record StoredMedia(MediaFile file, Resource resource) {}
+    /** Validez de la URL prefirmada del almacenamiento: los públicos se reutilizan más; los protegidos caducan antes. */
+    static final Duration PUBLIC_DIRECT_READ = Duration.ofHours(1);
+
+    static final Duration PROTECTED_DIRECT_READ = Duration.ofMinutes(5);
+
+    /** Cómo se entrega un fichero autorizado. */
+    public sealed interface Delivery {
+
+        MediaFile file();
+
+        /** El navegador lo lee directamente del almacenamiento (URL prefirmada que vale {@code validFor}). */
+        record Redirect(MediaFile file, URI location, Duration validFor) implements Delivery {}
+
+        /** La API sirve el contenido (almacenamiento en disco). */
+        record Content(MediaFile file, Resource resource) implements Delivery {}
+    }
 
     /**
      * Sin transacción propia: el fichero (hasta 100 MB) se escribe sin retener una conexión de la base de datos, y
@@ -89,7 +103,7 @@ public class MediaService implements MediaFiles {
         String key = UUID.randomUUID() + "." + type.extension();
         String sha256;
         try (DigestInputStream content = new DigestInputStream(upload.getInputStream(), sha256Digest())) {
-            storage.store(content, key);
+            storage.store(content, upload.getSize(), type.contentType(), key);
             sha256 = HexFormat.of().formatHex(content.getMessageDigest().digest());
         } catch (IOException e) {
             throw new UncheckedIOException("No se pudo leer el fichero subido", e);
@@ -106,13 +120,28 @@ public class MediaService implements MediaFiles {
     }
 
     /**
-     * El fichero, si está registrado y el acceso es válido: público, o protegido con una firma correcta y vigente.
+     * El fichero, si está registrado y el acceso es válido (público, o protegido con una firma correcta y vigente):
+     * como redirección a una URL prefirmada si el almacenamiento las ofrece, o con su contenido.
      */
     @Transactional(readOnly = true)
-    public Optional<StoredMedia> open(UUID id, @Nullable Long expires, @Nullable String signature) {
+    public Optional<Delivery> open(UUID id, @Nullable Long expires, @Nullable String signature) {
         return files.findById(id)
                 .filter(file -> file.isPublic() || signer.isValid(id, expires, signature))
-                .flatMap(file -> storage.load(file.getStorageKey()).map(resource -> new StoredMedia(file, resource)));
+                .flatMap(this::deliver);
+    }
+
+    private Optional<Delivery> deliver(MediaFile file) {
+        Duration validFor = file.isPublic() ? PUBLIC_DIRECT_READ : PROTECTED_DIRECT_READ;
+        FileStorage.DirectRead read = new FileStorage.DirectRead(
+                file.getContentType(),
+                MediaHeaders.disposition(file).toString(),
+                MediaHeaders.cacheControl(file).getHeaderValue(),
+                validFor);
+        Optional<Delivery> redirect = storage.presignedGet(file.getStorageKey(), read)
+                .map(location -> new Delivery.Redirect(file, location, validFor));
+        return redirect.isPresent()
+                ? redirect
+                : storage.load(file.getStorageKey()).map(resource -> new Delivery.Content(file, resource));
     }
 
     @Override

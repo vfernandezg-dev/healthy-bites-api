@@ -5,7 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.healthybites.billing.app.PaymentGateway;
-import com.healthybites.media.infra.FileStorage;
+import com.healthybites.media.app.FileStorage;
 import com.healthybites.support.Seed;
 import com.jayway.jsonpath.JsonPath;
 import jakarta.mail.Session;

@@ -4,8 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.startsWith;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -16,11 +20,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.healthybites.IntegrationTest;
 import com.healthybites.support.Seed;
 import com.jayway.jsonpath.JsonPath;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,11 +79,54 @@ class MediaTests extends IntegrationTest {
                     return invocation.callRealMethod();
                 })
                 .when(storage)
-                .store(any(), anyString());
+                .store(any(), anyLong(), anyString(), anyString());
 
         upload(Seed.JUAN, "POST_IMAGE", "foto.png", "image/png", PNG).andExpect(status().isCreated());
 
         assertThat(insideTransaction).containsExactly(false);
+    }
+
+    /**
+     * Con un almacenamiento de objetos (S3, R2), la API redirige a una URL prefirmada: el navegador lee el fichero del
+     * almacenamiento con las mismas cabeceras. La redirección de un fichero protegido no se guarda en caché.
+     */
+    @Test
+    void withObjectStorageFilesAreReadFromPresignedUrls() throws Exception {
+        String image = JsonPath.read(
+                upload(Seed.JUAN, "POST_IMAGE", "foto.png", "image/png", PNG)
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString(),
+                "$.path");
+        String pdfId = JsonPath.read(
+                upload(Seed.CARLOS, "CONTENT_FILE", "guia.pdf", "application/pdf", PDF)
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString(),
+                "$.id");
+        URI presigned = URI.create("https://bucket.example.com/objeto?X-Amz-Signature=firma");
+        doReturn(Optional.of(presigned)).when(storage).presignedGet(anyString(), any());
+
+        mockMvc.perform(get(image))
+                .andExpect(status().isFound())
+                .andExpect(header().string(HttpHeaders.LOCATION, presigned.toString()))
+                .andExpect(header().string(HttpHeaders.CACHE_CONTROL, "max-age=3000, private"));
+        verify(storage)
+                .presignedGet(
+                        anyString(),
+                        argThat(read -> read.contentType().equals("image/png")
+                                && read.contentDisposition().startsWith("inline")
+                                && read.cacheControl().contains("immutable")
+                                && read.validFor().equals(Duration.ofHours(1))));
+
+        mockMvc.perform(get(mediaFiles.signedPath(UUID.fromString(pdfId), Duration.ofMinutes(5))))
+                .andExpect(status().isFound())
+                .andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-store"));
+        verify(storage)
+                .presignedGet(
+                        anyString(),
+                        argThat(read -> read.contentDisposition().startsWith("attachment")
+                                && read.validFor().equals(Duration.ofMinutes(5))));
     }
 
     @Test

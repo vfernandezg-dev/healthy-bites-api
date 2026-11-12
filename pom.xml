@@ -25,10 +25,18 @@
         <palantir-java-format.version>2.103.0</palantir-java-format.version>
         <jacoco.version>0.8.16</jacoco.version>
         <shedlock.version>7.11.0</shedlock.version>
+        <aws-sdk.version>2.58.0</aws-sdk.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${aws-sdk.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>org.springframework.modulith</groupId>
                 <artifactId>spring-modulith-bom</artifactId>
@@ -103,6 +111,15 @@
             <groupId>net.javacrumbs.shedlock</groupId>
             <artifactId>shedlock-provider-jdbc-template</artifactId>
             <version>${shedlock.version}</version>
+        </dependency>
+        <!-- Almacenamiento de objetos S3-compatible (R2, S3, MinIO) con el cliente HTTP del JDK -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>url-connection-client</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springdoc</groupId>
