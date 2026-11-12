@@ -2,7 +2,8 @@
  * Comunidad: grupos públicos (cualquiera entra y lee) y privados (se pide entrar y el creador aprueba; solo los
  * miembros leen), publicaciones, comentarios y denuncias que modera un ADMIN.
  *
- * <p>Eventos en {@code events}: {@code MembershipRequested} (lo escucha notifications para avisar al creador).
+ * <p>API para otros módulos: {@link com.healthybites.community.GroupDirectory}. Eventos en {@code events}:
+ * {@code MembershipRequested} (lo escucha notifications para avisar al creador).
  */
 @ApplicationModule(displayName = "Community")
 @NullMarked

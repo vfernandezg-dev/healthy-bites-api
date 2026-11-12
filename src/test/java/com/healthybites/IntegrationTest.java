@@ -63,7 +63,8 @@ public abstract class IntegrationTest {
 
     @BeforeEach
     void setUpMail() {
-        when(mailSender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
+        // Un mensaje nuevo por correo: un test puede enviar varios y revisarlos todos al final.
+        when(mailSender.createMimeMessage()).thenAnswer(invocation -> new MimeMessage((Session) null));
     }
 
     /** Access token de una cuenta del seed (se reutiliza entre tests). */

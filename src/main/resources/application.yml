@@ -119,6 +119,8 @@ healthybites:
   app:
     frontend-url: ${APP_FRONTEND_URL:}
     api-public-url: ${API_PUBLIC_URL:}
+    # Zona horaria de las fechas que leen las personas (correos). La API trabaja siempre en UTC.
+    time-zone: ${APP_TIME_ZONE:America/Lima}
   security:
     jwt:
       secret: ${JWT_SECRET:}

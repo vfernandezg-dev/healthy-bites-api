@@ -16,9 +16,14 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 /**
  * Envío de correos HTML con plantillas Thymeleaf ({@code templates/email/*.html}). Todos salen desde la cuenta
  * configurada ({@code spring.mail.username}).
+ *
+ * <p>Los correos para las personas usan {@link EmailContent} y el diseño común; la plantilla libre queda para casos
+ * especiales, como el aviso interno del formulario de contacto.
  */
 @Service
 public class MailService {
+
+    static final String BRANDED_TEMPLATE = "email/notification";
 
     private final JavaMailSender mailSender;
     private final SpringTemplateEngine templateEngine;
@@ -34,18 +39,44 @@ public class MailService {
     }
 
     /**
-     * @param template plantilla sin extensión, por ejemplo {@code email/password-reset}
+     * Correo con el diseño común (HTML y texto plano).
+     *
+     * @throws MailException si el servidor de correo falla
+     */
+    public void send(String to, EmailContent content) {
+        String html = render(BRANDED_TEMPLATE, content.model());
+        deliver(to, content.subject(), content.plainText(), html, null);
+    }
+
+    /**
+     * @param template plantilla sin extensión, por ejemplo {@code email/contact-message-template}
      * @param replyTo  dirección a la que responder (el formulario de contacto usa la del visitante)
      * @throws MailException si el servidor de correo falla
      */
     public void send(String to, String subject, String template, Map<String, Object> model, @Nullable String replyTo) {
+        deliver(to, subject, null, render(template, model), replyTo);
+    }
+
+    public void send(String to, String subject, String template, Map<String, Object> model) {
+        send(to, subject, template, model, null);
+    }
+
+    private String render(String template, Map<String, Object> model) {
+        Context context = new Context();
+        context.setVariables(model);
+        return templateEngine.process(template, context);
+    }
+
+    private void deliver(String to, String subject, @Nullable String plainText, String html, @Nullable String replyTo) {
         MimeMessage message = mailSender.createMimeMessage();
         try {
             MimeMessageHelper helper =
                     new MimeMessageHelper(message, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, "UTF-8");
-            Context context = new Context();
-            context.setVariables(model);
-            helper.setText(templateEngine.process(template, context), true);
+            if (plainText != null) {
+                helper.setText(plainText, html);
+            } else {
+                helper.setText(html, true);
+            }
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setFrom(from);
@@ -56,9 +87,5 @@ public class MailService {
             throw new MailPreparationException("No se pudo preparar el correo", e);
         }
         mailSender.send(message);
-    }
-
-    public void send(String to, String subject, String template, Map<String, Object> model) {
-        send(to, subject, template, model, null);
     }
 }

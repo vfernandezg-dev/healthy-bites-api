@@ -2,6 +2,7 @@ package com.healthybites.rewards.app;
 
 import com.healthybites.content.ContentAccess;
 import com.healthybites.nutrition.MealPlanAccess;
+import com.healthybites.rewards.RewardDirectory;
 import com.healthybites.rewards.domain.Reward;
 import com.healthybites.rewards.domain.RewardRepository;
 import com.healthybites.rewards.domain.RewardStreak;
@@ -10,6 +11,7 @@ import com.healthybites.shared.web.ApiException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -19,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /** Recompensas: el catálogo con el progreso del cliente, sus rachas y la gestión del nutricionista. */
 @Service
-public class RewardService {
+public class RewardService implements RewardDirectory {
 
     private final RewardRepository rewards;
     private final RewardStreakRepository streaks;
@@ -93,6 +95,17 @@ public class RewardService {
                 throw ApiException.conflict("streak-completed", "Esta racha ya está completada");
             }
             streaks.delete(streak);
+        });
+    }
+
+    /** Para otros módulos: la recompensa con su premio, esté activa o no (las ya ganadas conservan su premio). */
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<RewardSummary> find(UUID rewardId) {
+        return rewards.findById(rewardId).map(reward -> {
+            Target target = target(reward);
+            PrizeKind kind = target.type() == TargetType.CONTENT ? PrizeKind.CONTENT : PrizeKind.MEAL_PLAN;
+            return new RewardSummary(reward.getTitle(), reward.getRequiredStreakDays(), kind, target.title());
         });
     }
 

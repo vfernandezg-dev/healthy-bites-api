@@ -1,6 +1,7 @@
 /**
  * Núcleo compartido: configuración transversal, entidad base, errores RFC 9457, seguridad (JWT, CORS, usuario
- * actual, rutas públicas), correo y limitación de peticiones.
+ * actual, rutas públicas), correo con el diseño común, limitación de peticiones y reintento de los eventos cuyo
+ * listener falló.
  *
  * <p>Es un módulo abierto: el resto de módulos usa directamente cualquiera de sus tipos. No depende de ningún otro
  * módulo.

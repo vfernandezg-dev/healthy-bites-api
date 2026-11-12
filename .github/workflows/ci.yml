@@ -29,9 +29,10 @@ jobs:
       - name: Compilar y ejecutar los tests
         run: ./mvnw -B -ntp verify
 
-      # OpenApiExportTests regenera el contrato: si la API cambió, docs/openapi.yaml tiene que ir en el commit.
-      - name: Contrato OpenAPI al día
-        run: git diff --exit-code -- docs/openapi.yaml
+      # Los tests regeneran el contrato OpenAPI (OpenApiExportTests) y el mapa de módulos (ModularityTests): si la API
+      # o la estructura cambiaron, docs/openapi.yaml y docs/modules.md tienen que ir en el commit.
+      - name: Contrato OpenAPI y mapa de módulos al día
+        run: git diff --exit-code -- docs/openapi.yaml docs/modules.md
 
       - name: Subir informes de tests
         if: failure()
