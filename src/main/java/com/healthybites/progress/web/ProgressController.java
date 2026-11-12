@@ -13,6 +13,7 @@ import com.healthybites.progress.web.ProgressDtos.RecommendationResponse;
 import com.healthybites.progress.web.ProgressDtos.StatusChangeResponse;
 import com.healthybites.progress.web.ProgressDtos.WeightEntryRequest;
 import com.healthybites.progress.web.ProgressDtos.WeightEntryResponse;
+import com.healthybites.shared.security.ClientOnly;
 import com.healthybites.shared.security.CurrentUser;
 import com.healthybites.shared.web.Locations;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,7 +25,6 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/me")
-@PreAuthorize("hasRole('CLIENT')")
+@ClientOnly
 @Tag(name = "Progreso", description = "Metas, pesajes, hábitos y recomendación (solo clientes)")
 class ProgressController {
 

@@ -1,11 +1,11 @@
 package com.healthybites.identity.web;
 
-import com.healthybites.identity.Role;
 import com.healthybites.identity.app.AdminUserService;
 import com.healthybites.identity.domain.UserStatus;
 import com.healthybites.identity.web.AdminDtos.AdminUserResponse;
 import com.healthybites.identity.web.AdminDtos.UserSummaryResponse;
 import com.healthybites.shared.security.CurrentUser;
+import com.healthybites.shared.security.Role;
 import com.healthybites.shared.web.Sorting;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

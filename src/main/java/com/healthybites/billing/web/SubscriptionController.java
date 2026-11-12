@@ -7,6 +7,7 @@ import com.healthybites.billing.web.BillingDtos.CheckoutResponse;
 import com.healthybites.billing.web.BillingDtos.CurrentSubscriptionResponse;
 import com.healthybites.billing.web.BillingDtos.PaymentResponse;
 import com.healthybites.billing.web.BillingDtos.PlanResponse;
+import com.healthybites.shared.security.ClientOnly;
 import com.healthybites.shared.security.CurrentUser;
 import com.healthybites.shared.web.Sorting;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,7 +21,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedModel;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -55,21 +55,21 @@ class SubscriptionController {
             summary = "Empieza el pago de un plan",
             description = "Devuelve la URL de PayPal donde el usuario aprueba el pago. PayPal vuelve a "
                     + "/client/subscription/checkout/return (o /cancel) del web-app.")
-    @PreAuthorize("hasRole('CLIENT')")
+    @ClientOnly
     @PostMapping("/me/subscription/checkout")
     CheckoutResponse checkout(@Valid @RequestBody CheckoutRequest body) {
         return new CheckoutResponse(subscriptions.checkout(CurrentUser.id(), body.tier()));
     }
 
     @Operation(summary = "Captura el pago aprobado y activa la suscripción (idempotente)")
-    @PreAuthorize("hasRole('CLIENT')")
+    @ClientOnly
     @PostMapping("/me/subscription/checkout/capture")
     CurrentSubscriptionResponse capture(@Valid @RequestBody CaptureRequest body) {
         return CurrentSubscriptionResponse.of(subscriptions.capture(CurrentUser.id(), body.orderId()));
     }
 
     @Operation(summary = "Cancela la renovación; el acceso sigue hasta el fin del período pagado")
-    @PreAuthorize("hasRole('CLIENT')")
+    @ClientOnly
     @PostMapping("/me/subscription/cancel")
     CurrentSubscriptionResponse cancel() {
         return CurrentSubscriptionResponse.of(subscriptions.cancel(CurrentUser.id()));

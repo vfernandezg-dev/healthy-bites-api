@@ -49,7 +49,7 @@ class ContentController {
                     Pageable pageable) {
         return new PagedModel<>(contents.catalog(
                         CurrentUser.id(),
-                        isStaff(),
+                        CurrentUser.isStaff(),
                         new Filter(type, category, q),
                         Sorting.restrict(pageable, SORTABLE))
                 .map(ContentSummaryResponse::of));
@@ -58,13 +58,13 @@ class ContentController {
     @Operation(summary = "Detalle con el cuerpo (403 subscription-required, con requiredTier, si está bloqueado)")
     @GetMapping("/content-items/{slug}")
     ContentDetailResponse detail(@PathVariable String slug) {
-        return ContentDetailResponse.of(contents.open(slug, CurrentUser.id(), isStaff()));
+        return ContentDetailResponse.of(contents.open(slug, CurrentUser.id(), CurrentUser.isStaff()));
     }
 
     @Operation(summary = "Enlace firmado y temporal al fichero del contenido (vídeo, PDF...)")
     @GetMapping("/content-items/{id}/file")
     ResponseEntity<FileLinkResponse> file(@PathVariable UUID id) {
-        String path = contents.fileLink(id, CurrentUser.id(), isStaff());
+        String path = contents.fileLink(id, CurrentUser.id(), CurrentUser.isStaff());
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noStore())
                 .body(new FileLinkResponse(path, ContentService.FILE_LINK_TTL.toSeconds()));
@@ -76,9 +76,5 @@ class ContentController {
         return contents.unlockedBy(CurrentUser.id()).stream()
                 .map(ContentSummaryResponse::of)
                 .toList();
-    }
-
-    private static boolean isStaff() {
-        return CurrentUser.hasRole("NUTRITIONIST") || CurrentUser.hasRole("ADMIN");
     }
 }

@@ -14,6 +14,7 @@ import com.healthybites.community.web.CommunityDtos.PostRequest;
 import com.healthybites.community.web.CommunityDtos.PostResponse;
 import com.healthybites.community.web.CommunityDtos.ReportRequest;
 import com.healthybites.shared.security.CurrentUser;
+import com.healthybites.shared.security.Role;
 import com.healthybites.shared.web.Locations;
 import com.healthybites.shared.web.Sorting;
 import io.swagger.v3.oas.annotations.Operation;
@@ -84,7 +85,7 @@ class CommunityController {
 
     @DeleteMapping("/groups/{id}")
     ResponseEntity<Void> delete(@PathVariable UUID id) {
-        groups.delete(id, CurrentUser.id(), CurrentUser.hasRole("ADMIN"));
+        groups.delete(id, CurrentUser.id(), CurrentUser.hasRole(Role.ADMIN));
         return ResponseEntity.noContent().build();
     }
 

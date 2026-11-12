@@ -2,7 +2,6 @@ package com.healthybites.profiles.app;
 
 import com.healthybites.identity.Registrations;
 import com.healthybites.identity.Registrations.InvitationPreview;
-import com.healthybites.identity.Role;
 import com.healthybites.identity.UserAccount;
 import com.healthybites.identity.UserAccounts;
 import com.healthybites.profiles.Sex;
@@ -10,6 +9,7 @@ import com.healthybites.profiles.domain.ClientProfile;
 import com.healthybites.profiles.domain.ClientProfileRepository;
 import com.healthybites.profiles.domain.NutritionistProfile;
 import com.healthybites.profiles.domain.NutritionistProfileRepository;
+import com.healthybites.shared.security.Role;
 import com.healthybites.shared.web.ApiException;
 import java.math.BigDecimal;
 import java.time.Clock;

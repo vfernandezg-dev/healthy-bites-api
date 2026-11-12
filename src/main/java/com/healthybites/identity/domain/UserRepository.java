@@ -1,6 +1,6 @@
 package com.healthybites.identity.domain;
 
-import com.healthybites.identity.Role;
+import com.healthybites.shared.security.Role;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;

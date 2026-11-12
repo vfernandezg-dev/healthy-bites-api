@@ -1,10 +1,10 @@
 package com.healthybites.identity.app;
 
-import com.healthybites.identity.Role;
 import com.healthybites.identity.domain.User;
 import com.healthybites.identity.domain.UserRepository;
 import com.healthybites.identity.domain.UserStatus;
 import com.healthybites.identity.events.UserDeactivated;
+import com.healthybites.shared.security.Role;
 import com.healthybites.shared.web.ApiException;
 import java.time.Clock;
 import java.time.Duration;

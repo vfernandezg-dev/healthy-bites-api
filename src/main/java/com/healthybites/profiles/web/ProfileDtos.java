@@ -1,7 +1,7 @@
 package com.healthybites.profiles.web;
 
-import com.healthybites.identity.Role;
 import com.healthybites.profiles.Sex;
+import com.healthybites.shared.security.Role;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;

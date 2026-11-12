@@ -5,6 +5,7 @@ import com.healthybites.rewards.app.RewardService.RewardView;
 import com.healthybites.rewards.web.RewardDtos.RewardRequest;
 import com.healthybites.rewards.web.RewardDtos.RewardResponse;
 import com.healthybites.rewards.web.RewardDtos.StartStreakRequest;
+import com.healthybites.shared.security.ClientOnly;
 import com.healthybites.shared.security.CurrentUser;
 import com.healthybites.shared.web.Locations;
 import com.healthybites.shared.web.Sorting;
@@ -22,7 +23,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,7 +45,7 @@ class RewardController {
     }
 
     @Operation(summary = "Recompensas activas con mi racha hacia cada una")
-    @PreAuthorize("hasRole('CLIENT')")
+    @ClientOnly
     @GetMapping("/rewards")
     PagedModel<RewardResponse> catalog(
             @ParameterObject @PageableDefault(size = 20, sort = "requiredStreakDays") Pageable pageable) {
@@ -53,7 +53,7 @@ class RewardController {
                 .map(RewardResponse::of));
     }
 
-    @PreAuthorize("hasRole('CLIENT')")
+    @ClientOnly
     @GetMapping("/me/streaks")
     List<RewardResponse> streaks() {
         return rewards.streaks(CurrentUser.id()).stream()
@@ -62,7 +62,7 @@ class RewardController {
     }
 
     @Operation(summary = "Empieza una racha: cuenta cada día que registres tus hábitos")
-    @PreAuthorize("hasRole('CLIENT')")
+    @ClientOnly
     @PostMapping("/me/streaks")
     ResponseEntity<RewardResponse> start(@Valid @RequestBody StartStreakRequest body) {
         RewardView view = rewards.start(body.rewardId(), CurrentUser.id());
@@ -72,7 +72,7 @@ class RewardController {
                 .body(RewardResponse.of(view));
     }
 
-    @PreAuthorize("hasRole('CLIENT')")
+    @ClientOnly
     @DeleteMapping("/me/streaks/{id}")
     ResponseEntity<Void> abandon(@PathVariable UUID id) {
         rewards.abandon(id, CurrentUser.id());

@@ -1,11 +1,11 @@
 package com.healthybites.identity.web;
 
-import com.healthybites.identity.Role;
 import com.healthybites.identity.app.AdminUserService;
 import com.healthybites.identity.app.InvitationService.InvitationView;
 import com.healthybites.identity.domain.NutritionistInvitation;
 import com.healthybites.identity.domain.User;
 import com.healthybites.identity.domain.UserStatus;
+import com.healthybites.shared.security.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

@@ -1,6 +1,5 @@
 package com.healthybites.media.web;
 
-import com.healthybites.identity.Role;
 import com.healthybites.media.MediaPurpose;
 import com.healthybites.media.app.MediaHeaders;
 import com.healthybites.media.app.MediaService;
@@ -13,7 +12,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.core.io.Resource;
@@ -58,7 +56,7 @@ class MediaController {
                     + "abren desde el contenido.")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<UploadResponse> upload(@RequestPart("file") MultipartFile file, @RequestParam MediaPurpose purpose) {
-        MediaFile stored = media.upload(file, purpose, CurrentUser.id(), currentRole());
+        MediaFile stored = media.upload(file, purpose, CurrentUser.id(), CurrentUser.role());
         UUID id = stored.requireId();
         UploadResponse body = new UploadResponse(
                 id, stored.getContentType(), stored.getSizeBytes(), stored.isPublic() ? media.publicPath(id) : null);
@@ -104,12 +102,5 @@ class MediaController {
                 ? CacheControl.maxAge(redirect.validFor().minus(REDIRECT_MARGIN))
                         .cachePrivate()
                 : CacheControl.noStore();
-    }
-
-    private static Role currentRole() {
-        return Arrays.stream(Role.values())
-                .filter(role -> CurrentUser.hasRole(role.name()))
-                .findFirst()
-                .orElseThrow();
     }
 }

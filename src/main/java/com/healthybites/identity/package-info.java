@@ -3,7 +3,7 @@
  * restablecimiento de contraseña.
  *
  * <p>API para el resto de módulos: {@link com.healthybites.identity.UserAccounts}, {@link
- * com.healthybites.identity.UserAccount} y {@link com.healthybites.identity.Role}. Los paquetes {@code domain},
+ * com.healthybites.identity.UserAccount} y su {@code Role} (en shared.security). Los paquetes {@code domain},
  * {@code app} y {@code web} son internos.
  */
 @ApplicationModule(displayName = "Identity")

@@ -3,6 +3,7 @@ package com.healthybites.shared.security;
 import java.util.UUID;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -12,6 +13,8 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
  * cuerpo ni ruta de la API lleva el id del propietario.
  */
 public final class CurrentUser {
+
+    private static final String ROLE_PREFIX = "ROLE_";
 
     private CurrentUser() {}
 
@@ -24,9 +27,24 @@ public final class CurrentUser {
         return jwt().getClaimAsString(TokenClaims.EMAIL);
     }
 
-    public static boolean hasRole(String role) {
+    /** Rol de la cuenta (cada cuenta tiene exactamente uno). */
+    public static Role role() {
         return authentication().getAuthorities().stream()
-                .anyMatch(authority -> ("ROLE_" + role).equals(authority.getAuthority()));
+                .map(GrantedAuthority::getAuthority)
+                .filter(authority -> authority != null && authority.startsWith(ROLE_PREFIX))
+                .map(authority -> Role.valueOf(authority.substring(ROLE_PREFIX.length())))
+                .findFirst()
+                .orElseThrow(() -> new AuthenticationCredentialsNotFoundException("La sesión no tiene rol"));
+    }
+
+    public static boolean hasRole(Role role) {
+        return authentication().getAuthorities().stream()
+                .anyMatch(authority -> (ROLE_PREFIX + role.name()).equals(authority.getAuthority()));
+    }
+
+    /** NUTRITIONIST o ADMIN: ven sus borradores y el contenido sin restricción de nivel. */
+    public static boolean isStaff() {
+        return hasRole(Role.NUTRITIONIST) || hasRole(Role.ADMIN);
     }
 
     private static Jwt jwt() {

@@ -1,5 +1,6 @@
 package com.healthybites.identity;
 
+import com.healthybites.shared.security.Role;
 import java.util.UUID;
 
 /** Vista de solo lectura de una cuenta para otros módulos. Nunca incluye el hash de la contraseña. */

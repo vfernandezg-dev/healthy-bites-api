@@ -9,11 +9,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.healthybites.identity.Role;
 import com.healthybites.identity.domain.RefreshToken;
 import com.healthybites.identity.domain.RefreshTokenRepository;
 import com.healthybites.identity.domain.User;
 import com.healthybites.shared.security.OpaqueTokens;
+import com.healthybites.shared.security.Role;
 import com.healthybites.support.MutableClock;
 import java.time.Duration;
 import java.time.Instant;

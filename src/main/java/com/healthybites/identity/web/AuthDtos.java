@@ -1,8 +1,8 @@
 package com.healthybites.identity.web;
 
-import com.healthybites.identity.Role;
 import com.healthybites.identity.UserAccount;
 import com.healthybites.identity.app.SessionService.Session;
+import com.healthybites.shared.security.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

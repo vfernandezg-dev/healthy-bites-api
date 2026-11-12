@@ -1,11 +1,11 @@
 package com.healthybites.media.app;
 
-import com.healthybites.identity.Role;
 import com.healthybites.media.MediaFiles;
 import com.healthybites.media.MediaPurpose;
 import com.healthybites.media.domain.FileType;
 import com.healthybites.media.domain.MediaFile;
 import com.healthybites.media.domain.MediaFileRepository;
+import com.healthybites.shared.security.Role;
 import com.healthybites.shared.web.ApiException;
 import java.io.IOException;
 import java.io.InputStream;

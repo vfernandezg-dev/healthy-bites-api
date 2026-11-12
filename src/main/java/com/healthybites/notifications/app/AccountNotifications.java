@@ -1,9 +1,9 @@
 package com.healthybites.notifications.app;
 
-import com.healthybites.identity.Role;
 import com.healthybites.identity.UserAccount;
 import com.healthybites.identity.events.UserRegistered;
 import com.healthybites.shared.mail.EmailContent;
+import com.healthybites.shared.security.Role;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 
