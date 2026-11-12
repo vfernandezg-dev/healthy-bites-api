@@ -14,6 +14,8 @@ servers:
 security:
 - bearer: []
 tags:
+- description: Subida de imágenes y ficheros de contenido
+  name: Ficheros
 - description: "Login, renovación, logout y restablecimiento de contraseña"
   name: Sesión
 - description: "Búsqueda, resumen y activación de cuentas (solo ADMIN)"
@@ -413,6 +415,81 @@ paths:
       summary: Actualiza el nombre y los datos del perfil
       tags:
       - Mi cuenta
+  /media:
+    post:
+      description: "El tipo se detecta por su contenido. POST_IMAGE: cualquier usuario,\
+        \ solo imágenes. CONTENT_COVER y CONTENT_FILE: nutricionistas. Los CONTENT_FILE\
+        \ no tienen ruta pública: se abren desde el contenido."
+      operationId: upload
+      parameters:
+      - in: query
+        name: purpose
+        required: true
+        schema:
+          type: string
+          enum:
+          - POST_IMAGE
+          - CONTENT_COVER
+          - CONTENT_FILE
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+              - file
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UploadResponse"
+          description: OK
+      summary: Sube un fichero
+      tags:
+      - Ficheros
+  /media/{id}:
+    get:
+      operationId: read
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: expires
+        required: false
+        schema:
+          type:
+          - integer
+          - "null"
+          format: int64
+      - in: query
+        name: signature
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+          description: OK
+      security: []
+      summary: "Lee un fichero: los públicos por id; los protegidos, solo con su URL\
+        \ firmada"
+      tags:
+      - Ficheros
 components:
   schemas:
     AcceptInvitationRequest:
@@ -810,6 +887,19 @@ components:
       required:
       - firstName
       - lastName
+    UploadResponse:
+      type: object
+      properties:
+        contentType:
+          type: string
+        id:
+          type: string
+          format: uuid
+        path:
+          type: string
+        sizeBytes:
+          type: integer
+          format: int64
     UserSummaryResponse:
       type: object
       properties:
