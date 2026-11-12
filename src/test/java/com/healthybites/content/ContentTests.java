@@ -85,6 +85,9 @@ class ContentTests extends IntegrationTest {
                 .andExpect(jsonPath("$.item.slug").value("guia-de-la-compra"))
                 .andExpect(jsonPath("$.item.coverPath").value("/media/" + cover))
                 .andExpect(jsonPath("$.item.hasFile").value(true))
+                // El autor recibe los ids para reenviarlos al editar; el detalle público no los lleva.
+                .andExpect(jsonPath("$.coverMediaId").value(cover))
+                .andExpect(jsonPath("$.fileMediaId").value(file))
                 .andReturn()
                 .getResponse()
                 .getContentAsString();

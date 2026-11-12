@@ -2,9 +2,9 @@ package com.healthybites.content.web;
 
 import com.healthybites.content.app.ContentService.ContentCard;
 import com.healthybites.content.app.NutritionistContentService;
-import com.healthybites.content.web.ContentDtos.ContentDetailResponse;
 import com.healthybites.content.web.ContentDtos.ContentRequest;
 import com.healthybites.content.web.ContentDtos.ContentSummaryResponse;
+import com.healthybites.content.web.ContentDtos.EditableContentResponse;
 import com.healthybites.shared.security.CurrentUser;
 import com.healthybites.shared.web.Sorting;
 import io.swagger.v3.oas.annotations.Operation;
@@ -50,21 +50,21 @@ class NutritionistContentController {
 
     @Operation(summary = "Crea un borrador (portada y fichero: ids subidos antes con POST /media)")
     @PostMapping
-    ResponseEntity<ContentDetailResponse> create(@Valid @RequestBody ContentRequest body) {
+    ResponseEntity<EditableContentResponse> create(@Valid @RequestBody ContentRequest body) {
         ContentCard created = contents.create(CurrentUser.id(), body.toData());
         return ResponseEntity.created(URI.create(
                         "/nutritionist/content-items/" + created.item().requireId()))
-                .body(ContentDetailResponse.of(created));
+                .body(EditableContentResponse.of(created));
     }
 
     @GetMapping("/{id}")
-    ContentDetailResponse get(@PathVariable UUID id) {
-        return ContentDetailResponse.of(contents.get(id, CurrentUser.id()));
+    EditableContentResponse get(@PathVariable UUID id) {
+        return EditableContentResponse.of(contents.get(id, CurrentUser.id()));
     }
 
     @PutMapping("/{id}")
-    ContentDetailResponse update(@PathVariable UUID id, @Valid @RequestBody ContentRequest body) {
-        return ContentDetailResponse.of(contents.update(id, CurrentUser.id(), body.toData()));
+    EditableContentResponse update(@PathVariable UUID id, @Valid @RequestBody ContentRequest body) {
+        return EditableContentResponse.of(contents.update(id, CurrentUser.id(), body.toData()));
     }
 
     @Operation(summary = "Borra un borrador (lo publicado se archiva)")
@@ -75,12 +75,12 @@ class NutritionistContentController {
     }
 
     @PostMapping("/{id}/publish")
-    ContentDetailResponse publish(@PathVariable UUID id) {
-        return ContentDetailResponse.of(contents.publish(id, CurrentUser.id()));
+    EditableContentResponse publish(@PathVariable UUID id) {
+        return EditableContentResponse.of(contents.publish(id, CurrentUser.id()));
     }
 
     @PostMapping("/{id}/archive")
-    ContentDetailResponse archive(@PathVariable UUID id) {
-        return ContentDetailResponse.of(contents.archive(id, CurrentUser.id()));
+    EditableContentResponse archive(@PathVariable UUID id) {
+        return EditableContentResponse.of(contents.archive(id, CurrentUser.id()));
     }
 }

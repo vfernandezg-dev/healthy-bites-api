@@ -69,6 +69,23 @@ final class ContentDtos {
         }
     }
 
+    /**
+     * Lo que ve el autor de un contenido: el detalle más los ids de la portada y del fichero, que tiene que reenviar
+     * al editar (null los quita). Los clientes no los reciben: el fichero solo se abre con una URL firmada.
+     */
+    record EditableContentResponse(
+            ContentSummaryResponse item,
+            @Nullable String body,
+            @Nullable UUID coverMediaId,
+            @Nullable UUID fileMediaId) {
+
+        static EditableContentResponse of(ContentCard card) {
+            ContentItem item = card.item();
+            return new EditableContentResponse(
+                    ContentSummaryResponse.of(card), item.getBody(), item.getCoverMediaId(), item.getFileMediaId());
+        }
+    }
+
     /** Ruta firmada (relativa a la API) y de vida corta al fichero. */
     record FileLinkResponse(String path, long expiresInSeconds) {}
 

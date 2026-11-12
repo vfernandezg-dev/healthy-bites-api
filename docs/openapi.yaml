@@ -1684,7 +1684,7 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: "#/components/schemas/ContentDetailResponse"
+                $ref: "#/components/schemas/EditableContentResponse"
           description: OK
       summary: "Crea un borrador (portada y fichero: ids subidos antes con POST /media)"
       tags:
@@ -1719,7 +1719,7 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: "#/components/schemas/ContentDetailResponse"
+                $ref: "#/components/schemas/EditableContentResponse"
           description: OK
       tags:
       - Nutricionista · Contenido
@@ -1743,7 +1743,7 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: "#/components/schemas/ContentDetailResponse"
+                $ref: "#/components/schemas/EditableContentResponse"
           description: OK
       tags:
       - Nutricionista · Contenido
@@ -1762,7 +1762,7 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: "#/components/schemas/ContentDetailResponse"
+                $ref: "#/components/schemas/EditableContentResponse"
           description: OK
       tags:
       - Nutricionista · Contenido
@@ -1781,7 +1781,7 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: "#/components/schemas/ContentDetailResponse"
+                $ref: "#/components/schemas/EditableContentResponse"
           description: OK
       tags:
       - Nutricionista · Contenido
@@ -2727,6 +2727,27 @@ components:
       required:
       - renews
       - tier
+    EditableContentResponse:
+      type: object
+      properties:
+        body:
+          type:
+          - string
+          - "null"
+        coverMediaId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        fileMediaId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        item:
+          $ref: "#/components/schemas/ContentSummaryResponse"
+      required:
+      - item
     EnrollRequest:
       type: object
       properties:
