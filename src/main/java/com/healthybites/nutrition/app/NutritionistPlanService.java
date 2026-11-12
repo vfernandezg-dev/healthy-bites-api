@@ -11,12 +11,14 @@ import com.healthybites.nutrition.domain.MealPlanEnrollmentRepository;
 import com.healthybites.nutrition.domain.MealPlanRepository;
 import com.healthybites.nutrition.domain.NutritionEnums.MealCategory;
 import com.healthybites.nutrition.domain.NutritionEnums.MealPlanGoal;
+import com.healthybites.nutrition.domain.NutritionEnums.MealPlanStatus;
 import com.healthybites.profiles.ClientProfiles;
 import com.healthybites.profiles.ClientProfiles.ClientProfileView;
 import com.healthybites.shared.web.ApiException;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,8 +70,22 @@ public class NutritionistPlanService {
             UserAccount account, @Nullable ClientProfileView profile, List<String> planTitles, Instant since) {}
 
     @Transactional(readOnly = true)
-    public Page<PlanCard> mine(UUID authorId, Pageable pageable) {
-        return plans.findByAuthorId(authorId, pageable).map(NutritionistPlanService::card);
+    public Page<PlanCard> mine(UUID authorId, @Nullable MealPlanStatus status, Pageable pageable) {
+        Page<MealPlan> page = status == null
+                ? plans.findByAuthorId(authorId, pageable)
+                : plans.findByAuthorIdAndStatus(authorId, status, pageable);
+        return page.map(NutritionistPlanService::card);
+    }
+
+    /** Cuántos planes tiene en cada estado (todos los estados, con cero si no hay). */
+    @Transactional(readOnly = true)
+    public Map<MealPlanStatus, Long> countByStatus(UUID authorId) {
+        Map<MealPlanStatus, Long> counts = new EnumMap<>(MealPlanStatus.class);
+        for (MealPlanStatus status : MealPlanStatus.values()) {
+            counts.put(status, 0L);
+        }
+        plans.countByStatus(authorId).forEach(row -> counts.put(row.getStatus(), row.getTotal()));
+        return counts;
     }
 
     @Transactional(readOnly = true)

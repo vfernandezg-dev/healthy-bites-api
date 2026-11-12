@@ -2,17 +2,21 @@ package com.healthybites.content.web;
 
 import com.healthybites.content.app.ContentService.ContentCard;
 import com.healthybites.content.app.NutritionistContentService;
+import com.healthybites.content.domain.ContentEnums.ContentStatus;
 import com.healthybites.content.web.ContentDtos.ContentRequest;
 import com.healthybites.content.web.ContentDtos.ContentSummaryResponse;
 import com.healthybites.content.web.ContentDtos.EditableContentResponse;
 import com.healthybites.shared.security.CurrentUser;
+import com.healthybites.shared.web.PublicationSummaryResponse;
 import com.healthybites.shared.web.Sorting;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -25,6 +29,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -40,12 +45,23 @@ class NutritionistContentController {
         this.contents = contents;
     }
 
-    @Operation(summary = "Mi contenido (todos los estados)")
+    @Operation(summary = "Mi contenido (todos los estados, o solo uno con ?status=)")
     @GetMapping
     PagedModel<ContentSummaryResponse> mine(
+            @RequestParam(required = false) @Nullable ContentStatus status,
             @PageableDefault(sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return new PagedModel<>(contents.mine(CurrentUser.id(), Sorting.restrict(pageable, SORTABLE))
+        return new PagedModel<>(contents.mine(CurrentUser.id(), status, Sorting.restrict(pageable, SORTABLE))
                 .map(ContentSummaryResponse::of));
+    }
+
+    @Operation(summary = "Cuántos contenidos tengo en cada estado")
+    @GetMapping("/summary")
+    PublicationSummaryResponse summary() {
+        Map<ContentStatus, Long> counts = contents.countByStatus(CurrentUser.id());
+        return new PublicationSummaryResponse(
+                counts.get(ContentStatus.DRAFT),
+                counts.get(ContentStatus.PUBLISHED),
+                counts.get(ContentStatus.ARCHIVED));
     }
 
     @Operation(summary = "Crea un borrador (portada y fichero: ids subidos antes con POST /media)")

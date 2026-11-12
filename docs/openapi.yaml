@@ -49,7 +49,7 @@ tags:
 paths:
   /admin/billing/summary:
     get:
-      operationId: summary_1
+      operationId: summary_3
       responses:
         "200":
           content:
@@ -312,7 +312,7 @@ paths:
       - Admin · Cuentas
   /admin/users/summary:
     get:
-      operationId: summary
+      operationId: summary_2
       responses:
         "200":
           content:
@@ -1657,6 +1657,17 @@ paths:
       operationId: mine_2
       parameters:
       - in: query
+        name: status
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          enum:
+          - DRAFT
+          - PUBLISHED
+          - ARCHIVED
+      - in: query
         name: pageable
         required: true
         schema:
@@ -1668,7 +1679,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/PagedModelContentSummaryResponse"
           description: OK
-      summary: Mi contenido (todos los estados)
+      summary: "Mi contenido (todos los estados, o solo uno con ?status=)"
       tags:
       - Nutricionista · Contenido
     post:
@@ -1687,6 +1698,19 @@ paths:
                 $ref: "#/components/schemas/EditableContentResponse"
           description: OK
       summary: "Crea un borrador (portada y fichero: ids subidos antes con POST /media)"
+      tags:
+      - Nutricionista · Contenido
+  /nutritionist/content-items/summary:
+    get:
+      operationId: summary_1
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PublicationSummaryResponse"
+          description: OK
+      summary: Cuántos contenidos tengo en cada estado
       tags:
       - Nutricionista · Contenido
   /nutritionist/content-items/{id}:
@@ -1790,6 +1814,17 @@ paths:
       operationId: mine_1
       parameters:
       - in: query
+        name: status
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          enum:
+          - DRAFT
+          - PUBLISHED
+          - ARCHIVED
+      - in: query
         name: pageable
         required: true
         schema:
@@ -1801,7 +1836,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/PagedModelMealPlanSummaryResponse"
           description: OK
-      summary: Mis planes (todos los estados)
+      summary: "Mis planes (todos los estados, o solo uno con ?status=)"
       tags:
       - Nutricionista · Planes
     post:
@@ -1820,6 +1855,19 @@ paths:
                 $ref: "#/components/schemas/MealPlanDetailResponse"
           description: OK
       summary: Crea un plan en borrador
+      tags:
+      - Nutricionista · Planes
+  /nutritionist/meal-plans/summary:
+    get:
+      operationId: summary
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PublicationSummaryResponse"
+          description: OK
+      summary: Cuántos planes tengo en cada estado
       tags:
       - Nutricionista · Planes
   /nutritionist/meal-plans/{id}:
@@ -3696,6 +3744,22 @@ components:
       - groupId
       - id
       - title
+    PublicationSummaryResponse:
+      type: object
+      properties:
+        archived:
+          type: integer
+          format: int64
+        draft:
+          type: integer
+          format: int64
+        published:
+          type: integer
+          format: int64
+      required:
+      - archived
+      - draft
+      - published
     RecommendationResponse:
       type: object
       properties:

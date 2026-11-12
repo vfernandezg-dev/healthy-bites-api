@@ -3,6 +3,7 @@ package com.healthybites.nutrition.web;
 import com.healthybites.nutrition.app.MealPlanService.PlanCard;
 import com.healthybites.nutrition.app.NutritionistPlanService;
 import com.healthybites.nutrition.domain.Meal;
+import com.healthybites.nutrition.domain.NutritionEnums.MealPlanStatus;
 import com.healthybites.nutrition.web.NutritionDtos.MealPlanDetailResponse;
 import com.healthybites.nutrition.web.NutritionDtos.MealPlanRequest;
 import com.healthybites.nutrition.web.NutritionDtos.MealPlanSummaryResponse;
@@ -10,14 +11,17 @@ import com.healthybites.nutrition.web.NutritionDtos.MealRequest;
 import com.healthybites.nutrition.web.NutritionDtos.MealResponse;
 import com.healthybites.nutrition.web.NutritionDtos.NutritionistClientResponse;
 import com.healthybites.shared.security.CurrentUser;
+import com.healthybites.shared.web.PublicationSummaryResponse;
 import com.healthybites.shared.web.Sorting;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -30,6 +34,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -45,12 +50,23 @@ class NutritionistMealPlanController {
         this.plans = plans;
     }
 
-    @Operation(summary = "Mis planes (todos los estados)")
+    @Operation(summary = "Mis planes (todos los estados, o solo uno con ?status=)")
     @GetMapping("/meal-plans")
     PagedModel<MealPlanSummaryResponse> mine(
+            @RequestParam(required = false) @Nullable MealPlanStatus status,
             @PageableDefault(sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return new PagedModel<>(plans.mine(CurrentUser.id(), Sorting.restrict(pageable, SORTABLE))
+        return new PagedModel<>(plans.mine(CurrentUser.id(), status, Sorting.restrict(pageable, SORTABLE))
                 .map(MealPlanSummaryResponse::of));
+    }
+
+    @Operation(summary = "Cuántos planes tengo en cada estado")
+    @GetMapping("/meal-plans/summary")
+    PublicationSummaryResponse summary() {
+        Map<MealPlanStatus, Long> counts = plans.countByStatus(CurrentUser.id());
+        return new PublicationSummaryResponse(
+                counts.get(MealPlanStatus.DRAFT),
+                counts.get(MealPlanStatus.PUBLISHED),
+                counts.get(MealPlanStatus.ARCHIVED));
     }
 
     @Operation(summary = "Crea un plan en borrador")

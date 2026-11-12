@@ -1,5 +1,7 @@
 package com.healthybites.content.domain;
 
+import com.healthybites.content.domain.ContentEnums.ContentStatus;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -18,6 +20,18 @@ public interface ContentItemRepository extends JpaRepository<ContentItem, UUID>,
     Optional<ContentItem> findByIdAndAuthorId(UUID id, UUID authorId);
 
     Page<ContentItem> findByAuthorId(UUID authorId, Pageable pageable);
+
+    Page<ContentItem> findByAuthorIdAndStatus(UUID authorId, ContentStatus status, Pageable pageable);
+
+    @Query(
+            "select c.status as status, count(c) as total from ContentItem c where c.authorId = :authorId group by c.status")
+    List<StatusCount> countByStatus(@Param("authorId") UUID authorId);
+
+    interface StatusCount {
+        ContentStatus getStatus();
+
+        long getTotal();
+    }
 
     @Query("select count(c) > 0 from ContentItem c where c.id = :id and c.authorId = :authorId"
             + " and c.status = com.healthybites.content.domain.ContentEnums.ContentStatus.PUBLISHED")

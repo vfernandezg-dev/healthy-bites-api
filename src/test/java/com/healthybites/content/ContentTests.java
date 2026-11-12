@@ -17,7 +17,10 @@ import com.healthybites.IntegrationTest;
 import com.healthybites.support.Seed;
 import com.jayway.jsonpath.JsonPath;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -35,6 +38,30 @@ class ContentTests extends IntegrationTest {
 
     @Autowired
     private ContentAccess contentAccess;
+
+    /** El resumen por estados coincide con la lista filtrada: el panel no necesita descargar la lista entera. */
+    @Test
+    void theStatusSummaryMatchesTheFilteredList() throws Exception {
+        String auth = bearer(token(Seed.CARLOS));
+        String summary = mockMvc.perform(
+                        get("/nutritionist/content-items/summary").header(HttpHeaders.AUTHORIZATION, auth))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        for (String state : List.of("DRAFT", "PUBLISHED", "ARCHIVED")) {
+            int counted = JsonPath.read(summary, "$." + state.toLowerCase(Locale.ROOT));
+            mockMvc.perform(get("/nutritionist/content-items")
+                            .param("status", state)
+                            .param("size", "100")
+                            .header(HttpHeaders.AUTHORIZATION, auth))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.page.totalElements").value(counted))
+                    .andExpect(jsonPath("$.content[*].status", Matchers.everyItem(Matchers.is(state))));
+        }
+        int published = JsonPath.read(summary, "$.published");
+        org.assertj.core.api.Assertions.assertThat(published).isPositive();
+    }
 
     @Test
     void theCatalogMarksLockedItemsAndHonoursUnlocksAndFilters() throws Exception {

@@ -2,6 +2,7 @@ package com.healthybites.nutrition.domain;
 
 import com.healthybites.nutrition.domain.NutritionEnums.MealPlanGoal;
 import com.healthybites.nutrition.domain.NutritionEnums.MealPlanStatus;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -17,6 +18,18 @@ public interface MealPlanRepository extends JpaRepository<MealPlan, UUID> {
     Page<MealPlan> findByStatusAndGoal(MealPlanStatus status, MealPlanGoal goal, Pageable pageable);
 
     Page<MealPlan> findByAuthorId(UUID authorId, Pageable pageable);
+
+    Page<MealPlan> findByAuthorIdAndStatus(UUID authorId, MealPlanStatus status, Pageable pageable);
+
+    @Query(
+            "select p.status as status, count(p) as total from MealPlan p where p.authorId = :authorId group by p.status")
+    List<StatusCount> countByStatus(@Param("authorId") UUID authorId);
+
+    interface StatusCount {
+        MealPlanStatus getStatus();
+
+        long getTotal();
+    }
 
     Optional<MealPlan> findByIdAndAuthorId(UUID id, UUID authorId);
 
