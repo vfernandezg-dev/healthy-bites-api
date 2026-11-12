@@ -34,6 +34,7 @@ build/
 
 ### Archivos subidos por usuarios (pueden contener datos personales: NUNCA versionar) ###
 mediafiles/
+uploads/
 
 ### Variables de entorno locales (contienen secretos: NUNCA versionar) ###
 .env

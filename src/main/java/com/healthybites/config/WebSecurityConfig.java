@@ -42,10 +42,13 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         // Permitir acceso a los endpoints de registro y login sin autenticación
                         .requestMatchers("/auth/login").permitAll()
-                        .requestMatchers("/auth/register/**").permitAll()
+                        // Solo los clientes se registran por su cuenta; los nutricionistas los da de alta un ADMIN.
+                        .requestMatchers("/auth/register/cliente").permitAll()
+                        .requestMatchers("/auth/register/nutricionista").hasRole("ADMIN")
                         .requestMatchers("/auth/forgot-password").permitAll()
                         .requestMatchers("/auth/reset-password").permitAll()
-                        .requestMatchers("/media/**").permitAll()
+                        // Las imágenes se leen sin token (<img>); subir ficheros exige sesión.
+                        .requestMatchers(HttpMethod.GET, "/media/**").permitAll()
                         .requestMatchers("/mail/**").permitAll()
                         // Formulario de contacto público de la landing page
                         .requestMatchers(HttpMethod.POST, "/contact").permitAll()

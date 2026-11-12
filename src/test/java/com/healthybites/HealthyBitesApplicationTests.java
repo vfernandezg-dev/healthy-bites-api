@@ -1,24 +1,13 @@
 package com.healthybites;
 
-import com.jayway.jsonpath.JsonPath;
-import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -29,24 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * ({@code data-test.sql}). Son la red de seguridad de las actualizaciones de Spring Boot y Java: si alguno
  * falla tras un cambio de versión, el comportamiento observable de la API cambió.
  */
-@SpringBootTest
-@AutoConfigureMockMvc
-@Import(TestcontainersConfiguration.class)
-class HealthyBitesApplicationTests {
-
-    private static final String DEMO_PASSWORD = "healthy123";
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    // Sin SMTP real: el correo se construye entero (plantilla incluida) pero no se envía.
-    @MockitoBean
-    private JavaMailSender mailSender;
-
-    @BeforeEach
-    void setUpMail() {
-        when(mailSender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
-    }
+class HealthyBitesApplicationTests extends IntegrationTest {
 
     @Test
     void loginWithDemoCredentialsReturnsTokenAndRole() throws Exception {
@@ -99,7 +71,7 @@ class HealthyBitesApplicationTests {
     void clientCanListTheirGoals() throws Exception {
         String token = loginAndGetToken("juan.perez@healthybites.com");
 
-        mockMvc.perform(get("/meta/cliente/1").header("Authorization", "Bearer " + token))
+        mockMvc.perform(get("/meta/cliente/1").header("Authorization", bearer(token)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
     }
@@ -109,7 +81,7 @@ class HealthyBitesApplicationTests {
         String token = loginAndGetToken("carlos.garcia@healthybites.com");
 
         // Carlos (nutricionista 1) es el autor de los planes 1 y 3 del seed.
-        mockMvc.perform(get("/plan-alimenticio/nutricionista/1").header("Authorization", "Bearer " + token))
+        mockMvc.perform(get("/plan-alimenticio/nutricionista/1").header("Authorization", bearer(token)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)));
     }
@@ -131,20 +103,5 @@ class HealthyBitesApplicationTests {
                 .andExpect(status().isNoContent());
 
         verify(mailSender).send(any(MimeMessage.class));
-    }
-
-    private String loginAndGetToken(String email) throws Exception {
-        String response = mockMvc.perform(post("/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginBody(email, DEMO_PASSWORD)))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
-        return JsonPath.read(response, "$.token");
-    }
-
-    private static String loginBody(String email, String password) {
-        return """
-                {"correo": "%s", "contrasena": "%s"}
-                """.formatted(email, password);
     }
 }

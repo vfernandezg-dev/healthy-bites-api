@@ -69,9 +69,9 @@ public class UsuarioServiceImpl implements UsuarioService {
             throw new IllegalArgumentException("Ya existe un usuario con el mismo nombre y apellido");
         }
 
+        // El id del perfil nunca se toma del cuerpo de la petición: el perfil ya es el del usuario.
         if (user.getCliente() != null) {
             Cliente cliente = user.getCliente();
-            cliente.setId(profileDTO.getId());
             cliente.setNombre(profileDTO.getNombre());
             cliente.setApellido(profileDTO.getApellido());
             cliente.setSexo(profileDTO.getSexo());
@@ -81,7 +81,6 @@ public class UsuarioServiceImpl implements UsuarioService {
             cliente.setFechaActualizacion(LocalDateTime.now());
         } else if (user.getNutricionista() != null) {
             Nutricionista nutricionista = user.getNutricionista();
-            nutricionista.setId(profileDTO.getId());
             nutricionista.setNombre(profileDTO.getNombre());
             nutricionista.setApellido(profileDTO.getApellido());
             nutricionista.setBio(profileDTO.getBio());
@@ -139,6 +138,9 @@ public class UsuarioServiceImpl implements UsuarioService {
         registrationDTO.setContrasena(passwordEncoder.encode(registrationDTO.getContrasena()));
 
         Usuario user = usuarioMapper.toUserEntity(registrationDTO);
+        // Un registro siempre crea un usuario nuevo: si el cliente envía un "id", se ignora. Con él, save()
+        // hacía un merge sobre la cuenta existente con ese id (por ejemplo, el ADMIN del seed).
+        user.setId(null);
         user.setRol(rol);
 
         if (rolEnum.equals(ERol.CLIENTE)) {
