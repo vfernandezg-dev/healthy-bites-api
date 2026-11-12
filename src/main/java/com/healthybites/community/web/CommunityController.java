@@ -14,11 +14,11 @@ import com.healthybites.community.web.CommunityDtos.PostRequest;
 import com.healthybites.community.web.CommunityDtos.PostResponse;
 import com.healthybites.community.web.CommunityDtos.ReportRequest;
 import com.healthybites.shared.security.CurrentUser;
+import com.healthybites.shared.web.Locations;
 import com.healthybites.shared.web.Sorting;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.net.URI;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -66,7 +66,7 @@ class CommunityController {
     @PostMapping("/groups")
     ResponseEntity<GroupResponse> create(@Valid @RequestBody GroupRequest body) {
         GroupCard card = groups.create(CurrentUser.id(), body.toData());
-        return ResponseEntity.created(URI.create("/groups/" + card.group().requireId()))
+        return ResponseEntity.created(Locations.of("/groups/{id}", card.group().requireId()))
                 .body(GroupResponse.of(card));
     }
 
@@ -134,7 +134,7 @@ class CommunityController {
     @PostMapping("/groups/{id}/posts")
     ResponseEntity<PostResponse> publish(@PathVariable UUID id, @Valid @RequestBody PostRequest body) {
         PostCard card = posts.create(id, CurrentUser.id(), body.toData());
-        return ResponseEntity.created(URI.create("/posts/" + card.post().requireId()))
+        return ResponseEntity.created(Locations.of("/posts/{id}", card.post().requireId()))
                 .body(PostResponse.of(card));
     }
 
@@ -164,7 +164,9 @@ class CommunityController {
     @PostMapping("/posts/{id}/comments")
     ResponseEntity<CommentResponse> comment(@PathVariable UUID id, @Valid @RequestBody CommentRequest body) {
         CommentCard card = posts.comment(id, CurrentUser.id(), body.body());
-        return ResponseEntity.status(201).body(CommentResponse.of(card));
+        return ResponseEntity.created(
+                        Locations.of("/comments/{id}", card.comment().requireId()))
+                .body(CommentResponse.of(card));
     }
 
     @DeleteMapping("/comments/{id}")

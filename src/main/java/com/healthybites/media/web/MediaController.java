@@ -8,6 +8,7 @@ import com.healthybites.media.app.MediaService.Delivery;
 import com.healthybites.media.domain.MediaFile;
 import com.healthybites.shared.security.CurrentUser;
 import com.healthybites.shared.web.ApiException;
+import com.healthybites.shared.web.Locations;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,7 +30,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
 @RequestMapping("/media")
@@ -62,11 +62,7 @@ class MediaController {
         UUID id = stored.requireId();
         UploadResponse body = new UploadResponse(
                 id, stored.getContentType(), stored.getSizeBytes(), stored.isPublic() ? media.publicPath(id) : null);
-        return ResponseEntity.created(ServletUriComponentsBuilder.fromCurrentRequest()
-                        .path("/{id}")
-                        .buildAndExpand(id)
-                        .toUri())
-                .body(body);
+        return ResponseEntity.created(Locations.of("/media/{id}", id)).body(body);
     }
 
     @Operation(summary = "Lee un fichero: los públicos por id; los protegidos, solo con su URL firmada")

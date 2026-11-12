@@ -6,11 +6,12 @@ import com.healthybites.rewards.web.RewardDtos.RewardRequest;
 import com.healthybites.rewards.web.RewardDtos.RewardResponse;
 import com.healthybites.rewards.web.RewardDtos.StartStreakRequest;
 import com.healthybites.shared.security.CurrentUser;
+import com.healthybites.shared.web.Locations;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -54,7 +55,9 @@ class RewardController {
     @PostMapping("/me/streaks")
     ResponseEntity<RewardResponse> start(@Valid @RequestBody StartStreakRequest body) {
         RewardView view = rewards.start(body.rewardId(), CurrentUser.id());
-        return ResponseEntity.created(URI.create("/me/streaks/" + view.streak().requireId()))
+        return ResponseEntity.created(Locations.of(
+                        "/me/streaks/{id}",
+                        Objects.requireNonNull(view.streak()).requireId()))
                 .body(RewardResponse.of(view));
     }
 
@@ -77,7 +80,7 @@ class RewardController {
     ResponseEntity<RewardResponse> create(@Valid @RequestBody RewardRequest body) {
         RewardView view = rewards.create(CurrentUser.id(), body.toData());
         return ResponseEntity.created(
-                        URI.create("/nutritionist/rewards/" + view.reward().requireId()))
+                        Locations.of("/nutritionist/rewards/{id}", view.reward().requireId()))
                 .body(RewardResponse.of(view));
     }
 

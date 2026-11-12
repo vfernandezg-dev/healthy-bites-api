@@ -7,12 +7,12 @@ import com.healthybites.content.web.ContentDtos.ContentRequest;
 import com.healthybites.content.web.ContentDtos.ContentSummaryResponse;
 import com.healthybites.content.web.ContentDtos.EditableContentResponse;
 import com.healthybites.shared.security.CurrentUser;
+import com.healthybites.shared.web.Locations;
 import com.healthybites.shared.web.PublicationSummaryResponse;
 import com.healthybites.shared.web.Sorting;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.net.URI;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -68,8 +68,8 @@ class NutritionistContentController {
     @PostMapping
     ResponseEntity<EditableContentResponse> create(@Valid @RequestBody ContentRequest body) {
         ContentCard created = contents.create(CurrentUser.id(), body.toData());
-        return ResponseEntity.created(URI.create(
-                        "/nutritionist/content-items/" + created.item().requireId()))
+        return ResponseEntity.created(Locations.of(
+                        "/nutritionist/content-items/{id}", created.item().requireId()))
                 .body(EditableContentResponse.of(created));
     }
 

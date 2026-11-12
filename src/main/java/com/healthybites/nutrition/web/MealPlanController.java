@@ -8,6 +8,7 @@ import com.healthybites.nutrition.web.NutritionDtos.EnrollmentResponse;
 import com.healthybites.nutrition.web.NutritionDtos.MealPlanDetailResponse;
 import com.healthybites.nutrition.web.NutritionDtos.MealPlanSummaryResponse;
 import com.healthybites.shared.security.CurrentUser;
+import com.healthybites.shared.web.Locations;
 import com.healthybites.shared.web.Sorting;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -72,8 +73,8 @@ class MealPlanController {
     @PostMapping("/me/meal-plan-enrollments")
     ResponseEntity<Void> enroll(@Valid @RequestBody EnrollRequest body) {
         MealPlanEnrollment enrollment = mealPlans.enroll(body.mealPlanId(), CurrentUser.id());
-        return ResponseEntity.status(201)
-                .header("Location", "/me/meal-plan-enrollments/" + enrollment.getMealPlanId())
+        return ResponseEntity.created(
+                        Locations.of("/me/meal-plan-enrollments/{mealPlanId}", enrollment.getMealPlanId()))
                 .build();
     }
 

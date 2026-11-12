@@ -11,12 +11,12 @@ import com.healthybites.nutrition.web.NutritionDtos.MealRequest;
 import com.healthybites.nutrition.web.NutritionDtos.MealResponse;
 import com.healthybites.nutrition.web.NutritionDtos.NutritionistClientResponse;
 import com.healthybites.shared.security.CurrentUser;
+import com.healthybites.shared.web.Locations;
 import com.healthybites.shared.web.PublicationSummaryResponse;
 import com.healthybites.shared.web.Sorting;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -73,8 +73,8 @@ class NutritionistMealPlanController {
     @PostMapping("/meal-plans")
     ResponseEntity<MealPlanDetailResponse> create(@Valid @RequestBody MealPlanRequest body) {
         PlanCard plan = plans.create(CurrentUser.id(), body.toData());
-        return ResponseEntity.created(
-                        URI.create("/nutritionist/meal-plans/" + plan.plan().requireId()))
+        return ResponseEntity.created(Locations.of(
+                        "/nutritionist/meal-plans/{id}", plan.plan().requireId()))
                 .body(MealPlanDetailResponse.of(plan));
     }
 
@@ -110,7 +110,8 @@ class NutritionistMealPlanController {
     @PostMapping("/meal-plans/{id}/meals")
     ResponseEntity<MealResponse> addMeal(@PathVariable UUID id, @Valid @RequestBody MealRequest body) {
         Meal meal = plans.addMeal(id, CurrentUser.id(), body.toData());
-        return ResponseEntity.created(URI.create("/nutritionist/meal-plans/" + id + "/meals/" + meal.requireId()))
+        return ResponseEntity.created(
+                        Locations.of("/nutritionist/meal-plans/{id}/meals/{mealId}", id, meal.requireId()))
                 .body(MealResponse.of(meal));
     }
 

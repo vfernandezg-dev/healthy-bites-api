@@ -25,7 +25,8 @@ class ProfileTests extends IntegrationTest {
         register(email, """
                         {"sex": "FEMALE", "birthDate": "1996-05-20", "heightCm": 168.5, "weightKg": 64.2}""")
                 .andExpect(status().isCreated())
-                .andExpect(header().string(HttpHeaders.LOCATION, "/me"))
+                // URL absoluta (en MockMvc no hay context path; en el servidor incluye /api/v1).
+                .andExpect(header().string(HttpHeaders.LOCATION, "http://localhost/me"))
                 .andExpect(jsonPath("$.role").value("CLIENT"))
                 .andExpect(jsonPath("$.client.heightCm").value(168.5))
                 .andExpect(jsonPath("$.client.age", Matchers.greaterThanOrEqualTo(29)));

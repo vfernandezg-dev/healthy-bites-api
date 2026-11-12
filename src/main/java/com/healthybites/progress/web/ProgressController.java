@@ -14,10 +14,10 @@ import com.healthybites.progress.web.ProgressDtos.StatusChangeResponse;
 import com.healthybites.progress.web.ProgressDtos.WeightEntryRequest;
 import com.healthybites.progress.web.ProgressDtos.WeightEntryResponse;
 import com.healthybites.shared.security.CurrentUser;
+import com.healthybites.shared.web.Locations;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -62,7 +62,7 @@ class ProgressController {
     @PostMapping("/goals")
     ResponseEntity<GoalResponse> createGoal(@Valid @RequestBody GoalRequest body) {
         Goal goal = goals.create(CurrentUser.id(), body.toData());
-        return ResponseEntity.created(URI.create("/me/goals/" + goal.requireId()))
+        return ResponseEntity.created(Locations.of("/me/goals/{id}", goal.requireId()))
                 .body(GoalResponse.of(goal));
     }
 
@@ -115,7 +115,7 @@ class ProgressController {
     @PostMapping("/goals/{id}/weight-entries")
     ResponseEntity<WeightEntryResponse> addWeight(@PathVariable UUID id, @Valid @RequestBody WeightEntryRequest body) {
         WeightEntry entry = goals.addWeight(id, CurrentUser.id(), body.toData());
-        return ResponseEntity.created(URI.create("/me/goals/" + id + "/weight-entries/" + entry.requireId()))
+        return ResponseEntity.created(Locations.of("/me/goals/{id}/weight-entries/{entryId}", id, entry.requireId()))
                 .body(WeightEntryResponse.of(entry));
     }
 
@@ -147,7 +147,7 @@ class ProgressController {
     @PostMapping("/habit-logs")
     ResponseEntity<HabitLogResponse> logHabits(@Valid @RequestBody HabitLogRequest body) {
         HabitLog log = habits.log(CurrentUser.id(), body.loggedOn(), body.toScores());
-        return ResponseEntity.created(URI.create("/me/habit-logs/" + log.requireId()))
+        return ResponseEntity.created(Locations.of("/me/habit-logs/{id}", log.requireId()))
                 .body(HabitLogResponse.of(log));
     }
 

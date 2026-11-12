@@ -11,6 +11,7 @@ import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.lang.ArchRule;
 import jakarta.persistence.Entity;
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Date;
 import org.junit.jupiter.api.Test;
@@ -49,6 +50,21 @@ class ArchitectureTests {
                 .should()
                 .dependOnClassesThat()
                 .areAssignableTo(Repository.class)
+                .check(CLASSES);
+    }
+
+    /** Los 201 llevan una Location absoluta con el context path: se construye siempre con Locations.of. */
+    @Test
+    void controllersBuildLocationsWithTheHelper() {
+        noClasses()
+                .that()
+                .areAnnotatedWith(RestController.class)
+                .should()
+                .callMethod(URI.class, "create", String.class)
+                .orShould()
+                .dependOnClassesThat()
+                .haveFullyQualifiedName("org.springframework.web.servlet.support.ServletUriComponentsBuilder")
+                .because("Locations.of incluye /api/v1 y el host; URI.create(\"/x\") apunta fuera de la API")
                 .check(CLASSES);
     }
 

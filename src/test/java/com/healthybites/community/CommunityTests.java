@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -143,6 +144,20 @@ class CommunityTests extends IntegrationTest {
                 .andExpect(jsonPath("$.targetHidden").value(true));
         mockMvc.perform(get("/posts/" + MARIA_POST_IN_G1).header(HttpHeaders.AUTHORIZATION, bearer(token(Seed.JUAN))))
                 .andExpect(status().isNotFound());
+    }
+
+    /** La Location de un 201 es la URL absoluta del recurso, con el context path (/api/v1). */
+    @Test
+    void aCreatedGroupPointsToItsAbsoluteUrl() throws Exception {
+        mockMvc.perform(post("/api/v1/groups")
+                        .contextPath("/api/v1")
+                        .header(HttpHeaders.AUTHORIZATION, bearer(token(Seed.JUAN)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\": \"Grupo con ubicación\", \"visibility\": \"PUBLIC\"}"))
+                .andExpect(status().isCreated())
+                .andExpect(header().string(
+                                HttpHeaders.LOCATION,
+                                org.hamcrest.Matchers.matchesPattern("http://localhost/api/v1/groups/[0-9a-f-]{36}")));
     }
 
     /** La lista de denuncias hace las mismas consultas tenga las filas que tenga: ninguna consulta por fila. */
