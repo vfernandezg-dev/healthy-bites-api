@@ -101,6 +101,20 @@
             <scope>runtime</scope>
             <optional>true</optional>
         </dependency>
+        <!-- Desarrollo local: ./mvnw spring-boot:run levanta PostgreSQL y Mailpit (docker-compose.yml).
+             El plugin de Spring Boot no lo empaqueta en el jar de producción. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-docker-compose</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+        <!-- Metadatos de las propiedades healthybites.* (autocompletado y validación en el IDE) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
 
         <!-- ===== Tests: un starter de test por tecnología (Spring Boot 4) ===== -->
         <dependency>
@@ -138,16 +152,21 @@
     <build>
         <plugins>
             <!-- Desde JDK 23 los procesadores de anotaciones del classpath ya no se ejecutan solos:
-                 hay que declararlos aquí (Lombok). -->
+                 hay que declararlos aquí (Lombok y los metadatos de configuración). -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
+                    <!-- Versiones de los procesadores desde el dependencyManagement de Spring Boot -->
+                    <annotationProcessorPathsUseDepMgmt>true</annotationProcessorPathsUseDepMgmt>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
-                            <version>${lombok.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-configuration-processor</artifactId>
                         </path>
                     </annotationProcessorPaths>
                     <compilerArgs>
@@ -179,6 +198,10 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
+                    <!-- ./mvnw spring-boot:run usa el perfil dev; el jar (producción) arranca sin perfil. -->
+                    <profiles>
+                        <profile>dev</profile>
+                    </profiles>
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>

@@ -10,9 +10,14 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.security.SecureRandom;
+import java.util.Base64;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -25,13 +30,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
-@TestPropertySource(properties = "storage.location=target/test-uploads")
+@ActiveProfiles("test")
 public abstract class IntegrationTest {
 
     protected static final String DEMO_PASSWORD = "healthy123";
 
     @Autowired
     protected MockMvc mockMvc;
+
+    // Clave JWT aleatoria por ejecución: el repositorio no contiene ninguna, ni siquiera para los tests.
+    @DynamicPropertySource
+    static void jwtSecret(DynamicPropertyRegistry registry) {
+        byte[] key = new byte[64];
+        new SecureRandom().nextBytes(key);
+        registry.add("healthybites.security.jwt.secret", () -> Base64.getEncoder().encodeToString(key));
+    }
 
     // Sin SMTP real: el correo se construye entero (plantilla incluida) pero no se envía.
     @MockitoBean

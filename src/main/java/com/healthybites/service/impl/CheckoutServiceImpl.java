@@ -1,5 +1,6 @@
 package com.healthybites.service.impl;
 
+import com.healthybites.config.properties.AppProperties;
 import com.healthybites.dto.PaymentCaptureResponse;
 import com.healthybites.dto.PaymentOrderResponse;
 import com.healthybites.dto.SuscripcionDetailsDTO;
@@ -27,6 +28,7 @@ public class CheckoutServiceImpl implements CheckoutService {
     private final PayPalService payPalService;
     private final SuscripcionService suscripcionService;
     private final EmailService emailService;
+    private final AppProperties appProperties;
 
     @Value("${spring.mail.username}")
     private String mailFrom;
@@ -73,7 +75,8 @@ public class CheckoutServiceImpl implements CheckoutService {
         Map<String, Object> model = new HashMap<>();
         model.put("user", userEmail);
         model.put("total", suscripcionDetailsDTO.getPrecio());
-        model.put("orderUrl", "http://localhost:4200/order/" + suscripcionDetailsDTO.getId());
+        // El web-app muestra la suscripción en el perfil del cliente.
+        model.put("orderUrl", appProperties.frontend("cliente/perfil"));
 
         Mail mail = emailService.createMail(
                 userEmail,

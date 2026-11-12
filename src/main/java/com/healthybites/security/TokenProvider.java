@@ -1,12 +1,12 @@
 package com.healthybites.security;
 
+import com.healthybites.config.properties.JwtProperties;
 import com.healthybites.exception.RoleNotFoundException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -25,18 +25,14 @@ public class TokenProvider {
 
     //private final UsuarioRepository userRepository;
 
-    @Value("${jwt.secret}")
-    private String jwtSecret;
-
-    @Value("${jwt.validity-in-seconds}")
-    private long jwtValidityInSeconds;
+    private final JwtProperties jwtProperties;
 
     private SecretKey key;
     private JwtParser jwtParser;
 
     @PostConstruct
     public void init() {
-        key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
+        key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtProperties.secret().trim()));
         jwtParser = Jwts
                 .parser()
                 .verifyWith(key)
@@ -65,7 +61,7 @@ public class TokenProvider {
                 .subject(authentication.getName())  // El sujeto será el email o el nombre de usuario
                 .claim("role", role)  // Solo se incluye el rol como claim
                 .signWith(key, Jwts.SIG.HS512)
-                .expiration(new Date(System.currentTimeMillis() + jwtValidityInSeconds * 1000))
+                .expiration(new Date(System.currentTimeMillis() + jwtProperties.validity().toMillis()))
                 .compact();
     }
 

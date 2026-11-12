@@ -38,3 +38,13 @@ uploads/
 
 ### Variables de entorno locales (contienen secretos: NUNCA versionar) ###
 .env
+.env.*
+!.env.example
+
+### Claves, certificados y logs ###
+*.pem
+*.key
+*.p12
+*.jks
+*.log
+logs/
