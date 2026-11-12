@@ -211,7 +211,8 @@ Ningún secreto se versiona. Toda la configuración llega de variables de entorn
 | ------------------------------------------ | ---------------------------------- | --------------------------------------------------------------------------------- |
 | `JWT_SECRET`                               | Sí                                 | Clave HS512 de los JWT (Base64, ≥ 64 bytes)                                       |
 | `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`     | Sí (en local, solo `DB_PASSWORD`)  | Conexión a PostgreSQL                                                             |
-| `MAIL_USERNAME`, `MAIL_PASSWORD`           | En producción                      | Cuenta SMTP que envía los correos                                                 |
+| `MAIL_USERNAME`, `MAIL_PASSWORD`           | En producción                      | Cuenta SMTP que envía los correos (`MAIL_HOST` y `MAIL_PORT`: Gmail por defecto)  |
+| `MAIL_FROM`                                | No                                 | Remitente, p. ej. `Healthy Bites <projects@vfernandezg.dev>` (por defecto, `MAIL_USERNAME`) |
 | `APP_FRONTEND_URL`, `API_PUBLIC_URL`       | En producción                      | URLs públicas del web-app (enlaces de los correos, vuelta de PayPal) y de la API  |
 | `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET` | Para pagos                         | Credenciales de PayPal (sandbox)                                                  |
 | `CORS_APP_ORIGINS`, `CORS_LANDING_ORIGINS` | En producción                      | Orígenes del web-app (toda la API, con credenciales) y de la landing (`/contact`) |
