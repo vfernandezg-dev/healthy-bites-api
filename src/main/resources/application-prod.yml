@@ -1,0 +1,5 @@
+# Producción: logs estructurados (ECS, una línea JSON por evento) para el agregador de logs del hosting.
+logging:
+  structured:
+    format:
+      console: ecs

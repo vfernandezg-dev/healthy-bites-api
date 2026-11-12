@@ -1,0 +1,222 @@
+openapi: 3.1.0
+info:
+  contact:
+    email: projects@vfernandezg.dev
+    name: Healthy Bites
+  description: "API de Healthy Bites: seguimiento de hábitos y metas, planes de alimentació\
+    n, contenido, recompensas y comunidad. Errores en formato RFC 9457 (ProblemDetail)."
+  license:
+    name: Uso privado
+  title: Healthy Bites API
+  version: v1
+servers:
+- url: http://localhost:8090/api/v1
+security:
+- bearer: []
+tags:
+- description: "Login, renovación, logout y restablecimiento de contraseña"
+  name: Sesión
+- description: Formulario de contacto de la landing
+  name: Contacto
+paths:
+  /auth/forgot-password:
+    post:
+      description: "Siempre 202, exista o no la cuenta: la respuesta no revela qué\
+        \ correos están registrados."
+      operationId: forgotPassword
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+      security: []
+      summary: Pide un enlace para restablecer la contraseña
+      tags:
+      - Sesión
+  /auth/login:
+    post:
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/SessionResponse"
+          description: OK
+      security: []
+      summary: "Abre una sesión: access token en el cuerpo y refresh token en una\
+        \ cookie httpOnly"
+      tags:
+      - Sesión
+  /auth/logout:
+    post:
+      operationId: logout
+      responses:
+        "200":
+          description: OK
+      security: []
+      summary: "Cierra la sesión: revoca el refresh token y borra la cookie"
+      tags:
+      - Sesión
+  /auth/refresh:
+    post:
+      operationId: refresh
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: object
+          description: OK
+      security: []
+      summary: "Renueva la sesión con la cookie del refresh token, que se rota en\
+        \ cada uso"
+      tags:
+      - Sesión
+  /auth/reset-password:
+    post:
+      operationId: resetPassword
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+      security: []
+      summary: Cambia la contraseña con el token del enlace y cierra todas las sesiones
+        del usuario
+      tags:
+      - Sesión
+  /contact:
+    post:
+      operationId: sendMessage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactMessage"
+        required: true
+      responses:
+        "200":
+          description: OK
+      security: []
+      summary: "Envía un mensaje al equipo (204, 422, 429 o 503)"
+      tags:
+      - Contacto
+components:
+  schemas:
+    ContactMessage:
+      type: object
+      properties:
+        apellido:
+          type: string
+          maxLength: 60
+          minLength: 2
+        correo:
+          type: string
+          format: email
+          maxLength: 254
+          minLength: 0
+        mensaje:
+          type: string
+          maxLength: 2000
+          minLength: 10
+        nombre:
+          type: string
+          maxLength: 60
+          minLength: 2
+        website:
+          type: string
+      required:
+      - apellido
+      - correo
+      - mensaje
+      - nombre
+    ForgotPasswordRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+          minLength: 0
+      required:
+      - email
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+          minLength: 0
+        password:
+          type: string
+          maxLength: 128
+          minLength: 0
+      required:
+      - email
+      - password
+    ResetPasswordRequest:
+      type: object
+      properties:
+        password:
+          type: string
+          maxLength: 64
+          minLength: 10
+        token:
+          type: string
+          maxLength: 128
+          minLength: 0
+      required:
+      - password
+      - token
+    SessionResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        expiresIn:
+          type: integer
+          format: int64
+        tokenType:
+          type: string
+        user:
+          $ref: "#/components/schemas/SessionUser"
+    SessionUser:
+      type: object
+      properties:
+        email:
+          type: string
+        firstName:
+          type: string
+        id:
+          type: string
+          format: uuid
+        lastName:
+          type: string
+        role:
+          type: string
+          enum:
+          - ADMIN
+          - CLIENT
+          - NUTRITIONIST
+  securitySchemes:
+    bearer:
+      bearerFormat: JWT
+      description: Access token de POST /auth/login o /auth/refresh
+      scheme: bearer
+      type: http

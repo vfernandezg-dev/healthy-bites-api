@@ -8,32 +8,48 @@ spring:
   application:
     name: healthy-bites
 
-  # Jackson 3 (Spring Boot 4) cambia varios valores por defecto (falla con null en tipos primitivos, ordena las
-  # propiedades...). Temporal: mantiene el JSON de Jackson 2 que espera el web-app hasta la fase 3.
-  jackson:
-    use-jackson2-defaults: true
-
   datasource:
     url: ${DB_URL:}
     username: ${DB_USERNAME:}
     password: ${DB_PASSWORD:}
 
+  # El esquema lo crean las migraciones de Flyway (src/main/resources/db/migration); Hibernate solo comprueba que
+  # las entidades coinciden con él.
   jpa:
+    open-in-view: false
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: ${SHOW_SQL:false}
     properties:
       # Entre corchetes para conservar el "_" de la clave al enlazarla al mapa de propiedades de Hibernate.
       "[hibernate.format_sql]": true
-    # El seed (data-test.sql) se ejecuta después de que Hibernate cree las tablas.
-    defer-datasource-initialization: true
+      "[hibernate.jdbc.time_zone]": UTC
 
-  # Datos de demostración: nunca fuera de los perfiles dev y test.
-  sql:
-    init:
-      mode: never
-      data-locations: classpath:data-test.sql
-      encoding: UTF-8
+  flyway:
+    locations: classpath:db/migration
+
+  # Eventos entre módulos: se guardan en event_publication (lo crea la migración V1) hasta que su listener
+  # termina; los que quedan a medias se reintentan al arrancar.
+  modulith:
+    events:
+      jdbc:
+        schema-initialization:
+          enabled: false
+      completion-mode: delete
+      republish-outstanding-events-on-restart: true
+
+  threads:
+    virtual:
+      enabled: true
+
+  # Paginación: ?page&size&sort, 20 por defecto y 100 como máximo.
+  data:
+    web:
+      pageable:
+        default-page-size: 20
+        max-page-size: 100
+        # Respuesta paginada estable ({content, page}) en vez de serializar PageImpl.
+        serialization-mode: via-dto
 
   servlet:
     multipart:
@@ -90,12 +106,14 @@ management:
     mail:
       enabled: false
 
-# Swagger UI y /v3/api-docs solo en el perfil dev.
+# Swagger UI y /v3/api-docs solo en el perfil dev (y en los tests, que exportan docs/openapi.yaml).
 springdoc:
   api-docs:
     enabled: false
   swagger-ui:
     enabled: false
+  # Salida estable: el contrato exportado solo cambia si cambia la API.
+  writer-with-order-by-keys: true
 
 healthybites:
   app:

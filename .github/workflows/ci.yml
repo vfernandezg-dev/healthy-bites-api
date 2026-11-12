@@ -3,7 +3,7 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, next]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -28,6 +28,10 @@ jobs:
       # Los tests de integración levantan PostgreSQL con Testcontainers (Docker viene en el runner).
       - name: Compilar y ejecutar los tests
         run: ./mvnw -B -ntp verify
+
+      # OpenApiExportTests regenera el contrato: si la API cambió, docs/openapi.yaml tiene que ir en el commit.
+      - name: Contrato OpenAPI al día
+        run: git diff --exit-code -- docs/openapi.yaml
 
       - name: Subir informes de tests
         if: failure()
