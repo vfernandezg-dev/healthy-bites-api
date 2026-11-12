@@ -4,9 +4,9 @@ import com.healthybites.identity.UserAccount;
 import com.healthybites.identity.UserAccounts;
 import com.healthybites.identity.domain.User;
 import com.healthybites.identity.domain.UserRepository;
+import com.healthybites.shared.persistence.TextSearch;
 import com.healthybites.shared.web.ApiException;
 import java.util.Collection;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -45,12 +45,7 @@ class UserAccountsService implements UserAccounts {
         if (ids.isEmpty() || text.isBlank()) {
             return Set.of();
         }
-        String escaped = text.trim()
-                .toLowerCase(Locale.ROOT)
-                .replace("\\", "\\\\")
-                .replace("%", "\\%")
-                .replace("_", "\\_");
-        return Set.copyOf(users.findIdsMatching(ids, "%" + escaped + "%"));
+        return Set.copyOf(users.findIdsMatching(ids, TextSearch.containsPattern(text)));
     }
 
     @Override

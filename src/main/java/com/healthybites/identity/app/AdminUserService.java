@@ -4,12 +4,12 @@ import com.healthybites.identity.domain.User;
 import com.healthybites.identity.domain.UserRepository;
 import com.healthybites.identity.domain.UserStatus;
 import com.healthybites.identity.events.UserDeactivated;
+import com.healthybites.shared.persistence.TextSearch;
 import com.healthybites.shared.security.Role;
 import com.healthybites.shared.web.ApiException;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.EnumMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -50,14 +50,14 @@ public class AdminUserService {
             spec = spec.and((root, q, cb) -> cb.equal(root.get("status"), status));
         }
         if (query != null && !query.isBlank()) {
-            String like = "%"
-                    + query.trim().toLowerCase(Locale.ROOT).replace("%", "\\%").replace("_", "\\_") + "%";
+            // El nombre completo ("Juan Pérez") se busca concatenado: TextSearch solo aporta el patrón escapado.
+            String like = TextSearch.containsPattern(query);
             spec = spec.and((root, q, cb) -> cb.or(
-                    cb.like(cb.lower(root.get("email")), like, '\\'),
+                    cb.like(cb.lower(root.get("email")), like, TextSearch.ESCAPE),
                     cb.like(
                             cb.lower(cb.concat(cb.concat(root.get("firstName"), " "), root.get("lastName"))),
                             like,
-                            '\\')));
+                            TextSearch.ESCAPE)));
         }
         return users.findAll(spec, pageable);
     }

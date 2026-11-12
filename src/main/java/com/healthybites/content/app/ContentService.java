@@ -14,12 +14,12 @@ import com.healthybites.content.domain.ContentUnlockRepository;
 import com.healthybites.identity.UserAccount;
 import com.healthybites.identity.UserAccounts;
 import com.healthybites.media.MediaFiles;
+import com.healthybites.shared.persistence.TextSearch;
 import com.healthybites.shared.web.ApiException;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -85,17 +85,7 @@ public class ContentService implements ContentAccess {
         if (filter.category() != null) {
             spec = spec.and((root, q, cb) -> cb.equal(root.get("category"), filter.category()));
         }
-        if (filter.query() != null && !filter.query().isBlank()) {
-            String like = "%"
-                    + filter.query()
-                            .trim()
-                            .toLowerCase(Locale.ROOT)
-                            .replace("%", "\\%")
-                            .replace("_", "\\_") + "%";
-            spec = spec.and((root, q, cb) -> cb.or(
-                    cb.like(cb.lower(root.get("title")), like, '\\'),
-                    cb.like(cb.lower(root.get("summary")), like, '\\')));
-        }
+        spec = spec.and(TextSearch.anyContains(filter.query(), "title", "summary"));
         Page<ContentItem> page = items.findAll(spec, pageable);
         Reader reader = reader(userId, staff);
         Map<UUID, UserAccount> authors = accounts.findAllById(page.getContent().stream()
