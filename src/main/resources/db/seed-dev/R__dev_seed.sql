@@ -210,3 +210,50 @@ values ('00000000-0000-7000-8000-000000002101', '00000000-0000-7000-8000-0000000
        ('00000000-0000-7000-8000-000000002103', '00000000-0000-7000-8000-000000002003',
         '00000000-0000-7000-8000-000000000006', 2, current_date - 2, null)
 on conflict do nothing;
+
+-- ---------- community ----------
+insert into community_groups (id, owner_id, name, description, visibility)
+values ('00000000-0000-7000-8000-000000003001', '00000000-0000-7000-8000-000000000004', 'Pérdida de peso',
+        'Nos acompañamos para bajar de peso sin dietas milagro.', 'PUBLIC'),
+       ('00000000-0000-7000-8000-000000003002', '00000000-0000-7000-8000-000000000005', 'Corredores',
+        'Para quienes empiezan a correr y quieren constancia.', 'PUBLIC'),
+       ('00000000-0000-7000-8000-000000003003', '00000000-0000-7000-8000-000000000006', 'Alimentación saludable',
+        'Grupo privado para compartir recetas y menús.', 'PRIVATE')
+on conflict do nothing;
+
+insert into group_memberships (id, group_id, user_id, role, status)
+values ('00000000-0000-7000-8000-000000003101', '00000000-0000-7000-8000-000000003001', '00000000-0000-7000-8000-000000000004', 'OWNER', 'ACTIVE'),
+       ('00000000-0000-7000-8000-000000003102', '00000000-0000-7000-8000-000000003001', '00000000-0000-7000-8000-000000000005', 'MEMBER', 'ACTIVE'),
+       ('00000000-0000-7000-8000-000000003103', '00000000-0000-7000-8000-000000003002', '00000000-0000-7000-8000-000000000005', 'OWNER', 'ACTIVE'),
+       ('00000000-0000-7000-8000-000000003104', '00000000-0000-7000-8000-000000003002', '00000000-0000-7000-8000-000000000004', 'MEMBER', 'ACTIVE'),
+       ('00000000-0000-7000-8000-000000003105', '00000000-0000-7000-8000-000000003002', '00000000-0000-7000-8000-000000000006', 'MEMBER', 'ACTIVE'),
+       ('00000000-0000-7000-8000-000000003106', '00000000-0000-7000-8000-000000003003', '00000000-0000-7000-8000-000000000006', 'OWNER', 'ACTIVE'),
+       ('00000000-0000-7000-8000-000000003107', '00000000-0000-7000-8000-000000003003', '00000000-0000-7000-8000-000000000005', 'MEMBER', 'PENDING')
+on conflict do nothing;
+
+insert into posts (id, group_id, author_id, title, body, created_at, updated_at)
+values ('00000000-0000-7000-8000-000000003201', '00000000-0000-7000-8000-000000003001', '00000000-0000-7000-8000-000000000004',
+        'Mi primera semana', 'Bajé 1 kg cambiando las bebidas azucaradas por agua.', now() - interval '6 days', now() - interval '6 days'),
+       ('00000000-0000-7000-8000-000000003202', '00000000-0000-7000-8000-000000003001', '00000000-0000-7000-8000-000000000005',
+        'Receta: ensalada de quinua', 'Quinua, tomate, pepino, palta y limón. Rápida y muy saciante.', now() - interval '1 day', now() - interval '1 day'),
+       ('00000000-0000-7000-8000-000000003203', '00000000-0000-7000-8000-000000003002', '00000000-0000-7000-8000-000000000005',
+        'Corrí mis primeros 5K', 'Después de un mes de entrenamiento completé 5 km sin parar.', now() - interval '4 days', now() - interval '4 days'),
+       ('00000000-0000-7000-8000-000000003204', '00000000-0000-7000-8000-000000003002', '00000000-0000-7000-8000-000000000006',
+        'Rutina de los sábados', '¿Alguien se anima a trotar el sábado temprano en el parque?', now() - interval '2 days', now() - interval '2 days'),
+       ('00000000-0000-7000-8000-000000003205', '00000000-0000-7000-8000-000000003003', '00000000-0000-7000-8000-000000000006',
+        'Menú de la semana', 'Comparto mi menú: lunes de legumbres, martes de pescado...', now() - interval '3 days', now() - interval '3 days')
+on conflict do nothing;
+
+insert into comments (id, post_id, author_id, body, created_at, updated_at)
+values ('00000000-0000-7000-8000-000000003301', '00000000-0000-7000-8000-000000003201', '00000000-0000-7000-8000-000000000005',
+        '¡Excelente inicio, Juan! Sigue así.', now() - interval '5 days', now() - interval '5 days'),
+       ('00000000-0000-7000-8000-000000003302', '00000000-0000-7000-8000-000000003203', '00000000-0000-7000-8000-000000000004',
+        'Felicitaciones, gran logro.', now() - interval '3 days', now() - interval '3 days'),
+       ('00000000-0000-7000-8000-000000003303', '00000000-0000-7000-8000-000000003204', '00000000-0000-7000-8000-000000000004',
+        'Yo me apunto, ¿a qué hora?', now() - interval '1 day', now() - interval '1 day')
+on conflict do nothing;
+
+insert into moderation_reports (id, reporter_id, comment_id, reason, status, created_at)
+values ('00000000-0000-7000-8000-000000003401', '00000000-0000-7000-8000-000000000006',
+        '00000000-0000-7000-8000-000000003302', 'Comentario de prueba para la moderación.', 'OPEN', now() - interval '1 day')
+on conflict do nothing;

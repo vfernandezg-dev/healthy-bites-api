@@ -18,6 +18,8 @@ tags:
   name: Sesión
 - description: "Catálogo de artículos, vídeos y guías"
   name: Contenido
+- description: "Grupos, membresías, publicaciones, comentarios y denuncias"
+  name: Comunidad
 - description: "Catálogo, detalle e inscripciones de los clientes"
   name: Planes de alimentación
 - description: "Planes, checkout con PayPal y pagos del usuario"
@@ -34,6 +36,8 @@ tags:
   name: Admin · Cuentas
 - description: "Suscripciones, pagos y resumen de ingresos (solo ADMIN)"
   name: Admin · Facturación
+- description: Denuncias de la comunidad (solo ADMIN)
+  name: Admin · Moderación
 - description: "Artículos, vídeos y guías propios"
   name: Nutricionista · Contenido
 - description: Alta de clientes y de nutricionistas invitados
@@ -57,6 +61,61 @@ paths:
         \ de 30 días"
       tags:
       - Admin · Facturación
+  /admin/moderation/reports:
+    get:
+      operationId: reports
+      parameters:
+      - in: query
+        name: status
+        required: false
+        schema:
+          type: string
+          default: OPEN
+          enum:
+          - OPEN
+          - RESOLVED
+          - DISMISSED
+      - in: query
+        name: pageable
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PagedModelReportResponse"
+          description: OK
+      summary: "Denuncias por estado (por defecto, las abiertas)"
+      tags:
+      - Admin · Moderación
+  /admin/moderation/reports/{id}/resolve:
+    post:
+      operationId: resolve
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResolveRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ReportResponse"
+          description: OK
+      summary: Oculta lo denunciado (cierra todas sus denuncias) o descarta la denuncia
+      tags:
+      - Admin · Moderación
   /admin/nutritionist-invitations:
     get:
       operationId: list
@@ -449,6 +508,42 @@ paths:
         del usuario
       tags:
       - Sesión
+  /comments/{id}:
+    delete:
+      operationId: deleteComment
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+      tags:
+      - Comunidad
+  /comments/{id}/reports:
+    post:
+      operationId: reportComment
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReportRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+      tags:
+      - Comunidad
   /contact:
     post:
       operationId: sendMessage
@@ -554,6 +649,253 @@ paths:
         \ si está bloqueado)"
       tags:
       - Contenido
+  /groups:
+    get:
+      operationId: directory
+      parameters:
+      - in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+      - in: query
+        name: pageable
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PagedModelGroupResponse"
+          description: OK
+      summary: Directorio de grupos (públicos y privados) con mi membresía
+      tags:
+      - Comunidad
+    post:
+      operationId: create_3
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GroupRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/GroupResponse"
+          description: OK
+      tags:
+      - Comunidad
+  /groups/{id}:
+    delete:
+      operationId: delete_2
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+      tags:
+      - Comunidad
+    get:
+      operationId: group
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/GroupResponse"
+          description: OK
+      tags:
+      - Comunidad
+    put:
+      operationId: update_4
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GroupRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/GroupResponse"
+          description: OK
+      tags:
+      - Comunidad
+  /groups/{id}/members:
+    get:
+      operationId: members
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MemberResponse"
+          description: OK
+      summary: Miembros (el creador ve también las solicitudes pendientes)
+      tags:
+      - Comunidad
+    post:
+      operationId: join
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/GroupResponse"
+          description: OK
+      summary: Entra en un grupo público o pide entrar en uno privado
+      tags:
+      - Comunidad
+  /groups/{id}/members/me:
+    delete:
+      operationId: leave
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+      tags:
+      - Comunidad
+  /groups/{id}/members/{userId}:
+    delete:
+      operationId: remove
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: userId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+      summary: Rechaza una solicitud o expulsa a un miembro (solo el creador)
+      tags:
+      - Comunidad
+  /groups/{id}/members/{userId}/approve:
+    post:
+      operationId: approve
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: userId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+      tags:
+      - Comunidad
+  /groups/{id}/posts:
+    get:
+      operationId: posts
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: query
+        name: pageable
+        required: true
+        schema:
+          $ref: "#/components/schemas/Pageable"
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PagedModelPostResponse"
+          description: OK
+      tags:
+      - Comunidad
+    post:
+      operationId: publish_2
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PostResponse"
+          description: OK
+      tags:
+      - Comunidad
   /me:
     get:
       operationId: me
@@ -1728,6 +2070,130 @@ paths:
           description: OK
       tags:
       - Recompensas
+  /posts/{id}:
+    delete:
+      operationId: deletePost
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: OK
+      tags:
+      - Comunidad
+    get:
+      operationId: post
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PostResponse"
+          description: OK
+      tags:
+      - Comunidad
+    put:
+      operationId: edit
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PostResponse"
+          description: OK
+      tags:
+      - Comunidad
+  /posts/{id}/comments:
+    get:
+      operationId: comments
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CommentResponse"
+          description: OK
+      tags:
+      - Comunidad
+    post:
+      operationId: comment
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CommentResponse"
+          description: OK
+      tags:
+      - Comunidad
+  /posts/{id}/reports:
+    post:
+      operationId: reportPost
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReportRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+      summary: Denuncia una publicación (la revisa un ADMIN)
+      tags:
+      - Comunidad
   /rewards:
     get:
       operationId: catalog
@@ -1976,6 +2442,28 @@ components:
           - OTHER
         weightKg:
           type: number
+    CommentRequest:
+      type: object
+      properties:
+        body:
+          type: string
+          maxLength: 1000
+          minLength: 0
+      required:
+      - body
+    CommentResponse:
+      type: object
+      properties:
+        author:
+          $ref: "#/components/schemas/PersonResponse"
+        body:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        id:
+          type: string
+          format: uuid
     ContactMessage:
       type: object
       properties:
@@ -2213,6 +2701,48 @@ components:
           type: number
         title:
           type: string
+    GroupRequest:
+      type: object
+      properties:
+        description:
+          type: string
+          maxLength: 500
+          minLength: 0
+        name:
+          type: string
+          maxLength: 80
+          minLength: 0
+        visibility:
+          type: string
+          enum:
+          - PUBLIC
+          - PRIVATE
+      required:
+      - name
+      - visibility
+    GroupResponse:
+      type: object
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+        description:
+          type: string
+        id:
+          type: string
+          format: uuid
+        members:
+          type: integer
+          format: int64
+        membership:
+          $ref: "#/components/schemas/MembershipResponse"
+        name:
+          type: string
+        visibility:
+          type: string
+          enum:
+          - PUBLIC
+          - PRIVATE
     HabitLogRequest:
       type: object
       properties:
@@ -2516,6 +3046,37 @@ components:
         position:
           type: integer
           format: int32
+    MemberResponse:
+      type: object
+      properties:
+        person:
+          $ref: "#/components/schemas/PersonResponse"
+        role:
+          type: string
+          enum:
+          - OWNER
+          - MEMBER
+        since:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum:
+          - PENDING
+          - ACTIVE
+    MembershipResponse:
+      type: object
+      properties:
+        role:
+          type: string
+          enum:
+          - OWNER
+          - MEMBER
+        status:
+          type: string
+          enum:
+          - PENDING
+          - ACTIVE
     Money:
       type: object
       properties:
@@ -2636,6 +3197,18 @@ components:
       required:
       - content
       - page
+    PagedModelGroupResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/GroupResponse"
+        page:
+          $ref: "#/components/schemas/PageMetadata"
+      required:
+      - content
+      - page
     PagedModelInvitationResponse:
       type: object
       properties:
@@ -2672,6 +3245,30 @@ components:
       required:
       - content
       - page
+    PagedModelPostResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/PostResponse"
+        page:
+          $ref: "#/components/schemas/PageMetadata"
+      required:
+      - content
+      - page
+    PagedModelReportResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReportResponse"
+        page:
+          $ref: "#/components/schemas/PageMetadata"
+      required:
+      - content
+      - page
     PaymentResponse:
       type: object
       properties:
@@ -2696,6 +3293,14 @@ components:
         subscriptionId:
           type: string
           format: uuid
+    PersonResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
     PlanResponse:
       type: object
       properties:
@@ -2717,6 +3322,46 @@ components:
           - BASIC
           - PREMIUM
           - VIP
+    PostRequest:
+      type: object
+      properties:
+        body:
+          type: string
+          maxLength: 4000
+          minLength: 0
+        imageMediaId:
+          type: string
+          format: uuid
+        title:
+          type: string
+          maxLength: 120
+          minLength: 0
+      required:
+      - body
+      - title
+    PostResponse:
+      type: object
+      properties:
+        author:
+          $ref: "#/components/schemas/PersonResponse"
+        body:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        groupId:
+          type: string
+          format: uuid
+        id:
+          type: string
+          format: uuid
+        imagePath:
+          type: string
+        title:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
     RecommendationResponse:
       type: object
       properties:
@@ -2770,6 +3415,51 @@ components:
       - firstName
       - lastName
       - password
+    ReportRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 500
+          minLength: 0
+      required:
+      - reason
+    ReportResponse:
+      type: object
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+        excerpt:
+          type: string
+        id:
+          type: string
+          format: uuid
+        reason:
+          type: string
+        reporter:
+          $ref: "#/components/schemas/PersonResponse"
+        resolvedAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum:
+          - OPEN
+          - RESOLVED
+          - DISMISSED
+        targetAuthor:
+          $ref: "#/components/schemas/PersonResponse"
+        targetHidden:
+          type: boolean
+        targetId:
+          type: string
+          format: uuid
+        targetType:
+          type: string
+          enum:
+          - POST
+          - COMMENT
     ResetPasswordRequest:
       type: object
       properties:
@@ -2784,6 +3474,21 @@ components:
       required:
       - password
       - token
+    ResolveRequest:
+      type: object
+      properties:
+        action:
+          type: string
+          enum:
+          - HIDE
+          - DISMISS
+        note:
+          type: string
+          maxLength: 200
+          minLength: 0
+      required:
+      - action
+      - note
     RewardRequest:
       type: object
       properties:
