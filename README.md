@@ -101,11 +101,15 @@ Para arrancar sin datos de demostración, usa `DB_SEED_MODE=never`.
 ### Pruebas
 
 ```bash
-./mvnw test
+./mvnw verify
 ```
 
-`HealthyBitesApplicationTests` levanta el contexto completo, así que necesita la base de datos en
-marcha. El resto son pruebas unitarias y de controlador (Mockito y MockMvc).
+Solo necesitas Docker en marcha. `HealthyBitesApplicationTests` levanta la aplicación completa sobre
+un PostgreSQL efímero con [Testcontainers](https://testcontainers.com) y el seed de demo. Comprueba de
+extremo a extremo el login, el registro, un flujo de cliente, uno de nutricionista y el formulario de
+contacto de la landing. El resto son pruebas unitarias y de controlador (Mockito y MockMvc).
+
+CI ejecuta lo mismo en cada pull request ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
 
 ## Configuración
 
