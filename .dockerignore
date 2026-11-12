@@ -2,6 +2,7 @@
 
 # Datos y secretos locales: nunca deben acabar en el contexto de build ni en una imagen.
 mediafiles/
+uploads/
 .env
 .env.*
 

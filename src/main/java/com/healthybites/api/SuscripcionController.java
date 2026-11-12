@@ -20,7 +20,9 @@ public class SuscripcionController {
 
     private final SuscripcionService suscripcionService;
 
+    // Lista las suscripciones de todos los usuarios: solo administración.
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<SuscripcionDetailsDTO>> list() {
         List<SuscripcionDetailsDTO> suscripciones = suscripcionService.getAll();
         return new ResponseEntity<>(suscripciones, HttpStatus.OK);
@@ -39,12 +41,16 @@ public class SuscripcionController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         suscripcionService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    // Marca la suscripción como pagada sin pasar por PayPal: solo como corrección manual de administración.
+    // Un cliente solo paga mediante la captura del checkout de PayPal (POST /checkout/capture).
     @PutMapping("/confirm/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<SuscripcionDetailsDTO> confirmPurchase(@PathVariable Integer id) {
         SuscripcionDetailsDTO confirmedPurchase = suscripcionService.confirmSuscripcion(id);
         return ResponseEntity.ok(confirmedPurchase);
