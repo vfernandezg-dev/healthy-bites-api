@@ -1,0 +1,15 @@
+# Fin de línea LF en el repositorio y en las copias de trabajo, también en Windows.
+# Sin esto, core.autocrlf=true reescribe mvnw con CRLF y el build de Docker falla (/bin/sh no lo ejecuta).
+* text=auto eol=lf
+
+# Scripts de Windows
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Binarios
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.jar binary
