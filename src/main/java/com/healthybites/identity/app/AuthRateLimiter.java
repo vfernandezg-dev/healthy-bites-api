@@ -6,7 +6,6 @@ import com.healthybites.shared.web.ApiException;
 import java.time.Duration;
 import java.util.Locale;
 import org.jspecify.annotations.Nullable;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -26,22 +25,16 @@ public class AuthRateLimiter {
     private final RateLimiter passwordResetsByAccount;
     private final RateLimiter passwordResetsByIp;
 
-    public AuthRateLimiter(
-            @Value("${healthybites.security.rate-limit.login-per-account:5}") int loginPerAccount,
-            @Value("${healthybites.security.rate-limit.login-per-ip:20}") int loginPerIp,
-            @Value("${healthybites.security.rate-limit.login-window:PT15M}") Duration loginWindow,
-            @Value("${healthybites.security.rate-limit.refresh-per-ip:60}") int refreshPerIp,
-            @Value("${healthybites.security.rate-limit.refresh-window:PT5M}") Duration refreshWindow,
-            @Value("${healthybites.security.rate-limit.password-reset-per-account:3}") int passwordResetPerAccount,
-            @Value("${healthybites.security.rate-limit.password-reset-per-ip:10}") int passwordResetPerIp,
-            @Value("${healthybites.security.rate-limit.password-reset-window:PT1H}") Duration passwordResetWindow,
-            RateLimiters rateLimiters) {
-        this.loginFailuresByAccount = rateLimiters.create("login-account", loginPerAccount, loginWindow);
-        this.loginFailuresByIp = rateLimiters.create("login-ip", loginPerIp, loginWindow);
-        this.refreshesByIp = rateLimiters.create("refresh-ip", refreshPerIp, refreshWindow);
-        this.passwordResetsByAccount =
-                rateLimiters.create("password-reset-account", passwordResetPerAccount, passwordResetWindow);
-        this.passwordResetsByIp = rateLimiters.create("password-reset-ip", passwordResetPerIp, passwordResetWindow);
+    public AuthRateLimiter(AuthProperties properties, RateLimiters rateLimiters) {
+        AuthProperties.RateLimit limits = properties.rateLimit();
+        this.loginFailuresByAccount =
+                rateLimiters.create("login-account", limits.loginPerAccount(), limits.loginWindow());
+        this.loginFailuresByIp = rateLimiters.create("login-ip", limits.loginPerIp(), limits.loginWindow());
+        this.refreshesByIp = rateLimiters.create("refresh-ip", limits.refreshPerIp(), limits.refreshWindow());
+        this.passwordResetsByAccount = rateLimiters.create(
+                "password-reset-account", limits.passwordResetPerAccount(), limits.passwordResetWindow());
+        this.passwordResetsByIp =
+                rateLimiters.create("password-reset-ip", limits.passwordResetPerIp(), limits.passwordResetWindow());
     }
 
     /** @throws ApiException 429 si la cuenta o la IP acumulan demasiados fallos recientes */

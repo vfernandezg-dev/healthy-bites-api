@@ -9,7 +9,6 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -23,15 +22,14 @@ public class OpenApiConfiguration {
     static final String BEARER = "bearer";
 
     @Bean
-    OpenAPI healthyBitesOpenApi(
-            AppProperties appProperties, @Value("${healthybites.openapi.contact-email}") String contactEmail) {
+    OpenAPI healthyBitesOpenApi(AppProperties appProperties, OpenApiProperties openApi) {
         return new OpenAPI()
                 .info(new Info()
                         .title("Healthy Bites API")
                         .version("v1")
                         .description("API de Healthy Bites: seguimiento de hábitos y metas, planes de alimentación,"
                                 + " contenido, recompensas y comunidad. Errores en formato RFC 9457 (ProblemDetail).")
-                        .contact(new Contact().name("Healthy Bites").email(contactEmail))
+                        .contact(new Contact().name("Healthy Bites").email(openApi.contactEmail()))
                         .license(new License().name("Uso privado")))
                 .servers(List.of(new Server().url(appProperties.apiPublicUrl())))
                 .components(new Components()

@@ -6,7 +6,9 @@ import com.healthybites.identity.domain.NutritionistInvitation;
 import com.healthybites.identity.domain.User;
 import com.healthybites.identity.domain.UserStatus;
 import com.healthybites.shared.security.Role;
-import jakarta.validation.constraints.Email;
+import com.healthybites.shared.validation.EmailAddress;
+import com.healthybites.shared.validation.Password;
+import com.healthybites.shared.validation.PersonName;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
@@ -55,11 +57,13 @@ final class AdminDtos {
     }
 
     record InviteNutritionistRequest(
-            @NotBlank(message = "El correo es obligatorio") @Email(message = "Debe ser un correo válido") @Size(max = 254) String email,
+            @EmailAddress String email,
 
-            @NotBlank(message = "El nombre es obligatorio") @Size(max = 60, message = "Máximo 60 caracteres") String firstName,
+            @NotBlank(message = "El nombre es obligatorio") @PersonName
+            String firstName,
 
-            @NotBlank(message = "El apellido es obligatorio") @Size(max = 60, message = "Máximo 60 caracteres") String lastName) {}
+            @NotBlank(message = "El apellido es obligatorio") @PersonName
+            String lastName) {}
 
     record InvitationResponse(
             UUID id,
@@ -88,5 +92,6 @@ final class AdminDtos {
     record ChangePasswordRequest(
             @NotBlank(message = "La contraseña actual es obligatoria") @Size(max = 128) String currentPassword,
 
-            @NotBlank(message = "La nueva contraseña es obligatoria") @Size(min = 10, max = 64, message = "La contraseña debe tener entre 10 y 64 caracteres") String newPassword) {}
+            @NotBlank(message = "La nueva contraseña es obligatoria") @Password
+            String newPassword) {}
 }

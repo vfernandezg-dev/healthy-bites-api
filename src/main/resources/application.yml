@@ -146,6 +146,25 @@ healthybites:
     # todas las instancias) o memory (cada instancia por su cuenta; solo con una instancia).
     rate-limit:
       store: ${RATE_LIMIT_STORE:jdbc}
+      # Inicio de sesión: fallos por cuenta (desde una IP) y por IP en la ventana; tras un login correcto, la cuenta
+      # vuelve a empezar.
+      login-per-account: 5
+      login-per-ip: 20
+      login-window: PT15M
+      refresh-per-ip: 60
+      refresh-window: PT5M
+      # Solicitudes de restablecimiento de contraseña (cuentan existan o no las cuentas).
+      password-reset-per-account: 3
+      password-reset-per-ip: 10
+      password-reset-window: PT1H
+      # Registros públicos de clientes desde una misma IP.
+      registrations-per-ip: 10
+      registration-window: PT1H
+    # Validez del enlace para restablecer la contraseña y de las invitaciones de nutricionistas.
+    password-reset:
+      token-ttl: PT30M
+    invitations:
+      validity: P7D
     jwt:
       secret: ${JWT_SECRET:}
       access-token-ttl: ${JWT_ACCESS_TOKEN_TTL:PT15M}

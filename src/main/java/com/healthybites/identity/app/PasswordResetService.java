@@ -14,7 +14,6 @@ import java.util.Objects;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -61,7 +60,7 @@ public class PasswordResetService {
             ApplicationEventPublisher events,
             AppProperties appProperties,
             Clock clock,
-            @Value("${healthybites.security.password-reset.token-ttl:PT30M}") Duration tokenTtl) {
+            AuthProperties properties) {
         this.tokens = tokens;
         this.users = users;
         this.passwordEncoder = passwordEncoder;
@@ -71,7 +70,7 @@ public class PasswordResetService {
         this.events = events;
         this.appProperties = appProperties;
         this.clock = clock;
-        this.tokenTtl = tokenTtl;
+        this.tokenTtl = properties.passwordReset().tokenTtl();
     }
 
     /**

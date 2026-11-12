@@ -10,7 +10,6 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -37,13 +36,13 @@ public class InvitationService {
             ApplicationEventPublisher events,
             AppProperties appProperties,
             Clock clock,
-            @Value("${healthybites.security.invitations.validity:P7D}") Duration validity) {
+            AuthProperties properties) {
         this.invitations = invitations;
         this.users = users;
         this.events = events;
         this.appProperties = appProperties;
         this.clock = clock;
-        this.validity = validity;
+        this.validity = properties.invitations().validity();
     }
 
     /** Una invitación y su estado en este momento. */
