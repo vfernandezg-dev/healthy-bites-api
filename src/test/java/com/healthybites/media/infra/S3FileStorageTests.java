@@ -34,7 +34,7 @@ class S3FileStorageTests {
     private static final String BUCKET = "healthybites-test";
 
     @Container
-    private static final GenericContainer<?> S3 = new GenericContainer<>(DockerImageName.parse("adobe/s3mock:4.9.1"))
+    private static final GenericContainer<?> S3 = new GenericContainer<>(DockerImageName.parse("adobe/s3mock:5.2.3"))
             .withExposedPorts(9090)
             .waitingFor(Wait.forHttp("/").forPort(9090));
 
