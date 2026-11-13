@@ -1,8 +1,11 @@
 package com.healthybites.media.domain;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Tipos de fichero que se aceptan, reconocidos por sus primeros bytes ("magic numbers"). La extensión y el
@@ -48,6 +51,17 @@ public enum FileType {
 
     public long maxMegabytes() {
         return maxBytes / (1024L * 1024L);
+    }
+
+    /** El tipo que corresponde a un tipo MIME declarado (el del navegador); la API lo confirma después por los bytes. */
+    public static Optional<FileType> fromContentType(@Nullable String contentType) {
+        if (contentType == null) {
+            return Optional.empty();
+        }
+        String normalized = contentType.trim().toLowerCase(Locale.ROOT);
+        return Arrays.stream(values())
+                .filter(type -> type.contentType.equals(normalized))
+                .findFirst();
     }
 
     public static Optional<FileType> detect(byte[] header) {

@@ -30,4 +30,15 @@ public interface FileStorage {
 
     /** Cómo debe responder el almacenamiento a la URL prefirmada, y durante cuánto tiempo vale. */
     record DirectRead(String contentType, String contentDisposition, String cacheControl, Duration validFor) {}
+
+    /**
+     * URL temporal para que el navegador suba el contenido directamente al almacenamiento (un PUT con exactamente ese
+     * tipo y ese tamaño), sin pasar por la API; vacío si el almacenamiento no las ofrece (en disco, se sube a la API).
+     */
+    default Optional<URI> presignedPut(String key, String contentType, long size, Duration validFor) {
+        return Optional.empty();
+    }
+
+    /** Cambia la clave de un fichero guardado (de la subida pendiente a la definitiva). */
+    void move(String from, String to);
 }
