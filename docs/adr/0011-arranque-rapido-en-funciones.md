@@ -24,9 +24,10 @@ Sin suspensión, Neon gastaría unas 180 CU-horas al mes y se cortaría a mitad 
   - caché AOT de Java 25 (JEP 483, 514 y 515) generada en el `Dockerfile` con una ejecución de entrenamiento
     (`spring.context.exit=onRefresh`) contra un PostgreSQL 18 temporal que se instala y se borra en la misma capa:
     de 14 s a unos 9 s. La imagen crece unos 150 MB.
-- **Una instancia caliente.** Un Cloudflare Worker (stack `healthy-bites` de `vfernandezg-infra`) llama cada 4
-  minutos a `/actuator/health/liveness`, que no toca la base de datos. Entre peticiones la instancia está pausada y
-  no consume CPU ni memoria facturable.
+- **Una instancia caliente.** Un workflow programado de `vfernandezg-infra` (`healthy-bites-keep-warm.yml`) llama
+  cada 5 minutos, dos veces con 2,5 minutos de separación, a `/actuator/health/liveness`, que no toca la base de
+  datos. Entre peticiones la instancia está pausada y no consume CPU ni memoria facturable. (Se pensó en un
+  Cloudflare Worker, pero el token de Terraform no puede crear Workers.)
 - **La base de datos puede suspenderse** aunque la instancia viva:
   - HikariCP sin conexiones en reposo (`minimum-idle: 0`, `idle-timeout` de 1 minuto, sin `keepalive`);
   - el monitor de eventos atascados comprueba cada hora (`spring.modulith.events.staleness.check-interval`);
@@ -35,7 +36,8 @@ Sin suspensión, Neon gastaría unas 180 CU-horas al mes y se cortaría a mitad 
 
 ## Consecuencias
 
-- Un arranque en frío ya no falla: la primera petición tarda lo que el arranque (unos 9 s) y responde.
+- Un arranque en frío ya no falla: la primera petición tarda lo que el arranque (7-8 s en Vercel según sus logs;
+  hasta 15 s si arrancan muchas instancias a la vez) y responde.
 - La primera consulta tras un minuto sin uso abre una conexión nueva (100-300 ms) y, si Neon estaba suspendido, lo
   despierta (alrededor de 1 s).
 - Las tareas programadas solo avanzan mientras la instancia atiende peticiones (el ping incluido): son de mejor
