@@ -6,7 +6,9 @@ WORKDIR /workspace
 
 # Primero solo lo necesario para resolver dependencias: esta capa se reutiliza mientras no cambie el pom.
 COPY .mvn/ .mvn/
-COPY mvnw pom.xml ./
+# El permiso de ejecución se fija aquí: si el contexto se sube desde Windows (p. ej. con la CLI de Vercel), se pierde.
+COPY --chmod=755 mvnw ./
+COPY pom.xml ./
 RUN --mount=type=cache,target=/root/.m2 ./mvnw -B -ntp dependency:go-offline
 
 COPY src/ src/
