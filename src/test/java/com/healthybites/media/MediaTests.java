@@ -7,11 +7,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -20,6 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.healthybites.IntegrationTest;
 import com.healthybites.support.Seed;
 import com.jayway.jsonpath.JsonPath;
+import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -29,8 +33,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -193,6 +199,128 @@ class MediaTests extends IntegrationTest {
                         .file(new MockMultipartFile("file", "a.png", "image/png", PNG))
                         .param("purpose", "POST_IMAGE"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void withoutObjectStorageTheClientUploadsToTheApi() throws Exception {
+        startDirectUpload(Seed.JUAN, "POST_IMAGE", "image/png", PNG.length)
+                .andExpect(status().isNotImplemented())
+                .andExpect(jsonPath("$.code").value("direct-upload-unavailable"));
+    }
+
+    @Test
+    void aDirectUploadIsCheckedLikeAnUploadToTheApiAndRegistered() throws Exception {
+        URI presigned = URI.create("https://bucket.example.com/pending?X-Amz-Signature=firma");
+        doReturn(Optional.of(presigned)).when(storage).presignedPut(anyString(), anyString(), anyLong(), any());
+
+        String started = startDirectUpload(Seed.JUAN, "POST_IMAGE", "image/png", PNG.length)
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.uploadUrl").value(presigned.toString()))
+                .andExpect(jsonPath("$.contentType").value("image/png"))
+                .andExpect(jsonPath("$.expiresAt").exists())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        String key = pendingKey(PNG.length);
+        assertThat(key).startsWith("pending-").endsWith(".png");
+
+        // El navegador sube el fichero al almacenamiento (aquí, directamente) y lo confirma.
+        storage.store(new ByteArrayInputStream(PNG), PNG.length, "image/png", key);
+        String ticket = JsonPath.read(started, "$.ticket");
+        String path = JsonPath.read(
+                complete(Seed.JUAN, ticket)
+                        .andExpect(status().isCreated())
+                        .andExpect(jsonPath("$.contentType").value("image/png"))
+                        .andExpect(jsonPath("$.sizeBytes").value(PNG.length))
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString(),
+                "$.path");
+
+        mockMvc.perform(get(path))
+                .andExpect(status().isOk())
+                .andExpect(content().bytes(PNG));
+        assertThat(storage.load(key)).as("ya no está en la clave pendiente").isEmpty();
+        // El billete vale una vez.
+        complete(Seed.JUAN, ticket)
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.code").value("upload-not-received"));
+    }
+
+    @Test
+    void aDirectUploadThatIsNotWhatWasAnnouncedIsDeleted() throws Exception {
+        doReturn(Optional.of(URI.create("https://bucket.example.com/x")))
+                .when(storage)
+                .presignedPut(anyString(), anyString(), anyLong(), any());
+        byte[] html = "<!doctype html><script>alert(1)</script>".getBytes(StandardCharsets.UTF_8);
+
+        String ticket = JsonPath.read(
+                startDirectUpload(Seed.JUAN, "POST_IMAGE", "image/png", html.length)
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString(),
+                "$.ticket");
+        String key = pendingKey(html.length);
+        storage.store(new ByteArrayInputStream(html), html.length, "image/png", key);
+
+        complete(Seed.JUAN, ticket)
+                .andExpect(status().isUnsupportedMediaType())
+                .andExpect(jsonPath("$.code").value("unsupported-file-type"));
+        assertThat(storage.load(key)).isEmpty();
+    }
+
+    @Test
+    void aTicketOnlyServesWhoAskedForItAndCannotBeForged() throws Exception {
+        doReturn(Optional.of(URI.create("https://bucket.example.com/x")))
+                .when(storage)
+                .presignedPut(anyString(), anyString(), anyLong(), any());
+        String ticket = JsonPath.read(
+                startDirectUpload(Seed.JUAN, "POST_IMAGE", "image/png", PNG.length)
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString(),
+                "$.ticket");
+
+        complete(Seed.CARLOS, ticket)
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.code").value("invalid-upload-ticket"));
+        String forged = ticket.substring(0, ticket.indexOf('.') + 1) + "firma-falsa";
+        complete(Seed.JUAN, forged).andExpect(jsonPath("$.code").value("invalid-upload-ticket"));
+    }
+
+    @Test
+    void aDirectUploadFollowsTheSameRulesAsAnUploadToTheApi() throws Exception {
+        startDirectUpload(Seed.JUAN, "CONTENT_FILE", "application/pdf", PDF.length)
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("media-purpose-forbidden"));
+        startDirectUpload(Seed.JUAN, "POST_IMAGE", "image/svg+xml", 100).andExpect(status().isUnsupportedMediaType());
+        startDirectUpload(Seed.JUAN, "POST_IMAGE", "image/png", 5 * 1024 * 1024 + 1)
+                .andExpect(status().isContentTooLarge())
+                .andExpect(jsonPath("$.code").value("file-too-large"));
+        startDirectUpload(Seed.CARLOS, "CONTENT_FILE", "video/mp4", 0).andExpect(status().isUnprocessableContent());
+    }
+
+    /** La clave con la que la API firmó la subida directa. */
+    private String pendingKey(long size) {
+        ArgumentCaptor<String> key = ArgumentCaptor.forClass(String.class);
+        verify(storage, atLeastOnce()).presignedPut(key.capture(), anyString(), eq(size), any());
+        return key.getValue();
+    }
+
+    private ResultActions startDirectUpload(String email, String purpose, String contentType, long size)
+            throws Exception {
+        return mockMvc.perform(post("/media/uploads")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"purpose\":\"" + purpose + "\",\"contentType\":\"" + contentType + "\",\"sizeBytes\":"
+                        + size + "}")
+                .header(HttpHeaders.AUTHORIZATION, bearer(token(email))));
+    }
+
+    private ResultActions complete(String email, String ticket) throws Exception {
+        return mockMvc.perform(post("/media/uploads/complete")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"ticket\":\"" + ticket + "\"}")
+                .header(HttpHeaders.AUTHORIZATION, bearer(token(email))));
     }
 
     private ResultActions upload(String email, String purpose, String name, String contentType, byte[] bytes)

@@ -4,6 +4,7 @@ import com.healthybites.media.app.FileStorage;
 import com.healthybites.shared.web.ApiException;
 import java.io.InputStream;
 import java.net.URI;
+import java.time.Duration;
 import java.util.Optional;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
@@ -20,12 +21,14 @@ import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
+import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 /**
  * Almacenamiento de objetos S3-compatible (Cloudflare R2, AWS S3): lo comparten todas las instancias y no se
@@ -123,6 +126,39 @@ final class S3FileStorage implements FileStorage, AutoCloseable {
                         .build())
                 .url()
                 .toString()));
+    }
+
+    /**
+     * Se firma en local. El tipo y el tamaño van en la firma: el navegador tiene que mandar exactamente esos (si no, el
+     * almacenamiento rechaza la subida).
+     */
+    @Override
+    public Optional<URI> presignedPut(String key, String contentType, long size, Duration validFor) {
+        PutObjectRequest request = PutObjectRequest.builder()
+                .bucket(bucket)
+                .key(key)
+                .contentType(contentType)
+                .contentLength(size)
+                .build();
+        return Optional.of(URI.create(presigner
+                .presignPutObject(PutObjectPresignRequest.builder()
+                        .signatureDuration(validFor)
+                        .putObjectRequest(request)
+                        .build())
+                .url()
+                .toString()));
+    }
+
+    /** Copia en el servidor (sin descargar el contenido) y borra el original. */
+    @Override
+    public void move(String from, String to) {
+        call(() -> s3.copyObject(CopyObjectRequest.builder()
+                .sourceBucket(bucket)
+                .sourceKey(from)
+                .destinationBucket(bucket)
+                .destinationKey(to)
+                .build()));
+        delete(from);
     }
 
     @Override

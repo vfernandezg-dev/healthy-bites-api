@@ -87,6 +87,32 @@ class S3FileStorageTests {
     }
 
     @Test
+    void theBrowserUploadsWithAPresignedPutAndTheApiMovesItToItsFinalKey() throws Exception {
+        byte[] content = "%PDF-1.7 subida directa".getBytes(StandardCharsets.UTF_8);
+        URI url = storage.presignedPut("pending-guia.pdf", "application/pdf", content.length, Duration.ofMinutes(15))
+                .orElseThrow();
+        assertThat(url.getQuery()).contains("X-Amz-Signature", "X-Amz-Expires=900");
+
+        // Lo que hace el navegador: un PUT con el tipo firmado.
+        HttpResponse<Void> put = HttpClient.newHttpClient()
+                .send(
+                        HttpRequest.newBuilder(url)
+                                .header("Content-Type", "application/pdf")
+                                .PUT(HttpRequest.BodyPublishers.ofByteArray(content))
+                                .build(),
+                        HttpResponse.BodyHandlers.discarding());
+        assertThat(put.statusCode()).isEqualTo(200);
+
+        storage.move("pending-guia.pdf", "guia-final.pdf");
+
+        assertThat(storage.load("pending-guia.pdf")).isEmpty();
+        try (var in = storage.load("guia-final.pdf").orElseThrow().getInputStream()) {
+            assertThat(in.readAllBytes()).isEqualTo(content);
+        }
+        storage.delete("guia-final.pdf");
+    }
+
+    @Test
     void anUnreachableStorageAnswers503() {
         try (S3FileStorage down = S3FileStorage.create(config("http://127.0.0.1:1"))) {
             assertThatThrownBy(() -> down.store(new ByteArrayInputStream(new byte[] {1}), 1, "image/png", "x.png"))

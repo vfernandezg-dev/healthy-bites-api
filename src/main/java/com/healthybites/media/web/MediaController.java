@@ -11,7 +11,13 @@ import com.healthybites.shared.web.Locations;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import java.net.URI;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.core.io.Resource;
@@ -23,6 +29,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -56,7 +63,46 @@ class MediaController {
                     + "abren desde el contenido.")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<UploadResponse> upload(@RequestPart("file") MultipartFile file, @RequestParam MediaPurpose purpose) {
-        MediaFile stored = media.upload(file, purpose, CurrentUser.id(), CurrentUser.role());
+        return created(media.upload(file, purpose, CurrentUser.id(), CurrentUser.role()));
+    }
+
+    /** Tipo y tamaño que el navegador va a subir (los comprueba la API al confirmar, por los bytes). */
+    record DirectUploadRequest(
+            @NotNull MediaPurpose purpose,
+            @NotBlank String contentType,
+            @Positive long sizeBytes) {}
+
+    /** Dónde subir el fichero (PUT con ese Content-Type) y el billete para confirmarlo antes de {@code expiresAt}. */
+    record DirectUploadResponse(URI uploadUrl, String contentType, String ticket, Instant expiresAt) {}
+
+    record CompleteUploadRequest(@NotBlank String ticket) {}
+
+    @Operation(
+            summary = "Empieza una subida directa al almacenamiento",
+            description = "Para ficheros que no caben en una petición a la API (más de 4,5 MB en el hosting): devuelve "
+                    + "una URL prefirmada para subir el fichero con PUT y el Content-Type indicado, y el billete para "
+                    + "confirmarlo con POST /media/uploads/complete. Mismas reglas que POST /media. Sin almacenamiento "
+                    + "de objetos responde 501 direct-upload-unavailable: sube el fichero a POST /media.")
+    @PostMapping(path = "/uploads", consumes = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<DirectUploadResponse> startUpload(@Valid @RequestBody DirectUploadRequest body) {
+        MediaService.DirectUpload upload = media.startDirectUpload(
+                body.purpose(), body.contentType(), body.sizeBytes(), CurrentUser.id(), CurrentUser.role());
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new DirectUploadResponse(
+                        upload.uploadUrl(), upload.contentType(), upload.ticket(), upload.expiresAt()));
+    }
+
+    @Operation(
+            summary = "Confirma una subida directa",
+            description =
+                    "Comprueba el fichero subido (tipo por su contenido y tamaño) y lo registra como POST /media. "
+                            + "Si no es el anunciado, se borra.")
+    @PostMapping(path = "/uploads/complete", consumes = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<UploadResponse> completeUpload(@Valid @RequestBody CompleteUploadRequest body) {
+        return created(media.completeDirectUpload(body.ticket(), CurrentUser.id()));
+    }
+
+    private ResponseEntity<UploadResponse> created(MediaFile stored) {
         UUID id = stored.requireId();
         UploadResponse body = new UploadResponse(
                 id, stored.getContentType(), stored.getSizeBytes(), stored.isPublic() ? media.publicPath(id) : null);

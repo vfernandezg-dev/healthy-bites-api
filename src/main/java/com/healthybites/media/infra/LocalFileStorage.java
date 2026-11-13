@@ -61,6 +61,17 @@ class LocalFileStorage implements FileStorage {
         });
     }
 
+    @Override
+    public void move(String from, String to) {
+        Path source = resolve(from).orElseThrow(() -> new IllegalArgumentException("Clave de fichero no válida"));
+        Path target = resolve(to).orElseThrow(() -> new IllegalArgumentException("Clave de fichero no válida"));
+        try {
+            Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            throw new UncheckedIOException("No se pudo mover el fichero", e);
+        }
+    }
+
     /** Ruta dentro del directorio de almacenamiento; vacía si la clave intenta salir de él. */
     private Optional<Path> resolve(String key) {
         try {

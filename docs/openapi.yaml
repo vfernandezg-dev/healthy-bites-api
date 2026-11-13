@@ -1844,6 +1844,51 @@ paths:
       summary: Sube un fichero
       tags:
       - Ficheros
+  /media/uploads:
+    post:
+      description: "Para ficheros que no caben en una petición a la API (más de 4,5\
+        \ MB en el hosting): devuelve una URL prefirmada para subir el fichero con\
+        \ PUT y el Content-Type indicado, y el billete para confirmarlo con POST /media/uploads/complete.\
+        \ Mismas reglas que POST /media. Sin almacenamiento de objetos responde 501\
+        \ direct-upload-unavailable: sube el fichero a POST /media."
+      operationId: startUpload
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DirectUploadRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DirectUploadResponse"
+          description: OK
+      summary: Empieza una subida directa al almacenamiento
+      tags:
+      - Ficheros
+  /media/uploads/complete:
+    post:
+      description: "Comprueba el fichero subido (tipo por su contenido y tamaño) y\
+        \ lo registra como POST /media. Si no es el anunciado, se borra."
+      operationId: completeUpload
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompleteUploadRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UploadResponse"
+          description: OK
+      summary: Confirma una subida directa
+      tags:
+      - Ficheros
   /media/{id}:
     get:
       operationId: read
@@ -2996,6 +3041,14 @@ components:
       required:
       - body
       - id
+    CompleteUploadRequest:
+      type: object
+      properties:
+        ticket:
+          type: string
+          minLength: 1
+      required:
+      - ticket
     ContactMessage:
       type: object
       properties:
@@ -3199,6 +3252,44 @@ components:
       - email
       - id
       - name
+    DirectUploadRequest:
+      type: object
+      properties:
+        contentType:
+          type: string
+          minLength: 1
+        purpose:
+          type: string
+          enum:
+          - POST_IMAGE
+          - CONTENT_COVER
+          - CONTENT_FILE
+        sizeBytes:
+          type: integer
+          format: int64
+          exclusiveMinimum: 0
+      required:
+      - contentType
+      - purpose
+      - sizeBytes
+    DirectUploadResponse:
+      type: object
+      properties:
+        contentType:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        ticket:
+          type: string
+        uploadUrl:
+          type: string
+          format: uri
+      required:
+      - contentType
+      - expiresAt
+      - ticket
+      - uploadUrl
     EditableContentResponse:
       type: object
       properties:
