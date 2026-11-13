@@ -27,7 +27,8 @@ class RateLimitCleanupJob {
         this.clock = clock;
     }
 
-    @Scheduled(cron = "0 20 * * * *")
+    // En el minuto 5, como las demás tareas horarias: la base de datos se despierta una sola vez por hora.
+    @Scheduled(cron = "0 5 * * * *")
     @SchedulerLock(name = "rate-limit-cleanup", lockAtMostFor = "PT10M")
     public void purge() {
         int deleted = jdbc.sql("delete from rate_limit_events where occurred_at < :before")

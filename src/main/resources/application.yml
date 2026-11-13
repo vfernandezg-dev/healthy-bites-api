@@ -18,6 +18,12 @@ spring:
     hikari:
       maximum-pool-size: ${DB_POOL_SIZE:10}
       connection-timeout: 5000
+      # Sin conexiones en reposo: se cierran al minuto sin uso y no hay keepalive. Así Neon puede suspender la base de
+      # datos tras 5 minutos sin consultas (su plan gratuito cuenta las horas de cómputo) aunque la instancia de la
+      # API siga viva. Abrir una conexión nueva cuesta unos 100-300 ms.
+      minimum-idle: ${DB_POOL_MIN_IDLE:0}
+      idle-timeout: 60000
+      keepalive-time: 0
 
   # El esquema lo crean las migraciones de Flyway (src/main/resources/db/migration); Hibernate solo comprueba que
   # las entidades coinciden con él.
@@ -57,6 +63,9 @@ spring:
         published: PT15M
         processing: PT15M
         resubmitted: PT15M
+        # Por defecto comprueba cada minuto, y cada comprobación es una consulta: la base de datos no se suspendería
+        # nunca. Una vez por hora basta para los eventos que se quedan a medias.
+        check-interval: PT1H
 
   threads:
     virtual:
