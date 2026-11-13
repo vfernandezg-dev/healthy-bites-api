@@ -26,9 +26,9 @@ ha reescrito como un monolito modular con las versiones y prácticas actuales. F
 
 | Repositorio                                                                       | Descripción                                         |
 | --------------------------------------------------------------------------------- | --------------------------------------------------- |
-| [healthy-bites-api](https://github.com/vfernandezg-dev/healthy-bites-api)         | API REST en Spring Boot + PostgreSQL (este repo)    |
-| [healthy-web-app](https://github.com/vfernandezg-dev/healthy-web-app)             | Aplicación web en Angular                           |
-| [healthy-bites-landing](https://github.com/vfernandezg-dev/healthy-bites-landing) | Landing page en Astro (usa el endpoint de contacto) |
+| [healthybites-backend](https://github.com/vfernandezg-dev/healthybites-backend)   | API REST en Spring Boot + PostgreSQL (este repo)    |
+| [healthybites-frontend](https://github.com/vfernandezg-dev/healthybites-frontend) | Aplicación web en Angular                           |
+| [healthybites-landing](https://github.com/vfernandezg-dev/healthybites-landing)   | Landing page en Astro (usa el endpoint de contacto) |
 
 ## Funcionalidad
 
@@ -261,7 +261,7 @@ para seguir una petición en los logs.
 
 ## Formulario de contacto
 
-`POST /api/v1/contact` es público y lo usa la [landing page](https://github.com/vfernandezg-dev/healthy-bites-landing).
+`POST /api/v1/contact` es público y lo usa la [landing page](https://github.com/vfernandezg-dev/healthybites-landing).
 Su contrato no ha cambiado con la reescritura.
 
 ```json
